@@ -16,7 +16,7 @@ import itertools
 #from physics.binary.harden import baruteau11
 from physics.binary.merge import tichy08
 from physics.binary.merge import chieff
-data=np.loadtxt('inputs.txt',usecols=range(1,21))
+#data=np.loadtxt('inputs.txt',usecols=range(1,21))
 
 def main():
     
