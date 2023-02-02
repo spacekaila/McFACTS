@@ -33,6 +33,15 @@ def main():
     out_chi=chieff.chi_effective(mass1,mass2,spin1,spin2,angle1,angle2,bin_ang_mom)
     print(outmass,outspin,out_chi)
     print("Play with inputs")
+    #test set-up
+    print("Generate an initial array of BH")
+    n_bh=50.
+    disk_outer_radius=1.e5
+    rng=np.random.random
+    integer_nbh=int(n_bh)
+    bh_initial_locations=disk_outer_radius*rng(integer_nbh)
+    print(bh_initial_locations)
+
     #mig_trap_radius=data[17]
     #print(mig_trap_radius)
 if __name__ == "__main__":
