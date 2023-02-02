@@ -65,6 +65,10 @@ def main():
     mu_spin_distribution=0.
     #Sigma of Gaussian initial spin distribution (small is good)
     sigma_spin_distribution=0.1
+    bh_initial_spins=np.random.normal(mu_spin_distribution,sigma_spin_distribution,integer_nbh)
+    bh_initial_spin_indices=np.array(bh_initial_spins)
+    negative_spin_indices=np.where(bh_initial_spin_indices < 0.)
+    print(bh_initial_spins)
 
     #mig_trap_radius=data[17]
     #print(mig_trap_radius)
