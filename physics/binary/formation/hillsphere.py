@@ -75,9 +75,9 @@ def encounter_test(prograde_bh_locations,bh_hill_sphere):
     final_bin_indices=sorted_in_result+sorted_out_result
     sorted_final_bin_indices=np.sort(final_bin_indices)
 
-    print("check if sorted_in & sorted_out arrays are the same")
+    #print("check if sorted_in & sorted_out arrays are the same")
     check=np.array_equiv(sorted_in_result,sorted_out_result)
-    print(check)
+    #print(check)
     # Return the indices of those elements in separation array <0
     # (ie BH are closer than 1 R_Hill)
     # In inwards case, r_i+1 -r_i <R_H_i, so relevant BH indices are i,i+1

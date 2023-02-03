@@ -14,6 +14,7 @@ from physics.accretion.eddington import changebhmass
 from physics.accretion.torque import changebh
 #from physics.feedback import hankla22
 #from physics.dynamics import wang22
+from physics.binary.formation import hillsphere
 #from physics.binary.formation import secunda20
 #from physics.binary.harden import baruteau11
 from physics.binary.merge import tichy08
@@ -36,11 +37,16 @@ def main():
     print(outmass,outspin,out_chi)
 
     #2. Test set-up; Use a choice of input parameters and call setup modules
+    #Mass SMBH (units of Msun)
+    mass_smbh=1.e8
+    #Number of BH in disk initially
     n_bh=50.
+    integer_nbh=int(n_bh)
+    #Disk outer radius (units of r_g)
     disk_outer_radius=1.e5
-    #Mode of initial BH mass distribution in M_sun
+    #Mode of initial BH mass distribution (units of M_sun)
     mode_mbh_init=10.
-    #Maximum of initial BH mass distribution in M_sun
+    #Maximum of initial BH mass distribution (units of M_sun)
     max_initial_bh_mass=40.0
     #Pareto(powerlaw) initial BH mass index
     mbh_powerlaw_index=2.
@@ -50,24 +56,12 @@ def main():
     sigma_spin_distribution=0.1
 
     print("Generate initial BH parameter arrays")
-    print("Initial locations(r_g):")
     bh_initial_locations=setupdiskblackholes.setup_disk_blackholes_location(n_bh,disk_outer_radius)
-    print(bh_initial_locations)
-    sorted_bh_locations=np.sort(bh_initial_locations)
-    print("Initial (sorted) locations")
-    print(sorted_bh_locations)
-    print("Initial masses(Msun):")
     bh_initial_masses=setupdiskblackholes.setup_disk_blackholes_masses(n_bh,mode_mbh_init,max_initial_bh_mass,mbh_powerlaw_index)
-    print(bh_initial_masses)
-    print("Initial spins:")
     bh_initial_spins=setupdiskblackholes.setup_disk_blackholes_spins(n_bh,mu_spin_distribution,sigma_spin_distribution)
-    print(bh_initial_spins)
-    print("Initial spin angles (rads)")
     bh_initial_spin_angles=setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh,bh_initial_spins)
-    print(bh_initial_spin_angles)
-    print("Initial orbital angular momentum")
     bh_initial_orb_ang_mom=setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
-    print(bh_initial_orb_ang_mom)    
+       
 
     #3.a Test migration of prograde BH
     #Disk surface density (assume constant for test)
@@ -99,8 +93,7 @@ def main():
     print("Prograde BH initial masses")
     print(prograde_bh_masses)
 
-    #c. Test spin change and torquing
-    
+    #c. Test spin change and spin angle torquing
     #Spin torque condition. 0.1=10% mass accretion to torque fully into alignment.
     # 0.01=1% mass accretion
     spin_torque_condition=0.1
@@ -113,28 +106,39 @@ def main():
     print("Prograde BH initial spin angles")
     prograde_bh_spin_angles=bh_initial_spin_angles[prograde_orb_ang_mom_indices]
     print(prograde_bh_spin_angles)
-    
+
+    #4 Test Binary formation
+    #Number of binary properties that we want to record (e.g. M_1,_2,a_1,2,theta_1,2,a_bin,a_com,t_gw,ecc,bin_ang_mom,generation)
+    number_of_bin_properties=13.0
+    integer_nbinprop=int(number_of_bin_properties)
+    #Set up empty initial Binary array
+    #Initially all zeros, then add binaries plus details as appropriate
+    #Make number of binaries possible equal to number of BH initially. Change this later to something dynamic.
+    binary_bh_arrary=np.zeros((integer_nbinprop,integer_nbh))
+
+    #Start Loop of Timesteps
     print("Start Loop!")
     time_passed=initial_time
     print("Initial Time(yrs)=",time_passed)
     while time_passed<final_time:
+        #Migrate
         prograde_bh_locations=type1.dr_migration(prograde_bh_locations,prograde_bh_masses,disk_surface_density,timestep)
+        #Accrete
         prograde_bh_masses=changebhmass.change_mass(prograde_bh_masses,frac_Eddington_ratio,mass_growth_Edd_rate,timestep)
+        #Spin up    
         prograde_bh_spins=changebh.change_spin_magnitudes(prograde_bh_spins,frac_Eddington_ratio,spin_torque_condition,timestep)
+        #Torque spin angle
         prograde_bh_spin_angles=changebh.change_spin_angles(prograde_bh_spin_angles,frac_Eddington_ratio,spin_torque_condition,spin_minimum_resolution,timestep)
+        #Calculate size of Hill sphere
+        bh_hill_sphere=hillsphere.calculate_hill_sphere(prograde_bh_locations,prograde_bh_masses,mass_smbh)
+        #Test for encounters within Hill sphere
+        close_encounters=hillsphere.encounter_test(prograde_bh_locations,bh_hill_sphere)
         #Iterate the time step
         time_passed=time_passed+timestep
+    #End Loop of Timesteps at Final Time, end all changes & print out results
+    
     print("End Loop!")
     print("Final Time(yrs)=",time_passed)
-    print("(Sorted) BH locations at Final Time")
-    sorted_final_bh_locations=np.sort(prograde_bh_locations)
-    print(sorted_final_bh_locations)
-    print("BH masses at Final Time")
-    print(prograde_bh_masses)
-    print("BH spins at Final Time")
-    print(prograde_bh_spins)
-    print("BH spin angles at Final Time")
-    print(prograde_bh_spin_angles)
 
 if __name__ == "__main__":
     main()
