@@ -15,6 +15,7 @@ from physics.accretion.torque import changebh
 #from physics.feedback import hankla22
 #from physics.dynamics import wang22
 from physics.binary.formation import hillsphere
+from physics.binary.formation import add_new_binary
 #from physics.binary.formation import secunda20
 #from physics.binary.harden import baruteau11
 from physics.binary.merge import tichy08
@@ -23,7 +24,7 @@ from physics.binary.merge import chieff
 def main():
     
     #1. Test a merger by calling modules
-    print("Do a thing with a merger")
+    print("Test merger")
     mass1=10.0
     mass2=15.0
     spin1=0.1
@@ -111,10 +112,12 @@ def main():
     #Number of binary properties that we want to record (e.g. M_1,_2,a_1,2,theta_1,2,a_bin,a_com,t_gw,ecc,bin_ang_mom,generation)
     number_of_bin_properties=13.0
     integer_nbinprop=int(number_of_bin_properties)
+    bin_index=0
+    test_bin_number=12.0
+    integer_test_bin_number=int(test_bin_number)
     #Set up empty initial Binary array
     #Initially all zeros, then add binaries plus details as appropriate
-    #Make number of binaries possible equal to number of BH initially. Change this later to something dynamic.
-    binary_bh_arrary=np.zeros((integer_nbinprop,integer_nbh))
+    binary_bh_array=np.zeros((integer_nbinprop,integer_test_bin_number))
 
     #Start Loop of Timesteps
     print("Start Loop!")
@@ -133,12 +136,37 @@ def main():
         bh_hill_sphere=hillsphere.calculate_hill_sphere(prograde_bh_locations,prograde_bh_masses,mass_smbh)
         #Test for encounters within Hill sphere
         close_encounters=hillsphere.encounter_test(prograde_bh_locations,bh_hill_sphere)
+        #If a close encounter within Hill sphere add a new Binary
+        if len(close_encounters) > 0:
+            sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
+            sorted_prograde_bh_location_indices=np.argsort(prograde_bh_locations)
+            number_of_new_bins=(len(close_encounters)+1)/2
+            binary_bh_array=add_new_binary.add_to_binary_array(binary_bh_array,prograde_bh_locations,prograde_bh_masses,prograde_bh_spins,prograde_bh_spin_angles,close_encounters,bin_index)
+            bin_index=bin_index+number_of_new_bins
+            bh_masses_by_sorted_location=prograde_bh_masses[sorted_prograde_bh_location_indices]
+            bh_spins_by_sorted_location=prograde_bh_spins[sorted_prograde_bh_location_indices]
+            bh_spin_angles_by_sorted_location=prograde_bh_spin_angles[sorted_prograde_bh_location_indices]
+            #Delete binary info from individual BH arrays
+            sorted_prograde_bh_locations=np.delete(sorted_prograde_bh_locations,close_encounters)
+            bh_masses_by_sorted_location=np.delete(bh_masses_by_sorted_location,close_encounters)
+            bh_spins_by_sorted_location=np.delete(bh_spins_by_sorted_location,close_encounters)
+            bh_spin_angles_by_sorted_location=np.delete(bh_spin_angles_by_sorted_location,close_encounters)
+            #Reset arrays
+            prograde_bh_locations=sorted_prograde_bh_locations
+            prograde_bh_masses=bh_masses_by_sorted_location
+            prograde_bh_spins=bh_spins_by_sorted_location
+            prograde_bh_spin_angles=bh_spin_angles_by_sorted_location
+
         #Iterate the time step
         time_passed=time_passed+timestep
     #End Loop of Timesteps at Final Time, end all changes & print out results
     
     print("End Loop!")
     print("Final Time(yrs)=",time_passed)
+    print("BH locations at Final Time")
+    print(prograde_bh_locations)
+    print("Binaries")
+    print(binary_bh_array)
 
 if __name__ == "__main__":
     main()
