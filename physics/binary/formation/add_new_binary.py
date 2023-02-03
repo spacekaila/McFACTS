@@ -44,7 +44,6 @@ def add_to_binary_array(bin_array,bh_locations,bh_masses,bh_spins,bh_spin_angles
    
         print("New Binary")
         print(bin_array)
-        print("Timestep")
-        print(timestep)
+        
 
     return bin_array
