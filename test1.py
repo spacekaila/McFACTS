@@ -22,7 +22,7 @@ from physics.binary.merge import chieff
 
 def main():
     
-    #Testing a few modules and packages here
+    #Test a merger by calling modules
     print("Do a thing with a merger")
     mass1=10.0
     mass2=15.0
@@ -36,7 +36,7 @@ def main():
     out_chi=chieff.chi_effective(mass1,mass2,spin1,spin2,angle1,angle2,bin_ang_mom)
     print(outmass,outspin,out_chi)
 
-    #Basic test of set-up; Use a choice of input parameters.
+    #Test set-up; Use a choice of input parameters and call setup modules
     n_bh=50.
     disk_outer_radius=1.e5
     #Mode of initial BH mass distribution in M_sun
@@ -60,10 +60,13 @@ def main():
     print(bh_initial_masses)
     print("Initial spins:")
     bh_initial_spins=setupdiskblackholes.setup_disk_blackholes_spins(n_bh,mu_spin_distribution,sigma_spin_distribution)
-    bh_initial_spin_indices=np.array(bh_initial_spins)
-    negative_spin_indices=np.where(bh_initial_spin_indices < 0.)
     print(bh_initial_spins)
     print("Initial spin angles (rads)")
+    bh_initial_spin_angles=setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh,bh_initial_spins)
+    print(bh_initial_spin_angles)
+    print("Initial orbital angular momentum")
+    bh_initial_orb_ang_mom=setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
+    print(bh_initial_orb_ang_mom)    
     
 if __name__ == "__main__":
     main()
