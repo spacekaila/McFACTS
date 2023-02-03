@@ -11,14 +11,13 @@ import itertools
 from setup import setupdiskblackholes
 from physics.migration.type1 import type1
 from physics.accretion.eddington import changebhmass
+from physics.accretion.torque import changebh
 #from physics.feedback import hankla22
 #from physics.dynamics import wang22
 #from physics.binary.formation import secunda20
 #from physics.binary.harden import baruteau11
 from physics.binary.merge import tichy08
 from physics.binary.merge import chieff
-
-#data=np.loadtxt('inputs.txt',usecols=range(1,21))
 
 def main():
     
@@ -101,24 +100,41 @@ def main():
     print(prograde_bh_masses)
 
     #c. Test spin change and torquing
+    
+    #Spin torque condition. 0.1=10% mass accretion to torque fully into alignment.
+    # 0.01=1% mass accretion
+    spin_torque_condition=0.1
+    #minimum spin angle resolution (ie less than this value gets fixed to zero) e.g 0.02 rad=1deg
+    spin_minimum_resolution=0.02
+    #Torque prograde orbiting BH only
+    print("Prograde BH initial spins")
     prograde_bh_spins=bh_initial_spins[prograde_orb_ang_mom_indices]
+    print(prograde_bh_spins)
+    print("Prograde BH initial spin angles")
     prograde_bh_spin_angles=bh_initial_spin_angles[prograde_orb_ang_mom_indices]
+    print(prograde_bh_spin_angles)
     
     print("Start Loop!")
     time_passed=initial_time
     print("Initial Time(yrs)=",time_passed)
     while time_passed<final_time:
-        bh_locations=type1.dr_migration(prograde_bh_locations,prograde_bh_masses,disk_surface_density,timestep)
-        bh_masses=changebhmass.change_mass(prograde_bh_masses,frac_Eddington_ratio,mass_growth_Edd_rate,timestep)
+        prograde_bh_locations=type1.dr_migration(prograde_bh_locations,prograde_bh_masses,disk_surface_density,timestep)
+        prograde_bh_masses=changebhmass.change_mass(prograde_bh_masses,frac_Eddington_ratio,mass_growth_Edd_rate,timestep)
+        prograde_bh_spins=changebh.change_spin_magnitudes(prograde_bh_spins,frac_Eddington_ratio,spin_torque_condition,timestep)
+        prograde_bh_spin_angles=changebh.change_spin_angles(prograde_bh_spin_angles,frac_Eddington_ratio,spin_torque_condition,spin_minimum_resolution,timestep)
         #Iterate the time step
         time_passed=time_passed+timestep
     print("End Loop!")
     print("Final Time(yrs)=",time_passed)
     print("(Sorted) BH locations at Final Time")
-    sorted_final_bh_locations=np.sort(bh_locations)
+    sorted_final_bh_locations=np.sort(prograde_bh_locations)
     print(sorted_final_bh_locations)
     print("BH masses at Final Time")
-    print(bh_masses)
+    print(prograde_bh_masses)
+    print("BH spins at Final Time")
+    print(prograde_bh_spins)
+    print("BH spin angles at Final Time")
+    print(prograde_bh_spin_angles)
 
 if __name__ == "__main__":
     main()
