@@ -9,7 +9,7 @@ import itertools
 #from inputs.smbh import smbhmass
 
 from setup import setupdiskblackholes
-#from physics.migration import type1
+from physics.migration.type1 import type1
 #from physics.accretion import eddington
 #from physics.feedback import hankla22
 #from physics.dynamics import wang22
@@ -51,9 +51,11 @@ def main():
     sigma_spin_distribution=0.1
 
     print("Generate initial BH parameter arrays")
-    print("Initial locations(r_g) (sorted):")
+    print("Initial locations(r_g):")
     bh_initial_locations=setupdiskblackholes.setup_disk_blackholes_location(n_bh,disk_outer_radius)
+    print(bh_initial_locations)
     sorted_bh_locations=np.sort(bh_initial_locations)
+    print("Initial (sorted) locations")
     print(sorted_bh_locations)
     print("Initial masses(Msun):")
     bh_initial_masses=setupdiskblackholes.setup_disk_blackholes_masses(n_bh,mode_mbh_init,max_initial_bh_mass,mbh_powerlaw_index)
@@ -67,6 +69,43 @@ def main():
     print("Initial orbital angular momentum")
     bh_initial_orb_ang_mom=setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
     print(bh_initial_orb_ang_mom)    
+
+    #Test migration of prograde BH
+    #Disk surface density (assume constant for test)
+    disk_surface_density=1.e5
+    #Set up time & number of timesteps
+    initial_time=0.0
+    #timestep in years. 10kyr=1.e4 is reasonable fiducial. 
+    timestep=1.e4
+    #For timestep=1.e4, number_of_timesteps=100 gives us 1Myr total time which is fine to start.
+    number_of_timesteps=20.
+    final_time=timestep*number_of_timesteps
+    print("Migrate BH in disk")
+    #Find prograde BH orbiters. Identify BH with orb. ang mom =+1
+    bh_orb_ang_mom_indices=np.array(bh_initial_orb_ang_mom)
+    prograde_orb_ang_mom_indices=np.where(bh_orb_ang_mom_indices == 1)
+    #retrograde_orb_ang_mom_indices=np.where(bh_orb_ang_mom_indices == -1)
+    prograde_bh_locations=bh_initial_locations[prograde_orb_ang_mom_indices]
+    sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
+    print("Sorted prograde BH locations:")
+    print(sorted_prograde_bh_locations)
+
+    prograde_bh_masses=bh_initial_masses[prograde_orb_ang_mom_indices]
+    prograde_bh_spins=bh_initial_spins[prograde_orb_ang_mom_indices]
+    prograde_bh_spin_angles=bh_initial_spin_angles[prograde_orb_ang_mom_indices]
     
+    print("Start Loop!")
+    time_passed=initial_time
+    print("Initial Time(yrs)=",time_passed)
+    while time_passed<final_time:
+        bh_locations=type1.dr_migration(prograde_bh_locations,prograde_bh_masses,disk_surface_density,timestep)
+        #Iterate the time step
+        time_passed=time_passed+timestep
+    print("End Loop!")
+    print("Final Time(yrs)=",time_passed)
+    print("(Sorted) BH locations at Final Time")
+    sorted_final_bh_locations=np.sort(bh_locations)
+    print(sorted_final_bh_locations)
+
 if __name__ == "__main__":
     main()
