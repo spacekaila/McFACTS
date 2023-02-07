@@ -23,7 +23,7 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
     bh_spin_angles_by_sorted_location = bh_spin_angles[sorted_bh_locations_indices]
     #bh_orb_ecc_by_sorted_location=bh_orbital_eccentricities[sorted_bh_locations_indices]
 
-    bindex = bin_index
+    bindex = int(bin_index)
     number_of_new_bins = (len(close_encounters)+1)/2
     num_new_bins = int(number_of_new_bins)
     if number_of_new_bins > 0:
