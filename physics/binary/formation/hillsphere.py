@@ -65,7 +65,7 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
         new_indx_out[ind+1] = temp_index+1
 
     new_indxs = new_indx_in+new_indx_out
-    rindx = np.sort(new_indxs)
+    #rindx = np.sort(new_indxs)
     result = np.asarray(new_indx_in)
 
     sorted_in_result = np.sort(result)
@@ -77,7 +77,7 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     sorted_final_bin_indices = np.sort(final_bin_indices)
 
     #print("check if sorted_in & sorted_out arrays are the same")
-    check=np.array_equiv(sorted_in_result, sorted_out_result)
+    check = np.array_equiv(sorted_in_result, sorted_out_result)
     #print(check)
     # Return the indices of those elements in separation array <0
     # (ie BH are closer than 1 R_Hill)
