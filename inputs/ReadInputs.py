@@ -1,4 +1,91 @@
 def ReadInputs():
+    """This function reads your input choices from a file named model_choice.txt,
+    and returns the chosen variables for manipulation by main.    
+
+    Required input formats and units are given in the model_choice.txt file.
+
+    See below for full output list, including units & formats
+
+    Example
+    -------
+    To run, ensure a model_choice.txt is in the same directory and type:
+
+        $ python ReadInputs.py
+
+    Notes
+    -----
+        This should (will) be updated to allow a user to specify an arbitrary
+        input file name.
+
+    Function will tell you what it is doing via print statements along the way.
+
+    Attributes
+    ----------
+    Output variables:
+    mass_smbh : float
+        Mass of the supermassive black hole (M_sun)
+    trap_radius : float
+        Radius of migration trap in gravitational radii (r_g = G*mass_smbh/c^2)
+        Should be set to zero if disk model has no trap
+    n_bh : int
+        Number of stellar mass black holes embedded in disk 
+    mode_mbh_init : float
+        Initial mass distribution for stellar bh is assumed to be Pareto
+        with high mass cutoff--mode of initial mass dist (M_sun)
+    max_initial_bh_mass : float
+        Initial mass distribution for stellar bh is assumed to be Pareto
+        with high mass cutoff--mass of cutoff (M_sun)
+    mbh_powerlaw_index : float
+        Initial mass distribution for stellar bh is assumed to be Pareto
+        with high mass cutoff--powerlaw index for Pareto dist
+    mu_spin_distribution : float
+        Initial spin distribution for stellar bh is assumed to be Gaussian
+        --mean of spin dist
+    sigma_spin_distribution : float
+        Initial spin distribution for stellar bh is assumed to be Gaussian
+        --standard deviation of spin dist
+    spin_torque_condition : float
+        fraction of initial mass required to be accreted before BH spin is torqued 
+        fully into alignment with the AGN disk. We don't know for sure but 
+        Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
+    frac_Eddington_ratio : float
+        assumed accretion rate onto stellar bh from disk gas, in units of Eddington
+        accretion rate
+    max_initial_eccentricity : float
+        assuming initially flat eccentricity distribution among single orbiters around SMBH
+        out to max_initial_eccentricity. Eventually this will become smarter.
+    timestep : float
+        How long is your timestep in years?
+    number_of_timesteps : int
+        How many timesteps are you taking (timestep*number_of_timesteps = disk_lifetime)
+    disk_model_radius_array : float array
+        The radii along which your disk model is defined in units of r_g (=G*mass_smbh/c^2)
+        drawn from modelname_surface_density.txt
+    disk_inner_radius : float
+        0th element of disk_model_radius_array (units of r_g)
+    disk_outer_radius : float
+        final element of disk_model_radius_array (units of r_g)
+    surface_density_array : float array
+        Surface density corresponding to radii in disk_model_radius_array (units of kg/m^2)
+        Yes, it's in SI not cgs. Get over it. Kisses.
+        drawn from modelname_surface_density.txt
+    aspect_ratio_array : float array
+        Aspect ratio corresponding to radii in disk_model_radius_array
+        drawn from modelname_aspect_ratio.txt
+    
+        Module level variables may be documented in either the ``Attributes``
+        section of the module docstring, or in an inline docstring immediately
+        following the variable.
+
+        Either form is acceptable, but the two should not be mixed. Choose
+        one convention to document module level variables and be consistent
+        with it.
+
+
+    .. _NumPy Documentation HOWTO:
+        https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
+
+    """
 
     # ReadInputs.py
     # This reads and parses the inputs from model_choice.txt
@@ -25,6 +112,12 @@ def ReadInputs():
             # if the variable is the one that's a filename for the disk model, deal with it
             if (varname == 'disk_model_name'):
                 disk_model_name = varvalue.strip("'")
+            # or if it's the number of black holes, typecast to int
+            elif (varname == 'n_bh'):
+                input_variables[varname] = int(varvalue)
+            # or the number of timesteps, typecast to int
+            elif (varname == 'number_of_timesteps'):
+                input_variables[varname] = int(varvalue)
             # otherwise, typecast to float and stick it in the dictionary
             else:
                 input_variables[varname] = float(varvalue)
@@ -104,4 +197,10 @@ def ReadInputs():
 
     print("I read and digested your disk model")
 
-    return
+    print("Sending variables back")
+
+    return mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
+        mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
+            spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
+                timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
+                    disk_outer_radius, surface_density_array, aspect_ratio_array
