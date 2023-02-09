@@ -18,6 +18,7 @@ from physics.binary.merge import tichy08
 from physics.binary.merge import chieff
 #data=np.loadtxt('inputs.txt',usecols=range(1,21))
 
+
 def main():
     
     print("Do a thing with a merger")
