@@ -19,29 +19,17 @@
 0.
 #Sigma of Gaussian initial spin distribution (small is good) (sigma_spin_distribution)
 0.1
-#What is the spin angle indicating alignment with AGN disk (should be 0rad) (aligned_spin_angle_radians)
-0.0
-#Spin angle indicating anti-alignment with AGN disk (should be pi rad=180deg) (antialigned_spin_angle_radians)
-3.14
 #Spin torque condition. 0.1=10% mass accretion to torque fully into alignment.
 # 0.01=1% mass accretion (spin_torque_condition)
 0.1
 #minimum spin angle resolution (ie less than this value gets fixed to zero) e.g 0.02 rad=1deg (spin_minimum_resolution)
 0.02
-#Start time (in years) (initial_time)
-0.
 #fraction of Eddington ratio accretion (1 is perfectly reasonable fiducial!) (frac_Eddington_ratio)
 1.0
-#Fractional rate of mass growth per year at the Eddington rate(2.3e-8/yr) (mass_growth_Edd_rate)
-2.3e-8
 #Mass of SMBH in units M_sun (mass_smbh)
 1.e8
-#Number of binary properties that we want to record (e.g. M_1,_2,a_1,2,theta_1,2,a_bin,a_com,t_gw,ecc,bin_ang_mom,generation) (number_of_bin_properties)
-13.0
 #Maximum initial eccentricity (upper bound to initial uniform distribution) (max_initial_eccentricity)
 0.3
-#Lower bound to eccentricity from damping (say e=0.01) (lower_bound_ecc)
-0.01
 
 #trap radius (fiducial 700r_g is reasonable to start) (trap_radius)
 700.
@@ -53,3 +41,18 @@
 #For timestep=1.e4, number_of_timesteps=100 gives us 1Myr total time which is fine to start.
 #(number_of_timesteps)
 20.
+
+# THESE ARE NOT INPUTS! THIS IS HOUSEKEEPING!!! 
+# OR PHYSICS!!! Put elsewhere!!!
+#What is the spin angle indicating alignment with AGN disk (should be 0rad) (aligned_spin_angle_radians)
+0.0
+#Spin angle indicating anti-alignment with AGN disk (should be pi rad=180deg) (antialigned_spin_angle_radians)
+3.14
+#Start time (in years) (initial_time)
+0.
+#Fractional rate of mass growth per year at the Eddington rate(2.3e-8/yr) (mass_growth_Edd_rate)
+2.3e-8
+#Lower bound to eccentricity from damping (say e=0.01) (lower_bound_ecc)
+0.01
+#Number of binary properties that we want to record (e.g. M_1,_2,a_1,2,theta_1,2,a_bin,a_com,t_gw,ecc,bin_ang_mom,generation) (number_of_bin_properties)
+13.0
