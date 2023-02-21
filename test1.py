@@ -23,7 +23,6 @@ from physics.binary.merge import chieff
 from physics.binary.merge import tgw
 
 
-
 def main():
     """
     """
@@ -157,7 +156,7 @@ def main():
         #Test for encounters within Hill sphere
         print("Time passed", time_passed)
         print("Number of binaries=", bin_index)
-        #If binary exists, harden it
+        #If binary exists, harden it. Add a thing here.
         if bin_index > 0:
             #Check and see if merger flagged (row 12, if negative)
             merger_flags=binary_bh_array[12,:]
