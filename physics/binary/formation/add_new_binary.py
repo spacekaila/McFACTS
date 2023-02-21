@@ -27,8 +27,8 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
     number_of_new_bins = (len(close_encounters)+1)/2
     num_new_bins = int(number_of_new_bins)
     if number_of_new_bins > 0:
-        #print("no of new bins")
-        #print(num_new_bins)
+        print("no of new bins")
+        print(num_new_bins)
         #print("indices")
         #print(close_encounters)
         #print(len(close_encounters))

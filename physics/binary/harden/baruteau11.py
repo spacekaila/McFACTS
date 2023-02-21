@@ -33,27 +33,26 @@ def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_t
                 temp_bh_spin_angle_1 = bin_array[6,j]
                 temp_bh_spin_angle_2 = bin_array[7,j]
                 temp_bin_separation = bin_array[8,j]
-            
-            temp_bin_separation = np.abs(temp_bh_loc_1 - temp_bh_loc_2)
-            temp_bin_mass = temp_bh_mass_1 + temp_bh_mass_2
-            temp_bin_reduced_mass = (temp_bh_mass_1*temp_bh_mass_2)/temp_bin_mass
-            # Binary period = 2pi*sqrt((delta_r)^3/GM_bin)
-            # or T_orb = 10^7s*(1r_g/m_smmbh=10^8Msun)^(3/2) *(M_bin/10Msun)^(-1/2) = 0.32yrs
-            temp_bin_period = 0.32*((temp_bin_separation)**(1.5))*((mass_smbh/1.e8)**(1.5))*(temp_bin_mass/10.0)**(-0.5)    
-            #Find how many binary orbits in timestep. Binary separation is halved for every 10^3 orbits.
-            temp_num_orbits_in_timestep = timestep/temp_bin_period
-            scaled_num_orbits=1000.0/temp_num_orbits_in_timestep
-            #Timescale for binary merger via GW emission alone, scaled to bin parameters
-            temp_bin_t_gw = norm_tgw*((temp_bin_separation)**(4.0))*((temp_bin_mass/10.0)**(-2))*((temp_bin_reduced_mass/2.5)**(-1.0))
-                
+                temp_bin_mass = temp_bh_mass_1 + temp_bh_mass_2
+                temp_bin_reduced_mass = (temp_bh_mass_1*temp_bh_mass_2)/temp_bin_mass
+                # Binary period = 2pi*sqrt((delta_r)^3/GM_bin)
+                # or T_orb = 10^7s*(1r_g/m_smmbh=10^8Msun)^(3/2) *(M_bin/10Msun)^(-1/2) = 0.32yrs
+                temp_bin_period = 0.32*((temp_bin_separation)**(1.5))*((mass_smbh/1.e8)**(1.5))*(temp_bin_mass/10.0)**(-0.5)    
+                #Find how many binary orbits in timestep. Binary separation is halved for every 10^3 orbits.
+                temp_num_orbits_in_timestep = timestep/temp_bin_period
+                scaled_num_orbits=temp_num_orbits_in_timestep/1000.0
+                #Timescale for binary merger via GW emission alone, scaled to bin parameters
+                temp_bin_t_gw = norm_tgw*((temp_bin_separation)**(4.0))*((temp_bin_mass/10.0)**(-2))*((temp_bin_reduced_mass/2.5)**(-1.0))
+                bin_array[10,j]=temp_bin_t_gw
+
             if temp_bin_t_gw > timestep:
                 #Binary will not merge in this timestep. 
                 #Write new bin_separation according to Baruteau+11 prescription
-                new_temp_bin_separation = 0.5*temp_bin_separation*scaled_num_orbits
+                new_temp_bin_separation = temp_bin_separation*((0.5)**(scaled_num_orbits))
                 bin_array[8,j] = new_temp_bin_separation
             else:
                 #Binary will merge in this timestep.
                 #Return a merger in bin_array! A negative flag on this line indicates merger. 
-                bin_array[9,j] = -1
+                bin_array[12,j] = -1
 
     return bin_array

@@ -121,17 +121,22 @@ def main():
     int_bin_index=int(bin_index)
     test_bin_number = 12.0
     integer_test_bin_number = int(test_bin_number)
+    number_of_mergers = 0
+    int_num_mergers = int(number_of_mergers)
+
     #Set up empty initial Binary array
     #Initially all zeros, then add binaries plus details as appropriate
     binary_bh_array = np.zeros((integer_nbinprop,integer_test_bin_number))
     #Set up normalization for t_gw
-    norm_t_gw=tgw.normalize_tgw(mass_smbh)
-    # Set up merger array
-    number_of_merger_properties = 14.0
+    norm_t_gw = tgw.normalize_tgw(mass_smbh)
+    print("Scale of t_gw (yrs)=", norm_t_gw)
+    
+    # Set up merger array (identical to binary array)
+    #number_of_merger_properties = 14.0
     num_of_mergers=4.0
-    int_merg_props=int(number_of_merger_properties)
-    int_n_merg=int(num_of_mergers)
-    merger_array=np.zeros((int_merg_props,int_n_merg))
+    #int_merg_props=int(number_of_merger_properties)
+    #int_n_merg=int(num_of_mergers)
+    merger_array=binary_bh_array
 
     #Start Loop of Timesteps
     print("Start Loop!")
@@ -150,25 +155,33 @@ def main():
         bh_hill_sphere = hillsphere.calculate_hill_sphere(prograde_bh_locations, prograde_bh_masses, mass_smbh)
         #Test for encounters within Hill sphere
         print("Time passed", time_passed)
-        print(bin_index)
+        print("Number of binaries=", bin_index)
         #If binary exists, harden it
         if bin_index > 0:
-            #Check and see if merger flagged (row 9, if negative)
-            merger_flags=binary_bh_array[9,:]
-            merger_indices = np.where(merger_flags == -1)
-            if len(merger_indices) > 0:
+            #Check and see if merger flagged (row 12, if negative)
+            merger_flags=binary_bh_array[12,:]
+            any_merger=np.count_nonzero(merger_flags) 
+            print(merger_flags)
+            merger_indices = np.where(merger_flags < 0.0)
+            print(merger_indices)
+            #print(binary_bh_array[:,merger_indices])
+            if any_merger > 0:
+                print("Merger!")
                 # If merger flag then add binary column to merger_array
-                merger_array = np.append(merger_array,binary_bh_array[merger_indices,:])
+                #np.copyto()
+                merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
+                # Add to number of mergers
+                number_of_mergers = number_of_mergers + 1
                 print("Merger Flag!")
-                print(merger_indices)
-                print("Timestep", timestep)
+                print(number_of_mergers)
+                print("Time ", time_passed)
                 print(merger_array)
             else:                
                 # No merger
                 # Harden binary
                 binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index)
                 print("Harden binary")
-                print("Timestep = ", timestep)
+                print("Timestep = ", time_passed)
                 print(binary_bh_array)
         else:
             
@@ -183,7 +196,7 @@ def main():
                 print("Make binary at time ", time_passed)
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
                 sorted_prograde_bh_location_indices = np.argsort(prograde_bh_locations)
-                number_of_new_bins = (len(close_encounters)+1)/2            
+                number_of_new_bins = (len(close_encounters))/2            
                 binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, close_encounters, bin_index)
                 bin_index = bin_index + number_of_new_bins
                 bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
