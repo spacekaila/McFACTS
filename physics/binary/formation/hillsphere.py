@@ -73,7 +73,7 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     new_result = np.asarray(new_indx_out)
     sorted_out_result = np.sort(new_result)
     
-    final_bin_indices = sorted_in_result+sorted_out_result
+    final_bin_indices = sorted_in_result + sorted_out_result
     sorted_final_bin_indices = np.sort(final_bin_indices)
 
     #print("check if sorted_in & sorted_out arrays are the same")

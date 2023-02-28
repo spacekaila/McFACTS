@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_tgw, bin_index):
+def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_tgw, bin_index,time_passed):
     # Use Baruteau+11 prescription to harden a pre-existing binary.
     # Scaling is: for every 1000 orbits of binary around its center of mass, 
     # separation (between binary components) is halved.
@@ -23,6 +23,9 @@ def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_t
     # For every 10^3 orbits, halve the binary separation.
     # 
     for j in range(0, bindex):
+        #if bin_array[12,j] < 0:
+        #    j = j + 1
+        #else:
             for i in range(0, integer_nbinprop):
                 temp_bh_loc_1 = bin_array[0,j]
                 temp_bh_loc_2 = bin_array[1,j]
@@ -39,7 +42,11 @@ def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_t
                 # or T_orb = 10^7s*(1r_g/m_smmbh=10^8Msun)^(3/2) *(M_bin/10Msun)^(-1/2) = 0.32yrs
                 temp_bin_period = 0.32*((temp_bin_separation)**(1.5))*((mass_smbh/1.e8)**(1.5))*(temp_bin_mass/10.0)**(-0.5)    
                 #Find how many binary orbits in timestep. Binary separation is halved for every 10^3 orbits.
-                temp_num_orbits_in_timestep = timestep/temp_bin_period
+                if temp_bin_period > 0:
+                    temp_num_orbits_in_timestep = timestep/temp_bin_period
+                else:
+                    temp_num_orbits_in_timestep = 0
+
                 scaled_num_orbits=temp_num_orbits_in_timestep/1000.0
                 #Timescale for binary merger via GW emission alone, scaled to bin parameters
                 temp_bin_t_gw = norm_tgw*((temp_bin_separation)**(4.0))*((temp_bin_mass/10.0)**(-2))*((temp_bin_reduced_mass/2.5)**(-1.0))
@@ -53,6 +60,7 @@ def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_t
             else:
                 #Binary will merge in this timestep.
                 #Return a merger in bin_array! A negative flag on this line indicates merger. 
-                bin_array[12,j] = -1
+                bin_array[11,j] = -2
+                bin_array[12,j] = time_passed
 
     return bin_array

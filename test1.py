@@ -21,7 +21,7 @@ from physics.binary.harden import baruteau11
 from physics.binary.merge import tichy08
 from physics.binary.merge import chieff
 from physics.binary.merge import tgw
-
+#from tests import tests
 
 def main():
     """
@@ -41,12 +41,14 @@ def main():
     out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle2, bin_ang_mom)
     print(outmass,outspin,out_chi)
     #Output should always be constant: 23.560384 0.8402299374639024 0.31214563487176167
+    #test_merger=tests.test_merger()
+
 
     #2. Test set-up; Use a choice of input parameters and call setup modules
     #Mass SMBH (units of Msun)
     mass_smbh = 1.e8
     #Number of BH in disk initially
-    n_bh = 50.
+    n_bh = 60.
     integer_nbh = int(n_bh)
     #Disk outer radius (units of r_g)
     disk_outer_radius = 1.e5
@@ -158,8 +160,8 @@ def main():
         print("Number of binaries=", bin_index)
         #If binary exists, harden it. Add a thing here.
         if bin_index > 0:
-            #Check and see if merger flagged (row 12, if negative)
-            merger_flags=binary_bh_array[12,:]
+            #Check and see if merger flagged (row 11, if negative)
+            merger_flags=binary_bh_array[11,:]
             any_merger=np.count_nonzero(merger_flags) 
             print(merger_flags)
             merger_indices = np.where(merger_flags < 0.0)
@@ -170,8 +172,13 @@ def main():
                 # If merger flag then add binary column to merger_array
                 #np.copyto()
                 merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
+                #Reset merger marker to zero
+                int_n_merge=int(number_of_mergers)
+                binary_bh_array[11,int_n_merge] = 0
                 # Add to number of mergers
                 number_of_mergers = number_of_mergers + 1
+                bin_index = bin_index + 1
+                
                 print("Merger Flag!")
                 print(number_of_mergers)
                 print("Time ", time_passed)
@@ -179,7 +186,7 @@ def main():
             else:                
                 # No merger
                 # Harden binary
-                binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index)
+                binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
                 print("Harden binary")
                 print("Timestep = ", time_passed)
                 print(binary_bh_array)
@@ -192,6 +199,7 @@ def main():
         #If a close encounter within mutual Hill sphere add a new Binary
 
             close_encounters = hillsphere.encounter_test(prograde_bh_locations, bh_hill_sphere)
+            print(close_encounters)
             if len(close_encounters) > 0:
                 print("Make binary at time ", time_passed)
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
@@ -224,8 +232,8 @@ def main():
     print("Final Time(yrs) = ",time_passed)
     print("BH locations at Final Time")
     print(prograde_bh_locations)
-    print("Binaries")
-    print(binary_bh_array)
+    print("Mergers")
+    print(merger_array)
 
 if __name__ == "__main__":
     main()

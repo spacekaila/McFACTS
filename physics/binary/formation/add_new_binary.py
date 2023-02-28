@@ -26,17 +26,25 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
     bindex = int(bin_index)
     number_of_new_bins = (len(close_encounters)+1)/2
     num_new_bins = int(number_of_new_bins)
+    print(close_encounters)
     if number_of_new_bins > 0:
         print("no of new bins")
         print(num_new_bins)
         #print("indices")
         #print(close_encounters)
-        #print(len(close_encounters))
+        print(len(close_encounters))
         array_of_indices = close_encounters
-        for j in range(bindex, bindex + (num_new_bins)):
-            for i in range(0,len(close_encounters)):
-                new_indx = array_of_indices[i]
-                #print(new_indx)
+        print(array_of_indices)
+        #print(bindex)
+        bincount = 0
+        #for i in range(0,2):
+        #    int_binc = int(bincount)
+        for j in range(bindex, bindex + num_new_bins):
+            int_binc = int(bincount)
+            for i in range(0,2):
+                #new_indx = j
+                new_indx = array_of_indices[i+j+int_binc]
+                print(new_indx)
                 bin_array[i,j] = sorted_bh_locations[new_indx]
                 bin_array[i+2,j] = bh_masses_by_sorted_location[new_indx]
                 bin_array[i+4,j] = bh_spins_by_sorted_location[new_indx]
@@ -51,6 +59,7 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
                 temp_mass_2 = bin_array[3,j]
                 temp_bin_mass = temp_mass_1 + temp_mass_2
                 bin_array[9,j] = temp_loc_1 + (temp_bin_separation*temp_mass_2/temp_bin_mass)
+            bincount = bincount + 1
         print("New Binary")
         print(bin_array)
         
