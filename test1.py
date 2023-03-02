@@ -17,6 +17,7 @@ from physics.accretion.torque import changebh
 from physics.binary.formation import hillsphere
 from physics.binary.formation import add_new_binary
 #from physics.binary.formation import secunda20
+from physics.binary.evolve import evolve
 from physics.binary.harden import baruteau11
 from physics.binary.merge import tichy08
 from physics.binary.merge import chieff
@@ -160,6 +161,14 @@ def main():
         print("Number of binaries=", bin_index)
         #If binary exists, harden it. Add a thing here.
         if bin_index > 0:
+            #Evolve binaries. 
+            #Migrate binaries
+            binary_bh_array = evolve.com_migration(binary_bh_array, disk_surface_density, timestep, integer_nbinprop, bin_index)
+            #Accrete gas
+            binary_bh_array = evolve.change_bin_mass(binary_bh_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index)
+            #Spin up binary components
+            binary_bh_array = evolve.change_bin_spin_magnitudes(binary_bh_array, frac_Eddington_ratio, spin_torque_condition, timestep, integer_nbinprop, bin_index)
+
             #Check and see if merger flagged (row 11, if negative)
             merger_flags=binary_bh_array[11,:]
             any_merger=np.count_nonzero(merger_flags) 
