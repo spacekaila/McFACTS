@@ -23,6 +23,7 @@ from physics.binary.merge import tichy08
 from physics.binary.merge import chieff
 from physics.binary.merge import tgw
 #from tests import tests
+from outputs import mergerfile
 
 def main():
     """
@@ -143,6 +144,10 @@ def main():
     #int_n_merg=int(num_of_mergers)
     merger_array = np.zeros((integer_nbinprop,integer_test_bin_number))
 
+    #Set up output array (mergerfile)
+    nprop_mergers=14.0
+    integer_nprop_merge=int(nprop_mergers)
+    merged_bh_array = np.zeros((integer_nprop_merge,integer_test_bin_number))
     #Start Loop of Timesteps
     print("Start Loop!")
     time_passed = initial_time
@@ -182,15 +187,27 @@ def main():
             #print(binary_bh_array[:,merger_indices])
             if any_merger > 0:
                 print("Merger!")
-                # If merger flag then add binary column to merger_array
-                #np.copyto()
+                #Calculate merger properties
+                mass_1 = binary_bh_array[2,merger_indices]
+                mass_2 = binary_bh_array[3,merger_indices]
+                spin_1 = binary_bh_array[4,merger_indices]
+                spin_2 = binary_bh_array[5,merger_indices]
+                angle_1 = binary_bh_array[6,merger_indices]
+                angle_2 = binary_bh_array[7,merger_indices]
+                bin_ang_mom = binary_bh_array[16,merger_indices]
+
+                merged_mass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
+                merged_spin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
+                merged_chi_eff = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle2, bin_ang_mom)
+                merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
+                
                 merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
-                print(merger_array)
+                #print(merger_array)
                 #Reset merger marker to zero
                 int_n_merge=int(number_of_mergers)
                 #Remove merged binary from binary array
                 binary_bh_array[:,merger_indices] = 0.0
-                #binary_bh_array[11,int_n_merge] = 0
+                binary_bh_array[11,int_n_merge] = 0
                 # Add to number of mergers
                 number_of_mergers = number_of_mergers + 1
                 #Reduce by 1 the number of binaries
@@ -249,9 +266,10 @@ def main():
     print("Final Time(yrs) = ",time_passed)
     print("BH locations at Final Time")
     print(prograde_bh_locations)
+    print("Number of binaries = ",bin_index)
     print("Total number of mergers = ",number_of_mergers)
     print("Mergers")
-    print(merger_array)
+    print(merged_bh_array)
 
 if __name__ == "__main__":
     main()

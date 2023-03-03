@@ -8,7 +8,7 @@ def change_bin_mass(bin_array, frac_Eddington_ratio, mass_growth_Edd_rate, times
     # Run over active binaries (j is jth binary; i is the ith property of the jth binary, e.g. mass1,mass 2 etc)
     
     for j in range(0, bindex):
-            for i in range(0, integer_nbinprop):
+            #for i in range(0, integer_nbinprop):
                 temp_bh_mass_1 = bin_array[2,j] 
                 temp_bh_mass_2 = bin_array[3,j]
                 mass_growth_factor = np.exp(mass_growth_Edd_rate*frac_Eddington_ratio*timestep)
@@ -28,17 +28,24 @@ def change_bin_spin_magnitudes(bin_array, frac_Eddington_ratio, spin_torque_cond
     normalized_timestep = timestep/1.e4
     normalized_spin_torque_condition = spin_torque_condition/0.1
     #Extract the binary locations and spin magnitudes
+    #max allowed spin
+    max_allowed_spin=0.98
     bindex = int(bin_index)
     # Run over active binaries (j is jth binary; i is the ith property of the jth binary, e.g. mass1,mass 2 etc)
     
     for j in range(0, bindex):
-            for i in range(0, integer_nbinprop):
+            #for i in range(0, integer_nbinprop):
                 temp_bh_spin_1 = bin_array[4,j] 
                 temp_bh_spin_2 = bin_array[5,j]
                 spin_change_factor = 4.4e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep
                 #print("Spin change factor", spin_change_factor)
                 new_bh_spin_1 = temp_bh_spin_1 + spin_change_factor
+                #print("Old spin1, new spin1 =",temp_bh_spin_1, new_bh_spin_1)
                 new_bh_spin_2 = temp_bh_spin_2 + spin_change_factor
+                if new_bh_spin_1 > max_allowed_spin:
+                    new_bh_spin_1 = max_allowed_spin
+                if new_bh_spin_2 > max_allowed_spin:
+                    new_bh_spin_2 = max_allowed_spin
                 #Update new bh masses in bin_array
                 bin_array[4,j] = new_bh_spin_1
                 bin_array[5,j] = new_bh_spin_2
@@ -57,7 +64,7 @@ def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_conditio
     # Run over active binaries (j is jth binary; i is the ith property of the jth binary, e.g. mass1,mass 2 etc)
     
     for j in range(0, bindex):
-            for i in range(0, integer_nbinprop):
+            #for i in range(0, integer_nbinprop):
                 temp_bh_spin_angle_1 = bin_array[6,j] 
                 temp_bh_spin_angle_2 = bin_array[7,j]
                 #bh_new_spin_angles[prograde_orb_ang_mom_indices]=bh_new_spin_angles[prograde_orb_ang_mom_indices]-(6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
@@ -95,8 +102,14 @@ def com_migration(bin_array, disk_surface_density, timestep, integer_nbinprop, b
     bindex = int(bin_index)
     # Run over active binaries (j is jth binary; i is the ith property of the jth binary, e.g. mass1,mass 2 etc)
     
-    for j in range(0, bindex):
-            for i in range(0, integer_nbinprop):
+    #If binary has been removed, it's all zeroes. So find first non-zero binary in array.
+    #loc1_bins=bin_array[:,0]
+    #live_loc1_bins=np.count_nonzero(loc1_bins) 
+    #if live_loc1_bins > 0:
+    #    bin_indices = np.where(live_loc1_bins > 0.0)
+
+    for j in range(0,bindex):
+            #for i in range(0, integer_nbinprop):
                 temp_bh_loc_1 = bin_array[0,j]
                 temp_bh_loc_2 = bin_array[1,j]
                 temp_bh_mass_1 = bin_array[2,j] 

@@ -68,6 +68,7 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
                 random_uniform_number = rng.random()
                 bh_initial_orb_ang_mom = (2.0*np.around(random_uniform_number)) - 1.0
                 bin_array[16,j] = bh_initial_orb_ang_mom
+                print("Random uniform number =", random_uniform_number )
                 print("New orb ang mom =", bh_initial_orb_ang_mom)
             bincount = bincount + 1
         print("New Binary")
