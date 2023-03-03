@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.random import default_rng
 
-def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_angles, close_encounters, bin_index):
+def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_angles, bh_gens, close_encounters, bin_index):
     #Here we add a new binary to this array, take properties from existing individual arrays and create some new ones
     #Column 1 is 1 binary, Column 2 is 2nd binary etc.
     #Extract location,mass,spin,spin angle from arrays & add to this array (=8 params)
@@ -21,6 +21,7 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
     bh_masses_by_sorted_location = bh_masses[sorted_bh_locations_indices]
     bh_spins_by_sorted_location = bh_spins[sorted_bh_locations_indices]
     bh_spin_angles_by_sorted_location = bh_spin_angles[sorted_bh_locations_indices]
+    bh_gens_by_sorted_location = bh_gens[sorted_bh_locations_indices]
     #bh_orb_ecc_by_sorted_location=bh_orbital_eccentricities[sorted_bh_locations_indices]
 
     bindex = int(bin_index)
@@ -59,12 +60,14 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
                 temp_mass_2 = bin_array[3,j]
                 temp_bin_mass = temp_mass_1 + temp_mass_2
                 bin_array[9,j] = temp_loc_1 + (temp_bin_separation*temp_mass_2/temp_bin_mass)
+                #Set up binary generations
+                bin_array[i+14,j] = bh_gens_by_sorted_location[new_indx]
                 #Set up bin orb. ang. mom. (randomly +1 (pro) or -1(retrograde))
                 #random number
                 rng=default_rng(1234)
                 random_uniform_number = rng.random()
                 bh_initial_orb_ang_mom = (2.0*np.around(random_uniform_number)) - 1.0
-                bin_array[14,j] = bh_initial_orb_ang_mom
+                bin_array[16,j] = bh_initial_orb_ang_mom
                 print("New orb ang mom =", bh_initial_orb_ang_mom)
             bincount = bincount + 1
         print("New Binary")

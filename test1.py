@@ -70,7 +70,7 @@ def main():
     bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution)
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
-       
+    bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
 
     #3.a Test migration of prograde BH
     #Disk surface density (assume constant for test)
@@ -115,10 +115,12 @@ def main():
     print("Prograde BH initial spin angles")
     prograde_bh_spin_angles = bh_initial_spin_angles[prograde_orb_ang_mom_indices]
     print(prograde_bh_spin_angles)
+    print("Prograde BH initial generations")
+    prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
 
     #4 Test Binary formation
-    #Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, bin_ang_mom,generation)
-    number_of_bin_properties = 15.0
+    #Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom)
+    number_of_bin_properties = 17.0
     integer_nbinprop = int(number_of_bin_properties)
     bin_index = 0
     int_bin_index=int(bin_index)
@@ -135,7 +137,7 @@ def main():
     print("Scale of t_gw (yrs)=", norm_t_gw)
     
     # Set up merger array (identical to binary array)
-    #number_of_merger_properties = 14.0
+    #number_of_merger_properties = 16.0
     num_of_mergers=4.0
     #int_merg_props=int(number_of_merger_properties)
     #int_n_merg=int(num_of_mergers)
@@ -220,7 +222,7 @@ def main():
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
                 sorted_prograde_bh_location_indices = np.argsort(prograde_bh_locations)
                 number_of_new_bins = (len(close_encounters))/2            
-                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, close_encounters, bin_index)
+                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index)
                 bin_index = bin_index + number_of_new_bins
                 bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
                 bh_spins_by_sorted_location = prograde_bh_spins[sorted_prograde_bh_location_indices]
