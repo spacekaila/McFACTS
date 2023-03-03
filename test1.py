@@ -117,8 +117,8 @@ def main():
     print(prograde_bh_spin_angles)
 
     #4 Test Binary formation
-    #Number of binary properties that we want to record (e.g. M_1,_2,a_1,2,theta_1,2,a_bin,a_com,t_gw,ecc,bin_ang_mom,generation)
-    number_of_bin_properties = 13.0
+    #Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, bin_ang_mom,generation)
+    number_of_bin_properties = 15.0
     integer_nbinprop = int(number_of_bin_properties)
     bin_index = 0
     int_bin_index=int(bin_index)
@@ -139,7 +139,7 @@ def main():
     num_of_mergers=4.0
     #int_merg_props=int(number_of_merger_properties)
     #int_n_merg=int(num_of_mergers)
-    merger_array=binary_bh_array
+    merger_array = np.zeros((integer_nbinprop,integer_test_bin_number))
 
     #Start Loop of Timesteps
     print("Start Loop!")
@@ -183,12 +183,16 @@ def main():
                 # If merger flag then add binary column to merger_array
                 #np.copyto()
                 merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
+                print(merger_array)
                 #Reset merger marker to zero
                 int_n_merge=int(number_of_mergers)
-                binary_bh_array[11,int_n_merge] = 0
+                #Remove merged binary from binary array
+                binary_bh_array[:,merger_indices] = 0.0
+                #binary_bh_array[11,int_n_merge] = 0
                 # Add to number of mergers
                 number_of_mergers = number_of_mergers + 1
-                bin_index = bin_index + 1
+                #Reduce by 1 the number of binaries
+                bin_index = bin_index - 1
                 
                 print("Merger Flag!")
                 print(number_of_mergers)
@@ -243,6 +247,7 @@ def main():
     print("Final Time(yrs) = ",time_passed)
     print("BH locations at Final Time")
     print(prograde_bh_locations)
+    print("Total number of mergers = ",number_of_mergers)
     print("Mergers")
     print(merger_array)
 
