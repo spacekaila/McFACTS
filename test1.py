@@ -164,10 +164,12 @@ def main():
             #Evolve binaries. 
             #Migrate binaries
             binary_bh_array = evolve.com_migration(binary_bh_array, disk_surface_density, timestep, integer_nbinprop, bin_index)
-            #Accrete gas
+            #Accrete gas onto binaries
             binary_bh_array = evolve.change_bin_mass(binary_bh_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index)
             #Spin up binary components
             binary_bh_array = evolve.change_bin_spin_magnitudes(binary_bh_array, frac_Eddington_ratio, spin_torque_condition, timestep, integer_nbinprop, bin_index)
+            #Torque binary spin components
+            binary_bh_array = evolve.change_bin_spin_angles(binary_bh_array, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep, integer_nbinprop, bin_index)
 
             #Check and see if merger flagged (row 11, if negative)
             merger_flags=binary_bh_array[11,:]
@@ -197,7 +199,7 @@ def main():
                 # Harden binary
                 binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
                 print("Harden binary")
-                print("Timestep = ", time_passed)
+                print("Time passed = ", time_passed)
                 print(binary_bh_array)
         else:
             

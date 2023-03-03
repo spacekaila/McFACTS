@@ -46,19 +46,32 @@ def change_bin_spin_magnitudes(bin_array, frac_Eddington_ratio, spin_torque_cond
     return bin_array
 
 
-def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep):
+def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep, integer_nbinprop, bin_index):
     #Calculate change in spin angle due to accretion during timestep
     normalized_Eddington_ratio = frac_Eddington_ratio/1.0
     normalized_timestep = timestep/1.e4
     normalized_spin_torque_condition = spin_torque_condition/0.1
-   
-    #bh_new_spin_angles[prograde_orb_ang_mom_indices]=bh_new_spin_angles[prograde_orb_ang_mom_indices]-(6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
-    bh_new_spin_angles = prograde_bh_spin_angles-(6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
-   
-    #TO DO: Include a condition to keep spin angle at or close to zero once it gets there
-    #Return new spin angles
-    bh_new_spin_angles[bh_new_spin_angles<spin_minimum_resolution] = 0.0
-    return bh_new_spin_angles
+
+    #Extract the binary locations and spin magnitudes
+    bindex = int(bin_index)
+    # Run over active binaries (j is jth binary; i is the ith property of the jth binary, e.g. mass1,mass 2 etc)
+    
+    for j in range(0, bindex):
+            for i in range(0, integer_nbinprop):
+                temp_bh_spin_angle_1 = bin_array[6,j] 
+                temp_bh_spin_angle_2 = bin_array[7,j]
+                #bh_new_spin_angles[prograde_orb_ang_mom_indices]=bh_new_spin_angles[prograde_orb_ang_mom_indices]-(6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
+                spin_angle_change_factor = (6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
+                new_bh_spin_angle_1 = temp_bh_spin_angle_1 - spin_angle_change_factor
+                new_bh_spin_angle_2 = temp_bh_spin_angle_2 - spin_angle_change_factor
+                if new_bh_spin_angle_1 < spin_minimum_resolution:
+                    new_bh_spin_angle_1 = 0.0
+                if new_bh_spin_angle_2 < spin_minimum_resolution:
+                    new_bh_spin_angle_2 = 0.0
+                bin_array[6,j] = new_bh_spin_angle_1
+                bin_array[7,j] = new_bh_spin_angle_2
+
+    return bin_array
 
 def com_migration(bin_array, disk_surface_density, timestep, integer_nbinprop, bin_index):
     #Return updated locations of binary center of mass (com) and location 1,2 
