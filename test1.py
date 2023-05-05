@@ -208,11 +208,28 @@ def main():
                 #Remove merged binary from binary array
                 binary_bh_array[:,merger_indices] = 0.0
                 binary_bh_array[11,int_n_merge] = 0
-                # Add to number of mergers
-                number_of_mergers = number_of_mergers + 1
+                
                 #Reduce by 1 the number of binaries
                 bin_index = bin_index - 1
                 
+                #Find relevant properties of merged BH to add to single BH arrays
+                merged_bh_com = merged_bh_array[0,int_n_merge]
+                merged_mass = merged_bh_array[1,int_n_merge]
+                merged_spin = merged_bh_array[3,int_n_merge]
+                merged_spin_angle = merged_bh_array[4,int_n_merge]
+                #New bh generation is max of generations involved in merger plus 1
+                merged_bh_gen = np.maximum(merged_bh_array[11,int_n_merge],merged_bh_array[12,int_n_merge]) + 1.0 
+                print("Merger at=",merged_bh_com,merged_mass,merged_spin,merged_spin_angle,merged_bh_gen)
+                # Add to number of mergers
+                number_of_mergers = number_of_mergers + 1
+                # Append new merged BH to arrays of single BH locations, masses, spins, spin angles & gens
+                prograde_bh_locations = np.append(prograde_bh_locations,merged_bh_com)
+                prograde_bh_masses = np.append(prograde_bh_masses,merged_mass)
+                prograde_bh_spins = np.append(prograde_bh_spins,merged_spin)
+                prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,merged_spin_angle)
+                prograde_bh_generations = np.append(prograde_bh_generations,merged_bh_gen)
+                sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
+                print("New BH locations", sorted_prograde_bh_locations)
                 print("Merger Flag!")
                 print(number_of_mergers)
                 print("Time ", time_passed)
