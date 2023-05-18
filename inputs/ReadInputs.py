@@ -75,12 +75,6 @@ def ReadInputs():
 
     """
 
-    # ReadInputs.py
-    # This reads and parses the inputs from model_choice.txt
-    # should eventually change to specify infilename generically
-    # Even assuming this works, need to pass info out...
-    # also note: some items in B's original inputs.txt are NOT INPUTS
-
     # create a dictionary to store numerical variables in
     input_variables = {}
 

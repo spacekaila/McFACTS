@@ -4,9 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import itertools
 
-#from inputs.nsc import nscmodel
-#from inputs.disk import sirkogoodman03
-#from inputs.smbh import smbhmass
+from inputs import ReadInputs
 
 from setup import setupdiskblackholes
 from physics.migration.type1 import type1
@@ -45,25 +43,19 @@ def main():
     #Output should always be constant: 23.560384 0.8402299374639024 0.31214563487176167
     #test_merger=tests.test_merger()
 
+    # Setting up automated input parameters
+    # see ReadInputs.py for documentation of variable names/types/etc.
 
-    #2. Test set-up; Use a choice of input parameters and call setup modules
-    #Mass SMBH (units of Msun)
-    mass_smbh = 1.e8
-    #Number of BH in disk initially
-    n_bh = 60.
+    mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
+         mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
+             spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
+                 timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
+                     disk_outer_radius, surface_density_array, aspect_ratio_array = ReadInputs
+    
+    # BARRY: WHAT FRESH HELL IS THIS? THERE ARE INTEGER NUMBER OF BH!
+    # All of them should be in integer usage and will prob improve speed/memory usage
+    # Is there some reason I should not change this for all of them forever?
     integer_nbh = int(n_bh)
-    #Disk outer radius (units of r_g)
-    disk_outer_radius = 1.e5
-    #Mode of initial BH mass distribution (units of M_sun)
-    mode_mbh_init = 10.
-    #Maximum of initial BH mass distribution (units of M_sun)
-    max_initial_bh_mass = 40.0
-    #Pareto(powerlaw) initial BH mass index
-    mbh_powerlaw_index = 2.
-    #Mean of Gaussian initial spin distribution (zero is good)
-    mu_spin_distribution = 0.
-    #Sigma of Gaussian initial spin distribution (small is good)
-    sigma_spin_distribution = 0.1
 
     print("Generate initial BH parameter arrays")
     bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(n_bh, disk_outer_radius)
@@ -71,17 +63,15 @@ def main():
     bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution)
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
-    bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
+    #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
+    bh_initial_generations = np.ones((integer_nbh,),dtype=int)
 
     #3.a Test migration of prograde BH
     #Disk surface density (assume constant for test)
+    #BARRY: yeah we got fancy options now, let's use them???
     disk_surface_density = 1.e5
-    #Set up time & number of timesteps
+    #Housekeeping: Set up time
     initial_time = 0.0
-    #timestep in years. 10kyr = 1.e4 is reasonable fiducial. 
-    timestep = 1.e4
-    #For timestep = 1.e4, number_of_timesteps=100 gives us 1Myr total time which is fine to start.
-    number_of_timesteps = 20.
     final_time = timestep*number_of_timesteps
     print("Migrate BH in disk")
     #Find prograde BH orbiters. Identify BH with orb. ang mom =+1
@@ -94,9 +84,9 @@ def main():
     print(sorted_prograde_bh_locations)
 
     #b. Test accretion onto prograde BH
-    #fraction of Eddington ratio accretion (1 is perfectly reasonable fiducial!)
-    frac_Eddington_ratio = 1.0
     #Fractional rate of mass growth per year at the Eddington rate(2.3e-8/yr)
+    # BARRY: we discussed this thing before, but I lost my notes is this a
+    # housekeeping thing or an input choice?
     mass_growth_Edd_rate = 2.3e-8
     #Use masses of prograde BH only
     prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
@@ -104,10 +94,7 @@ def main():
     print(prograde_bh_masses)
 
     #c. Test spin change and spin angle torquing
-    #Spin torque condition. 0.1=10% mass accretion to torque fully into alignment.
-    # 0.01=1% mass accretion
-    spin_torque_condition = 0.1
-    #minimum spin angle resolution (ie less than this value gets fixed to zero) e.g 0.02 rad=1deg
+    #Housekeeping: minimum spin angle resolution (ie less than this value gets fixed to zero) e.g 0.02 rad=1deg
     spin_minimum_resolution = 0.02
     #Torque prograde orbiting BH only
     print("Prograde BH initial spins")
