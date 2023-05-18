@@ -35,15 +35,6 @@ disk_model_name = 'sirko_goodman'
 # trap radius
 trap_radius = 700.
 #
-# !!!Next few inputs should actually come from disk model files
-# will have to sort this out in mcfacts main...
-# read in first/last radii and dump them to appropriate variables
-# disk_outer_radius in units of gravitational radii (R_g=GM_SMBH/c^2)
-#disk_outer_radius = 1.e5
-# disk_surface_density in units of kg/m^2
-#disk_surface_density=1.e5
-# disk aspect ratio is scale height over radius
-#disk_aspect_ratio=0.03
 #
 # Choices about Nuclear Star Cluster Population:
 #
@@ -54,7 +45,7 @@ trap_radius = 700.
 #   ratio.
 #
 # number of BH in disk to start
-n_bh = 100
+n_bh = 60
 # Mode of initial BH mass distribution in M_sun (peak of Pareto fn)
 mode_mbh_init = 10.
 # Pareto (powerlaw) initial BH mass index
