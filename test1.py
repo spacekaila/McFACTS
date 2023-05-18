@@ -280,7 +280,7 @@ def main():
     #End Loop of Timesteps at Final Time, end all changes & print out results
     
     print("End Loop!")
-    print("Final Time(yrs) = ",time_passed)
+    print("Final Time (yrs) = ",time_passed)
     print("BH locations at Final Time")
     print(prograde_bh_locations)
     print("Number of binaries = ",bin_index)
