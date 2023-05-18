@@ -50,7 +50,8 @@ def main():
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array = ReadInputs
+                     disk_outer_radius, surface_density_array, aspect_ratio_array \
+                        = ReadInputs.ReadInputs()
     
     # BARRY: WHAT FRESH HELL IS THIS? THERE ARE INTEGER NUMBER OF BH!
     # All of them should be in integer usage and will prob improve speed/memory usage

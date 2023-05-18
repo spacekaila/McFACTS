@@ -1,3 +1,5 @@
+import numpy as np
+
 def ReadInputs():
     """This function reads your input choices from a file named model_choice.txt,
     and returns the chosen variables for manipulation by main.    
@@ -133,7 +135,8 @@ def ReadInputs():
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
     infile_suffix = '_surface_density.txt'
-    infile = disk_model_name+infile_suffix
+    infile_path = 'inputs/'
+    infile = infile_path+disk_model_name+infile_suffix
     surface_density_file = open(infile, 'r')
     density_list = []
     radius_list = []
@@ -158,7 +161,7 @@ def ReadInputs():
     #       (radius is actually ignored in this file!)
     #   filename = model_aspect_ratio.txt, where model is user choice
     infile_suffix = '_aspect_ratio.txt'
-    infile = disk_model_name+infile_suffix
+    infile = infile_path+disk_model_name+infile_suffix
     aspect_ratio_file = open(infile, 'r')
     aspect_ratio_list = []
     for line in aspect_ratio_file:
