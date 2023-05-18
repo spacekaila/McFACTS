@@ -79,7 +79,7 @@ def ReadInputs():
     input_variables = {}
 
     # open the main input file for reading
-    model_inputs = open("model_choice.txt", 'r')
+    model_inputs = open("inputs/model_choice.txt", 'r')
 
     # go through the file line by line
     for line in model_inputs:
