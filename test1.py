@@ -60,7 +60,13 @@ def main():
     outmass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
     outspin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
     out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
-    print(outmass,outspin,out_chi)
+    print("Initial Mass1, Mass2 = ", mass_1, mass_2)
+    print("Initial spin1, spin2 = ", spin_1, spin_2)
+    print("Initial spin direction 1, 2 =", angle_1, angle_2)
+    print("Binary angular momentum =", bin_ang_mom)
+    print("Final mass =", outmass)
+    print("Final spin =", outspin)
+    print("Final chi_eff =", out_chi)
     #Output should always be constant: 23.560384 0.8402299374639024 0.31214563487176167
    #    test_merger=tests.test_merger()
 
