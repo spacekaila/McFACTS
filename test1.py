@@ -49,18 +49,18 @@ def main():
     """
 
     #1. Test a merger by calling modules
-    # print("Test merger")
-    # mass_1 = 10.0
-    # mass_2 = 15.0
-    # spin_1 = 0.1
-    # spin_2 = 0.7
-    # angle_1 = 1.80
-    # angle2 = 0.7
-    # bin_ang_mom = 1.0
-    # outmass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
-    # outspin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
-    # out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle2, bin_ang_mom)
-    # print(outmass,outspin,out_chi)
+    print("Test merger")
+    mass_1 = 10.0
+    mass_2 = 15.0
+    spin_1 = 0.1
+    spin_2 = 0.7
+    angle_1 = 1.80
+    angle_2 = 0.7
+    bin_ang_mom = 1.0
+    outmass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
+    outspin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
+    out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
+    print(outmass,outspin,out_chi)
     #Output should always be constant: 23.560384 0.8402299374639024 0.31214563487176167
    #    test_merger=tests.test_merger()
 
@@ -244,7 +244,6 @@ def main():
                 merged_mass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
                 merged_spin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
                 merged_chi_eff = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
-#                merged_bh_rec_array = mergerfile.extend_rec_merged_bh(merged_bh_rec_array, n_mergers_so_far,  merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
                 merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
                 
                 
