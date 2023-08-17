@@ -74,7 +74,7 @@ def main():
     # Test reference quantities for final mass, final spin, and chi
     reference = [expected_mass, expected_spin, expected_chi]
     # Did it pass?
-    if calculated==reference:
+    if calculated == reference:
         print(" Merger test passed!")
     else:
         print(" Merger test failed!")
@@ -128,7 +128,7 @@ def main():
     bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution)
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
-    #bh_initial_generations = np.ones((integer_nbh,), dtype=int)  
+    #bh_initial_generations = np.ones((integer_nbh,), dtype=int)
     bh_initial_generations = np.ones((integer_nbh,), dtype=int)
 
     #3.a Test migration of prograde BH
@@ -193,9 +193,9 @@ def main():
     
     # Set up merger array (identical to binary array)
     #number_of_merger_properties = 16.0
-#    num_of_mergers=4.0
-    #int_merg_props=int(number_of_merger_properties)
-    #int_n_merg=int(num_of_mergers)
+    num_of_mergers = 4.0
+    #int_merg_props = int(number_of_merger_properties)
+    #int_n_merg = int(num_of_mergers)
     merger_array = np.zeros((integer_nbinprop, integer_test_bin_number))
 
     #Set up output array (mergerfile)
@@ -336,8 +336,8 @@ def main():
                 print("Make binary at time ", time_passed)
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
                 sorted_prograde_bh_location_indices = np.argsort(prograde_bh_locations)
-                number_of_new_bins = (len(close_encounters))/2            
-                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index, retro)
+                number_of_new_bins = (len(close_encounters)) // 2
+                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index)
                 bin_index = bin_index + number_of_new_bins
                 bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
                 bh_spins_by_sorted_location = prograde_bh_spins[sorted_prograde_bh_location_indices]
