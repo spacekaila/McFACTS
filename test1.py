@@ -66,9 +66,9 @@ def main():
     expected_chi = 0.31214563487176167
     
     # Calculate post-merger quantities
-    out_mass = 1+tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
-    out_spin = 1+tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
-    out_chi = 1+chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
+    out_mass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
+    out_spin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
+    out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
     calculated = [out_mass, out_spin, out_chi]
         
     # Test reference quantities for final mass, final spin, and chi
