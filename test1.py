@@ -49,7 +49,9 @@ def main():
     """
 
     #1. Test a merger by calling modules
-    print("Test merger")
+    print("Test merger using Tichy & Marionetti (2008)")
+    
+    # Pre-merger binary parameters
     mass_1 = 10.0
     mass_2 = 15.0
     spin_1 = 0.1
@@ -57,16 +59,36 @@ def main():
     angle_1 = 1.80
     angle_2 = 0.7
     bin_ang_mom = 1.0
-    outmass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
-    outspin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
-    out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
-    print("Initial Mass1, Mass2 = ", mass_1, mass_2)
-    print("Initial spin1, spin2 = ", spin_1, spin_2)
-    print("Initial spin direction 1, 2 =", angle_1, angle_2)
-    print("Binary angular momentum =", bin_ang_mom)
-    print("Final mass =", outmass)
-    print("Final spin =", outspin)
-    print("Final chi_eff =", out_chi)
+
+    # Expected Tichy & Marionetti post-merger values
+    expected_mass = 23.560384
+    expected_spin = 0.8402299374639024
+    expected_chi = 0.31214563487176167
+    
+    # Calculate post-merger quantities
+    out_mass = 1+tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
+    out_spin = 1+tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
+    out_chi = 1+chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
+    calculated = [out_mass, out_spin, out_chi]
+        
+    # Test reference quantities for final mass, final spin, and chi
+    reference = [expected_mass, expected_spin, expected_chi]
+    # Did it pass?
+    if calculated==reference:
+        print(" Merger test passed!")
+    else:
+        print(" Merger test failed!")
+        print("  Initial mass_1, mass_2 =", mass_1, mass_2)
+        print("  Initial spin_1, spin_2 =", spin_1, spin_2)
+        print("  Initial spin angle_1, angle_2 =", angle_1, angle_2)
+        print("  Binary angular momentum =", bin_ang_mom)
+        print("  Final mass =", out_mass)
+        print("  Expected mass =", expected_mass)
+        print("  Final spin =", out_spin)
+        print("  Expected spin =", expected_spin)
+        print("  Final chi =", out_chi)
+        print("  Expected chi =", expected_chi)
+    
     #Output should always be constant: 23.560384 0.8402299374639024 0.31214563487176167
    #    test_merger=tests.test_merger()
 
