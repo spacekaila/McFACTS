@@ -4,6 +4,9 @@ import math
 import matplotlib.pyplot as plt
 import itertools
 
+import sys
+import argparse
+
 from inputs import ReadInputs
 
 from setup import setupdiskblackholes
@@ -23,40 +26,69 @@ from physics.binary.merge import tgw
 #from tests import tests
 from outputs import mergerfile
 
+
+verbose=False
+n_bins_max = 1000
+n_bins_max_out = 100
+binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom"
+merger_field_names=' '.join(mergerfile.names_rec)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--use-ini",help="Filename of configuration file", default=None)
+parser.add_argument("--fname-output-mergers",default="output_mergers.dat",help="output merger file (if any)")
+parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(index).dat",help="output of BH index file ")
+parser.add_argument("--no-snapshots", action='store_true')
+parser.add_argument("--verbose",action='store_true')
+opts=  parser.parse_args()
+verbose=opts.verbose
+
 def main():
     """
     """
 
     #1. Test a merger by calling modules
-    print("Test merger")
-    mass_1 = 10.0
-    mass_2 = 15.0
-    spin_1 = 0.1
-    spin_2 = 0.7
-    angle_1 = 1.80
-    angle2 = 0.7
-    bin_ang_mom = 1.0
-    outmass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
-    outspin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
-    out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle2, bin_ang_mom)
-    print(outmass,outspin,out_chi)
+    # print("Test merger")
+    # mass_1 = 10.0
+    # mass_2 = 15.0
+    # spin_1 = 0.1
+    # spin_2 = 0.7
+    # angle_1 = 1.80
+    # angle2 = 0.7
+    # bin_ang_mom = 1.0
+    # outmass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
+    # outspin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
+    # out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle2, bin_ang_mom)
+    # print(outmass,outspin,out_chi)
     #Output should always be constant: 23.560384 0.8402299374639024 0.31214563487176167
-    #test_merger=tests.test_merger()
+   #    test_merger=tests.test_merger()
 
     # Setting up automated input parameters
     # see ReadInputs.py for documentation of variable names/types/etc.
 
+    fname = 'inputs/model_choice.txt'
+    if opts.use_ini:
+        fname = opts.use_ini
     mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
                      disk_outer_radius, surface_density_array, aspect_ratio_array \
-                        = ReadInputs.ReadInputs()
+                     = ReadInputs.ReadInputs_ini(fname)
+
+
+    # mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
+    #      mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
+    #          spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
+    #              timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
+    #                  disk_outer_radius, surface_density_array, aspect_ratio_array \
+    #                     = ReadInputs.ReadInputs()
     
     # BARRY: WHAT FRESH HELL IS THIS? THERE ARE INTEGER NUMBER OF BH!
     # All of them should be in integer usage and will prob improve speed/memory usage
     # Is there some reason I should not change this for all of them forever?
     integer_nbh = int(n_bh)
+    print(" Number of BHs ", integer_nbh,n_bh)
 
     print("Generate initial BH parameter arrays")
     bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(n_bh, disk_outer_radius)
@@ -81,8 +113,8 @@ def main():
     #retrograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == -1)
     prograde_bh_locations = bh_initial_locations[prograde_orb_ang_mom_indices]
     sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
-    print("Sorted prograde BH locations:")
-    print(sorted_prograde_bh_locations)
+    print("Sorted prograde BH locations:", len(sorted_prograde_bh_locations), len(prograde_bh_locations))
+#    print(sorted_prograde_bh_locations)
 
     #b. Test accretion onto prograde BH
     #Fractional rate of mass growth per year at the Eddington rate(2.3e-8/yr)
@@ -91,8 +123,8 @@ def main():
     mass_growth_Edd_rate = 2.3e-8
     #Use masses of prograde BH only
     prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
-    print("Prograde BH initial masses")
-    print(prograde_bh_masses)
+    print("Prograde BH initial masses", len(prograde_bh_masses))
+#    print(prograde_bh_masses)
 
     #c. Test spin change and spin angle torquing
     #Housekeeping: minimum spin angle resolution (ie less than this value gets fixed to zero) e.g 0.02 rad=1deg
@@ -100,20 +132,20 @@ def main():
     #Torque prograde orbiting BH only
     print("Prograde BH initial spins")
     prograde_bh_spins = bh_initial_spins[prograde_orb_ang_mom_indices]
-    print(prograde_bh_spins)
+#    print(prograde_bh_spins)
     print("Prograde BH initial spin angles")
     prograde_bh_spin_angles = bh_initial_spin_angles[prograde_orb_ang_mom_indices]
-    print(prograde_bh_spin_angles)
+#    print(prograde_bh_spin_angles)
     print("Prograde BH initial generations")
     prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
 
     #4 Test Binary formation
-    #Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom)
-    number_of_bin_properties = 17.0
+    #Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom)o
+    number_of_bin_properties = len(binary_field_names.split())+1
     integer_nbinprop = int(number_of_bin_properties)
     bin_index = 0
     int_bin_index=int(bin_index)
-    test_bin_number = 12.0
+    test_bin_number = n_bins_max
     integer_test_bin_number = int(test_bin_number)
     number_of_mergers = 0
     int_num_mergers = int(number_of_mergers)
@@ -127,20 +159,34 @@ def main():
     
     # Set up merger array (identical to binary array)
     #number_of_merger_properties = 16.0
-    num_of_mergers=4.0
+#    num_of_mergers=4.0
     #int_merg_props=int(number_of_merger_properties)
     #int_n_merg=int(num_of_mergers)
     merger_array = np.zeros((integer_nbinprop,integer_test_bin_number))
-
+    
     #Set up output array (mergerfile)
-    nprop_mergers=14.0
+    nprop_mergers=len(mergerfile.names_rec)
     integer_nprop_merge=int(nprop_mergers)
     merged_bh_array = np.zeros((integer_nprop_merge,integer_test_bin_number))
+    merged_bh_rec_array = np.empty((integer_nbinprop, integer_test_bin_number), dtype=mergerfile.dtype_rec)
     #Start Loop of Timesteps
     print("Start Loop!")
     time_passed = initial_time
     print("Initial Time(yrs) = ",time_passed)
+
+    n_mergers_so_far=0
+    n_timestep_index = 0
     while time_passed < final_time:
+        # Record 
+        if not(opts.no_snapshots):
+            n_bh_out_size = len(prograde_bh_locations)
+            svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations[:n_bh_out_size]]))
+            # Single output:  does work
+            np.savetxt("output_bh_single_{}.dat".format(n_timestep_index), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T,prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta gen")
+            # Binary output: does not work
+            np.savetxt("output_bh_binary_{}.dat".format(n_timestep_index),binary_bh_array[:,:n_mergers_so_far+1].T,header=binary_field_names)
+            n_timestep_index +=1
+
         #Migrate
         prograde_bh_locations = type1.dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surface_density, timestep)
         #Accrete
@@ -169,9 +215,13 @@ def main():
             #Check and see if merger flagged (row 11, if negative)
             merger_flags=binary_bh_array[11,:]
             any_merger=np.count_nonzero(merger_flags) 
-            print(merger_flags)
+            if verbose:
+                print(merger_flags)
             merger_indices = np.where(merger_flags < 0.0)
-            print(merger_indices)
+            if isinstance(merger_indices,tuple):
+                merger_indices = merger_indices[0]
+            if verbose:
+                print(merger_indices)
             #print(binary_bh_array[:,merger_indices])
             if any_merger > 0:
                 print("Merger!")
@@ -186,8 +236,10 @@ def main():
 
                 merged_mass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
                 merged_spin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
-                merged_chi_eff = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle2, bin_ang_mom)
+                merged_chi_eff = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
+#                merged_bh_rec_array = mergerfile.extend_rec_merged_bh(merged_bh_rec_array, n_mergers_so_far,  merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
                 merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
+                n_mergers_so_far += len(merger_indices)
                 
                 merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
                 #print(merger_array)
@@ -217,18 +269,22 @@ def main():
                 prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,merged_spin_angle)
                 prograde_bh_generations = np.append(prograde_bh_generations,merged_bh_gen)
                 sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
-                print("New BH locations", sorted_prograde_bh_locations)
+                if verbose:
+                    print("New BH locations", sorted_prograde_bh_locations)
                 print("Merger Flag!")
                 print(number_of_mergers)
                 print("Time ", time_passed)
-                print(merger_array)
+                if verbose:
+                    print(merger_array)
             else:                
                 # No merger
                 # Harden binary
                 binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
                 print("Harden binary")
                 print("Time passed = ", time_passed)
-                print(binary_bh_array)
+                if bin_index>0: # verbose:
+                    print(" BH binaries ", bin_index,  binary_bh_array[:,:int(bin_index)].shape)
+                    print(binary_bh_array[:,:int(bin_index)].T)  # this makes printing work as expected
         else:
             
             # No Binaries present in bin_array. Nothing to do.
@@ -269,12 +325,17 @@ def main():
     
     print("End Loop!")
     print("Final Time (yrs) = ",time_passed)
-    print("BH locations at Final Time")
-    print(prograde_bh_locations)
+    if verbose:
+        print("BH locations at Final Time")
+        print(prograde_bh_locations)
     print("Number of binaries = ",bin_index)
     print("Total number of mergers = ",number_of_mergers)
-    print("Mergers")
-    print(merged_bh_array)
+    print("Mergers", merged_bh_array.shape)
+    if True and number_of_mergers > 0: #verbose:
+        print(merged_bh_array[:,:number_of_mergers].T)
+        
+    np.savetxt(opts.fname_output_mergers, merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
+
 
 if __name__ == "__main__":
     main()
