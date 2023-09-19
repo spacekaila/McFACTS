@@ -11,9 +11,14 @@ def chi_effective(mass_1, mass_2, spin_1, spin_2, spin_angle1, spin_angle2, bin_
     abs_spin2 = np.abs(spin_2)
 
 # If L_b=-1 then need to measure angles wrt to 3.1415rad not 0 rad.
-    if bin_ang_mom == -1:
-        angle_1 = 3.1415 - spin_angle1
-        angle_2 = 3.1415 - spin_angle2
+    if not(isinstance(bin_ang_mom, np.ndarray)):
+           if bin_ang_mom == -1:
+               angle_1 = np.pi - spin_angle1
+               angle_2 = np.pi - spin_angle2
+    else:
+        indx_swap = np.where(bin_ang_mom == -1)[0]
+        angle_1[indx_swap] = np.pi - spin_angle1[indx_swap]
+        angle_2[indx_swap] = np.pi - spin_angle2[indx_swap]
 
 # Calculate each component of chi_effective
     chi_factor1 = (mass_1/total_mass)*abs_spin1*np.cos(angle_1)
