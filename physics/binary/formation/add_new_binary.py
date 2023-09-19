@@ -1,7 +1,10 @@
 import numpy as np
 from numpy.random import default_rng
 
-def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_angles, bh_gens, close_encounters, bin_index):
+rng=default_rng(1234)
+
+
+def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_angles, bh_gens, close_encounters, bin_index,verbose=False):
     #Here we add a new binary to this array, take properties from existing individual arrays and create some new ones
     #Column 1 is 1 binary, Column 2 is 2nd binary etc.
     #Extract location,mass,spin,spin angle from arrays & add to this array (=8 params)
@@ -16,6 +19,8 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
    
     #Start by extracting all relevant data first
 
+
+
     sorted_bh_locations = np.sort(bh_locations)
     sorted_bh_locations_indices = np.argsort(bh_locations)
     bh_masses_by_sorted_location = bh_masses[sorted_bh_locations_indices]
@@ -27,20 +32,24 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
     bindex = int(bin_index)
     number_of_new_bins = (len(close_encounters)+1)/2
     num_new_bins = int(number_of_new_bins)
+
+    print(" Adding to binary array ", bin_array.shape, bin_index,num_new_bins)
+
     print(close_encounters)
     if number_of_new_bins > 0:
         print("no of new bins")
         print(num_new_bins)
         #print("indices")
         #print(close_encounters)
-        print(len(close_encounters))
+#        print(len(close_encounters))
         array_of_indices = close_encounters
-        print(array_of_indices)
+        print("Close encounters ", len(close_encounters), array_of_indices)
         #print(bindex)
         bincount = 0
         #for i in range(0,2):
         #    int_binc = int(bincount)
         for j in range(bindex, bindex + num_new_bins):
+            print(" Binary ", j)
             int_binc = int(bincount)
             for i in range(0,2):
                 #new_indx = j
@@ -64,15 +73,15 @@ def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_an
                 bin_array[i+14,j] = bh_gens_by_sorted_location[new_indx]
                 #Set up bin orb. ang. mom. (randomly +1 (pro) or -1(retrograde))
                 #random number
-                rng=default_rng(1234)
                 random_uniform_number = rng.random()
                 bh_initial_orb_ang_mom = (2.0*np.around(random_uniform_number)) - 1.0
                 bin_array[16,j] = bh_initial_orb_ang_mom
                 print("Random uniform number =", random_uniform_number )
                 print("New orb ang mom =", bh_initial_orb_ang_mom)
             bincount = bincount + 1
-        print("New Binary")
-        print(bin_array)
+        if verbose:
+            print("New Binary")
+            print(bin_array)
         
 
     return bin_array
