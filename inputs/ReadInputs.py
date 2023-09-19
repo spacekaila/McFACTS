@@ -1,5 +1,111 @@
 import numpy as np
 
+import configparser as ConfigParser
+from io import StringIO
+
+
+def ReadInputs_ini(fname='inputs/model_choice.txt'):
+    config = ConfigParser.ConfigParser()
+    config.optionxform=str # force preserve case! Important for --choose-data-LI-seglen
+
+    # Default format has no section headings ...
+    #config.read(opts.use_ini)
+    with open(fname) as stream:
+        stream = StringIO("[top]\n" + stream.read())
+        config.readfp(stream)
+
+    # convert to dict
+    input_variables = dict(config.items('top'))
+    # try to pretty-convert these to quantites
+    for name in input_variables:
+        if '.' in input_variables[name]:
+            input_variables[name]=float(input_variables[name])
+        elif input_variables[name].isdigit():
+            input_variables[name] =int(input_variables[name])
+        else:
+            input_variables[name] = input_variables[name].strip("'")
+    print(input_variables)
+
+    disk_model_name = input_variables['disk_model_name']
+    mass_smbh = input_variables['mass_smbh']
+    trap_radius = input_variables['trap_radius']
+    n_bh = int(input_variables['n_bh'])
+    mode_mbh_init = input_variables['mode_mbh_init']
+    max_initial_bh_mass = input_variables['max_initial_bh_mass']
+    mbh_powerlaw_index = input_variables['mbh_powerlaw_index']
+    mu_spin_distribution = input_variables['mu_spin_distribution']
+    sigma_spin_distribution = input_variables['sigma_spin_distribution']
+    spin_torque_condition = input_variables['spin_torque_condition']
+    frac_Eddington_ratio = input_variables['frac_Eddington_ratio']
+    max_initial_eccentricity = input_variables['max_initial_eccentricity']
+    timestep = input_variables['timestep']
+    number_of_timesteps = input_variables['number_of_timesteps']
+
+    print("I put your variables where they belong")
+
+    # open the disk model surface density file and read it in
+    # Note format is assumed to be comments with #
+    #   density in SI in first column
+    #   radius in r_g in second column
+    #   infile = model_surface_density.txt, where model is user choice
+    infile_suffix = '_surface_density.txt'
+    infile_path = 'inputs/'
+    infile = infile_path+disk_model_name+infile_suffix
+    surface_density_file = open(infile, 'r')
+    density_list = []
+    radius_list = []
+    for line in surface_density_file:
+        line = line.strip()
+        # If it is NOT a comment line
+        if (line.startswith('#') == 0):
+            columns = line.split()
+            density_list.append(float(columns[0]))
+            radius_list.append(float(columns[1]))
+    # close file
+    surface_density_file.close()
+
+    # re-cast from lists to arrays
+    surface_density_array = np.array(density_list)
+    disk_model_radius_array = np.array(radius_list)
+
+    # open the disk model aspect ratio file and read it in
+    # Note format is assumed to be comments with #
+    #   aspect ratio in first column
+    #   radius in r_g in second column must be identical to surface density file
+    #       (radius is actually ignored in this file!)
+    #   filename = model_aspect_ratio.txt, where model is user choice
+    infile_suffix = '_aspect_ratio.txt'
+    infile = infile_path+disk_model_name+infile_suffix
+    aspect_ratio_file = open(infile, 'r')
+    aspect_ratio_list = []
+    for line in aspect_ratio_file:
+        line = line.strip()
+        # If it is NOT a comment line
+        if (line.startswith('#') == 0):
+            columns = line.split()
+            aspect_ratio_list.append(float(columns[0]))
+    # close file
+    aspect_ratio_file.close()
+
+    # re-cast from lists to arrays
+    aspect_ratio_array = np.array(aspect_ratio_list)
+
+    # Housekeeping from input variables
+    disk_outer_radius = disk_model_radius_array[-1]
+    disk_inner_radius = disk_model_radius_array[0]
+
+    print("I read and digested your disk model")
+
+    print("Sending variables back")
+
+    return mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
+        mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
+            spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
+                timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
+                    disk_outer_radius, surface_density_array, aspect_ratio_array
+
+
+
 def ReadInputs():
     """This function reads your input choices from a file named model_choice.txt,
     and returns the chosen variables for manipulation by main.    
