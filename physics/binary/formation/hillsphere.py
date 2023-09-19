@@ -45,8 +45,12 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     comparison_distance_outwards = separations-sorted_hill_spheres_minus_first
 
     index_in = np.where(comparison_distance_inwards < 0)
+    if isinstance(index_in,tuple):
+        index_in = index_in[0]
     # E.g say r3-r2 <R_H2 then we'll want the info for the BH at r2 & r3. (i,i+1)
     index_out = np.where(comparison_distance_outwards < 0)
+    if isinstance(index_out,tuple):
+        index_out = index_out[0]
     #E.g. say r3-r2 <R_H3 then we'll want the info for the BH at r3 and r2 (i,i-1)
     length_index_in = len(index_in)
     length_index_out = len(index_out)
@@ -67,13 +71,13 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     new_indxs = new_indx_in+new_indx_out
     #rindx = np.sort(new_indxs)
     result = np.asarray(new_indx_in)
-
     sorted_in_result = np.sort(result)
 
     new_result = np.asarray(new_indx_out)
     sorted_out_result = np.sort(new_result)
-    
-    final_bin_indices = sorted_in_result + sorted_out_result
+
+    # Concatenate the two lists, and remove duplicates
+    final_bin_indices = np.array(list(set(list(sorted_in_result) + list(sorted_out_result))))
     sorted_final_bin_indices = np.sort(final_bin_indices)
 
     #print("check if sorted_in & sorted_out arrays are the same")
