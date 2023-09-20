@@ -80,7 +80,7 @@ def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_conditio
 
     return bin_array
 
-def com_migration(bin_array, disk_surf_model, timestep, integer_nbinprop, bin_index):
+def com_migration(bin_array, disk_surf_model, disk_aspect_ratio_model, timestep, integer_nbinprop, bin_index):
     #Return updated locations of binary center of mass (com) and location 1,2 
     # based on Type 1 migration prescription
     #sg_norm is a normalization factor for the Sirko & Goodman (2003) disk model
@@ -92,7 +92,7 @@ def com_migration(bin_array, disk_surf_model, timestep, integer_nbinprop, bin_in
     #scaled_aspect=disk_aspect ratio scaled to 0.02 as a fiducial value.
     scaled_aspect = 0.02
     #for test fixed disk aspect ratio
-    disk_aspect_ratio = 0.03
+    #disk_aspect_ratio = 0.03
     #scaled location= BH location scaled to 10^4r_g
     scaled_location = 1.e4
     #scaled sigma= Disk surface density scaled to 10^5kg/m^2
@@ -122,10 +122,14 @@ def com_migration(bin_array, disk_surf_model, timestep, integer_nbinprop, bin_in
                     disk_surface_density = disk_surf_model
                 else:
                     disk_surface_density = disk_surf_model(temp_bin_com)
+                if isinstance(disk_aspect_ratio_model, float):
+                    disk_aspect_ratio = disk_aspect_ratio_model
+                else:
+                    disk_aspect_ratio = disk_aspect_ratio_model(temp_bin_com)
                 normalized_com = temp_bin_com/scaled_location
                 normalized_bin_mass = bin_mass/scaled_mass
                 normalized_com_sqrt = np.sqrt(normalized_com)
-                #Can normalize the aspect ratio and sigma to these scales when we
+                # Can normalize the aspect ratio and sigma to these scales when we
                 # implement the 1d disk model (interpolate over SG03)
                 normalized_sigma = disk_surface_density/scaled_sigma
                 normalized_aspect_ratio = disk_aspect_ratio/scaled_aspect
