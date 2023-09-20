@@ -3,6 +3,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import itertools
+import scipy.interpolate
 
 import sys
 import argparse
@@ -76,6 +77,8 @@ def main():
                      disk_outer_radius, surface_density_array, aspect_ratio_array \
                      = ReadInputs.ReadInputs_ini(fname)
 
+    surf_dens_func_log = scipy.interpolate.UnivariateSpline(disk_model_radius_array, np.log(surface_density_array))
+    surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
 
     # mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
     #      mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
@@ -102,7 +105,8 @@ def main():
     #3.a Test migration of prograde BH
     #Disk surface density (assume constant for test)
     #BARRY: yeah we got fancy options now, let's use them???
-    disk_surface_density = 1.e5
+    #disk_surface_density = 1.e5
+    disk_surface_density = surf_dens_func
     #Housekeeping: Set up time
     initial_time = 0.0
     final_time = timestep*number_of_timesteps
