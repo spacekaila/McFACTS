@@ -117,9 +117,8 @@ def main():
 #    print(sorted_prograde_bh_locations)
 
     #b. Test accretion onto prograde BH
-    #Fractional rate of mass growth per year at the Eddington rate(2.3e-8/yr)
-    # BARRY: we discussed this thing before, but I lost my notes is this a
-    # housekeeping thing or an input choice?
+    # Housekeeping: Fractional rate of mass growth per year at 
+    # the Eddington rate(2.3e-8/yr)
     mass_growth_Edd_rate = 2.3e-8
     #Use masses of prograde BH only
     prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
@@ -127,7 +126,9 @@ def main():
 #    print(prograde_bh_masses)
 
     #c. Test spin change and spin angle torquing
-    #Housekeeping: minimum spin angle resolution (ie less than this value gets fixed to zero) e.g 0.02 rad=1deg
+    #Housekeeping: minimum spin angle resolution 
+    # (ie less than this value gets fixed to zero) 
+    # e.g 0.02 rad=1deg
     spin_minimum_resolution = 0.02
     #Torque prograde orbiting BH only
     print("Prograde BH initial spins")
