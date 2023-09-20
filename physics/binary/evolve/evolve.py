@@ -81,6 +81,12 @@ def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_conditio
     return bin_array
 
 def com_migration(bin_array, disk_surf_model, disk_aspect_ratio_model, timestep, integer_nbinprop, bin_index):
+    # !!!This should be re-written to do computations NOT in the loop 
+    # (especially the surface density & aspect ratio)
+    # Saavik has some worries about the functional forms working correctly
+    # because it didn't actually fail when I didn't update them (I did singleton
+    # migration first, tested, then did binary evolution, but it didn't fail
+    # the first time... so that's a bit worrisome from a physics perspective)
     #Return updated locations of binary center of mass (com) and location 1,2 
     # based on Type 1 migration prescription
     #sg_norm is a normalization factor for the Sirko & Goodman (2003) disk model
