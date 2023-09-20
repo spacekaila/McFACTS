@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surf_model, timestep):
+def dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, timestep):
     #Return updated location array based on Type 1 migration prescription
     #sg_norm is a normalization factor for the Sirko & Goodman (2003) disk model
     #38Myrs=3.8e7yrs is the time for a 5Msun BH to undergo Type I migration to
@@ -16,7 +16,12 @@ def dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surf_model, tim
     #scaled_aspect=disk_aspect ratio scaled to 0.02 as a fiducial value.
     scaled_aspect = 0.02
     #for test fixed disk aspect ratio
-    disk_aspect_ratio = 0.03
+    # Now making this a function that is passed in
+    #disk_aspect_ratio = 0.03
+    if isinstance(disk_aspect_ratio_model, float):
+        disk_aspect_ratio = disk_aspect_ratio_model
+    else:
+        disk_aspect_ratio = disk_aspect_ratio_model(prograde_bh_locations)
     #scaled location= BH location scaled to 10^4r_g
     scaled_location = 1.e4
     #scaled sigma= Disk surface density scaled to 10^5kg/m^2
