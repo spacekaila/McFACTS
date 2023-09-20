@@ -80,7 +80,7 @@ def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_conditio
 
     return bin_array
 
-def com_migration(bin_array, disk_surface_density, timestep, integer_nbinprop, bin_index):
+def com_migration(bin_array, disk_surf_model, timestep, integer_nbinprop, bin_index):
     #Return updated locations of binary center of mass (com) and location 1,2 
     # based on Type 1 migration prescription
     #sg_norm is a normalization factor for the Sirko & Goodman (2003) disk model
@@ -118,6 +118,10 @@ def com_migration(bin_array, disk_surface_density, timestep, integer_nbinprop, b
                 temp_bin_com = bin_array[9,j]
                 bin_mass = temp_bh_mass_1 + temp_bh_mass_2
                 #Normalize the com location and BH masses 
+                if isinstance(disk_surf_model, float):
+                    disk_surface_density = disk_surf_model
+                else:
+                    disk_surface_density = disk_surf_model(temp_bin_com)
                 normalized_com = temp_bin_com/scaled_location
                 normalized_bin_mass = bin_mass/scaled_mass
                 normalized_com_sqrt = np.sqrt(normalized_com)
