@@ -77,8 +77,12 @@ def main():
                      disk_outer_radius, surface_density_array, aspect_ratio_array \
                      = ReadInputs.ReadInputs_ini(fname)
 
+    # create surface density & aspect ratio functions from input arrays
     surf_dens_func_log = scipy.interpolate.UnivariateSpline(disk_model_radius_array, np.log(surface_density_array))
     surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
+
+    aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(disk_model_radius_array, np.log(aspect_ratio_array))
+    aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
 
     # mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
     #      mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
@@ -103,10 +107,12 @@ def main():
     bh_initial_generations = np.ones((integer_nbh,),dtype=int)
 
     #3.a Test migration of prograde BH
-    #Disk surface density (assume constant for test)
+    # Disk surface density (assume constant for test)
     #BARRY: yeah we got fancy options now, let's use them???
     #disk_surface_density = 1.e5
     disk_surface_density = surf_dens_func
+    # and disk aspect ratio
+    disk_aspect_ratio = aspect_ratio_func
     #Housekeeping: Set up time
     initial_time = 0.0
     final_time = timestep*number_of_timesteps
@@ -193,7 +199,7 @@ def main():
             n_timestep_index +=1
 
         #Migrate
-        prograde_bh_locations = type1.dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surface_density, timestep)
+        prograde_bh_locations = type1.dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep)
         #Accrete
         prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
         #Spin up    
@@ -209,7 +215,7 @@ def main():
         if bin_index > 0:
             #Evolve binaries. 
             #Migrate binaries
-            binary_bh_array = evolve.com_migration(binary_bh_array, disk_surface_density, timestep, integer_nbinprop, bin_index)
+            binary_bh_array = evolve.com_migration(binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, integer_nbinprop, bin_index)
             #Accrete gas onto binaries
             binary_bh_array = evolve.change_bin_mass(binary_bh_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index)
             #Spin up binary components
