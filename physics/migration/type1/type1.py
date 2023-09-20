@@ -1,11 +1,15 @@
 import numpy as np
 
 
-def dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surface_density, timestep):
+def dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surf_model, timestep):
     #Return updated location array based on Type 1 migration prescription
     #sg_norm is a normalization factor for the Sirko & Goodman (2003) disk model
     #38Myrs=3.8e7yrs is the time for a 5Msun BH to undergo Type I migration to
     #the SMBH from 10^4r_g in that model.
+    if isinstance(disk_surf_model, float):
+        disk_surface_density = disk_surf_model
+    else:
+        disk_surface_density = disk_surf_model(prograde_bh_locations)
     sg_norm = 3.8e7
     #scaled mass= BH mass/lower bound mass (e.g. 5Msun, upper end of lower mass gap)
     scaled_mass = 5.0
