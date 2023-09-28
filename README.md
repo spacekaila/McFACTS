@@ -53,7 +53,7 @@ At this point, all that's left to do is run McFACTS!
 ```
     python test1.py
 ```
-to run with our default inputs in inputs/model_choice.txt (you can update model_choice.txt with your own inputs).
+to run with our default inputs in `inputs/model_choice.txt` (you can update `model_choice.txt` with your own inputs).
 
 Or use your own input filename
 
@@ -61,7 +61,7 @@ Or use your own input filename
     python test1.py infilename
 ```
 
-Output files will appear in test_mcfacts. For each timestep there will be an `output_bh_single_ts.dat` and `output_bh_binary_ts.dat` where ts is the timestep number (0-N)---these track every single/binary in the simulation at that timestep. The whole run will have a single output_mergers.dat which gives the details of every merger throughout the run.
+Output files will appear in test_mcfacts. For each timestep there will be an `output_bh_single_ts.dat` and `output_bh_binary_ts.dat` where `ts` is the timestep number (0-N)---these files track every single/binary in the simulation at that timestep. The whole run will have a single `output_mergers.dat` file, which gives the details of every merger throughout the run. If you are trying to get distributions of merger properties, you probably only need `output_mergers.dat`, but if you are trying to track the history of individual mergers or want to know e.g. the state of the nuclear star cluster after an AGN of some duration, you will want the larger output suite.
 
 <!-- Put simply? `pip install legwork`! But we recommend creating a conda environment first to ensure everything goes smoothly! Check out the installation instructions [here](https://legwork.readthedocs.io/en/latest/install.html) to learn exactly how to install LEGWORK -->
 
