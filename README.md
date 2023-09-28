@@ -29,8 +29,7 @@
 
 ### Installation
 
-The latest development version is available directly from our [GitHub Repo]
-(https://github.com/bmckernan/test_mcfacts). To start, clone the repository onto your machine:
+The latest development version is available directly from our [GitHub Repo](https://github.com/bmckernan/test_mcfacts). To start, clone the repository onto your machine:
 
 ```
     git clone https://github.com/bmckernan/test_mcfacts
