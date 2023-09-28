@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="500", src="https://www.google.com">
+    <img width="500", src="logo2.png">
     <!-- put our logo here instead of google -->
 </p>
 
