@@ -48,14 +48,24 @@ And then activate the environment by running
     conda activate mcfacts-dev
 ```
 
-At this point, all that's left to do is install McFACTS!
+At this point, all that's left to do is run McFACTS!
 
 ```
-    pip install .
+    python test1.py
 ```
+to run with our default inputs in model_choice.txt (you can update model_choice.txt with your own inputs).
+
+Or use your own input filename
+
+```
+    python test1.py infilename
+```
+
+Output files will appear.
+
 <!-- Put simply? `pip install legwork`! But we recommend creating a conda environment first to ensure everything goes smoothly! Check out the installation instructions [here](https://legwork.readthedocs.io/en/latest/install.html) to learn exactly how to install LEGWORK -->
 
-McFACTS has a couple of dependencies: `numpy`, `scipy`, `matplotlib`.
+McFACTS has a couple of dependencies: `numpy`, `scipy`, `matplotlib`. Using the environment commands above should take care of it.
 <!-- (see [requirements.txt](requirements.txt) for the exact version requirements). -->
 
 ### Documentation
