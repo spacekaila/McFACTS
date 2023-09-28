@@ -4,7 +4,7 @@
 </p>
 
 <h2 align="center">
-    The <b>M</b>onte <b>c</b>arlo <b>F</b>or <b>A</b>GN <b>C</b>hannel <b>T</b>esting and <b>S</b>imulations
+    <b>M</b>onte <b>c</b>arlo <b>F</b>or <b>A</b>GN <b>C</b>hannel <b>T</b>esting and <b>S</b>imulations
     <br>
     <!-- <a href="https://github.com/TeamLEGWORK/LEGWORK-paper">
         <img src="https://img.shields.io/badge/release paper-repo-blue.svg?style=flat&logo=GitHub" alt="Read the article"/>
@@ -28,41 +28,37 @@
 </p>
 
 ### Installation
-.. warning::
 
-            We don't guarantee that there won't be mistakes or bugs in the development version, use at your own risk!
+The latest development version is available directly from our [GitHub Repo]
+(https://github.com/bmckernan/test_mcfacts). To start, clone the repository onto your machine:
 
-        The latest development version is available directly from our `GitHub Repo
-        <https://github.com/bmckernan/test_mcfacts>`_. To start, clone the repository onto your machine:
+```
+    git clone https://github.com/bmckernan/test_mcfacts
+    cd test_mcfacts
+```
+Next, we recommend that you create a Conda environment for working with McFACTS.
+You can do this by running
 
-        .. code-block:: bash
-        
-            git clone https://github.com/bmckernan/test_mcfacts
-            cd test_mcfacts
-
-        Next, we recommend that you create a Conda environment for working with McFACTS.
-        You can do this by running
-
-        .. code-block:: bash
-
-            conda create --name mcfacts-dev "python>=3.10.4" pip "numpy>=1.23.1" "scipy>=1.11.2" "matplotlib>=3.5.2" -c conda-forge -c defaults
+```
+    conda create --name mcfacts-dev "python>=3.10.4" pip "numpy>=1.23.1" "scipy>=1.11.2" "matplotlib>=3.5.2" -c conda-forge -c defaults
 <!-- I don't know what the -c stuff does or if it is needed/actually wrong I copied it from LEGWORK -->
+```
 
-        And then activate the environment by running
+And then activate the environment by running
 
-        .. code-block:: bash
+```
+    conda activate mcfacts-dev
+```
 
-            conda activate mcfacts-dev
+At this point, all that's left to do is install McFACTS!
 
-        At this point, all that's left to do is install McFACTS!
-
-        .. code-block:: bash
-
-            pip install .
+```
+    pip install .
+```
 <!-- Put simply? `pip install legwork`! But we recommend creating a conda environment first to ensure everything goes smoothly! Check out the installation instructions [here](https://legwork.readthedocs.io/en/latest/install.html) to learn exactly how to install LEGWORK -->
 
 McFACTS has a couple of dependencies: `numpy`, `scipy`, `matplotlib`.
-  <!-- (see [requirements.txt](requirements.txt) for the exact version requirements). -->
+<!-- (see [requirements.txt](requirements.txt) for the exact version requirements). -->
 
 ### Documentation
 All documentation related to McFACTS can be found in the code for now.
