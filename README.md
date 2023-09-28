@@ -41,7 +41,6 @@ You can do this by running
 
 ```
     conda create --name mcfacts-dev "python>=3.10.4" pip "numpy>=1.23.1" "scipy>=1.11.2" "matplotlib>=3.5.2" -c conda-forge -c defaults
-<!-- I don't know what the -c stuff does or if it is needed/actually wrong I copied it from LEGWORK -->
 ```
 
 And then activate the environment by running
