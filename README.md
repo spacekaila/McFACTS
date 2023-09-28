@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="500", src="https://www.google.com">
+    <img width="500", src="logo2.png">
     <!-- put our logo here instead of google -->
 </p>
 
@@ -29,8 +29,7 @@
 
 ### Installation
 
-The latest development version is available directly from our [GitHub Repo]
-(https://github.com/bmckernan/test_mcfacts). To start, clone the repository onto your machine:
+The latest development version is available directly from our [GitHub Repo](https://github.com/bmckernan/test_mcfacts). To start, clone the repository onto your machine:
 
 ```
     git clone https://github.com/bmckernan/test_mcfacts
@@ -49,14 +48,24 @@ And then activate the environment by running
     conda activate mcfacts-dev
 ```
 
-At this point, all that's left to do is install McFACTS!
+At this point, all that's left to do is run McFACTS!
 
 ```
-    pip install .
+    python test1.py
 ```
+to run with our default inputs in `inputs/model_choice.txt` (you can update `model_choice.txt` with your own inputs).
+
+Or use your own input filename
+
+```
+    python test1.py infilename
+```
+
+Output files will appear in test_mcfacts. For each timestep there will be an `output_bh_single_ts.dat` and `output_bh_binary_ts.dat` where `ts` is the timestep number (0-N)---these files track every single/binary in the simulation at that timestep. The whole run will have a single `output_mergers.dat` file, which gives the details of every merger throughout the run. If you are trying to get distributions of merger properties, you probably only need `output_mergers.dat`, but if you are trying to track the history of individual mergers or want to know e.g. the state of the nuclear star cluster after an AGN of some duration, you will want the larger output suite.
+
 <!-- Put simply? `pip install legwork`! But we recommend creating a conda environment first to ensure everything goes smoothly! Check out the installation instructions [here](https://legwork.readthedocs.io/en/latest/install.html) to learn exactly how to install LEGWORK -->
 
-McFACTS has a couple of dependencies: `numpy`, `scipy`, `matplotlib`.
+McFACTS has a couple of dependencies: `numpy`, `scipy`, `matplotlib`. Using the environment commands above should take care of it.
 <!-- (see [requirements.txt](requirements.txt) for the exact version requirements). -->
 
 ### Documentation
