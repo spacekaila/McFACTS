@@ -1,0 +1,40 @@
+Input/output documentation
+
+Default input file : model_choice.txt
+
+Document that shit
+
+Output file : output_mergers.dat
+14 column file listing all mergers from a single run of test1.py
+First row is # short parameter listing
+
+    Parameters
+    ----------
+    CM : What is this?
+        
+    M : 
+        mass of remnant?
+    chi_eff : 
+        chi_effective for the merger
+    a_tot : 
+        magnitude of spin of remnant?
+    spin_angle : 
+        spin angle of remnant?
+    m1 :
+        mass of (more massive?) progenitor
+    m2 :
+        mass of (less massive?) progenitor
+    a1 :
+        spin magnitude of m1
+    a2 :
+        spin magnitude of m2
+    theta1 :
+        spin angle of m1
+    theta2 :
+        spin angle of m2
+    gen1 :
+        generation of m1 (before merger)
+    gen2 :
+        generation of m2 (before merger)
+    t_merge :
+        time of merger after onset of AGN (assumed to appear magically at t=0)
