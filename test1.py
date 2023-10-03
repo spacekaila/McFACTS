@@ -252,27 +252,39 @@ def main():
                 merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
                 n_mergers_so_far += len(merger_indices)
                 
+                
+
                 merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
                 #print(merger_array)
                 #Reset merger marker to zero
-                int_n_merge=int(number_of_mergers)
-                #Remove merged binary from binary array
-                binary_bh_array[:,merger_indices] = 0.0
-                binary_bh_array[11,int_n_merge] = 0
+                #n_mergers_so_far=int(number_of_mergers)
+                #Remove merged binary from binary array. Delete column where merger_indices is the label.
+                print("!Merger properties!",binary_bh_array[:,merger_indices],merger_array[:,merger_indices],merged_bh_array)
+                binary_bh_array=np.delete(binary_bh_array,merger_indices,1)
                 
-                #Reduce by 1 the number of binaries
-                bin_index = bin_index - 1
+                #binary_bh_array[:,merger_indices] = 0.0
+                #binary_bh_array[11,n_mergers_so_far] = 0
                 
+                #Reduce number of binaries by number of mergers
+                bin_index = bin_index - len(merger_indices)
+                print("bin index",bin_index)
                 #Find relevant properties of merged BH to add to single BH arrays
-                merged_bh_com = merged_bh_array[0,int_n_merge]
-                merged_mass = merged_bh_array[1,int_n_merge]
-                merged_spin = merged_bh_array[3,int_n_merge]
-                merged_spin_angle = merged_bh_array[4,int_n_merge]
+                num_mergers_this_timestep = len(merger_indices)
+                
+                print("num mergers this timestep",num_mergers_this_timestep)
+                print("n_mergers_so_far",n_mergers_so_far)    
+                for i in range (0,num_mergers_this_timestep):
+                    merged_bh_com = merged_bh_array[0,n_mergers_so_far + i]
+                    merged_mass = merged_bh_array[1,n_mergers_so_far + i]
+                    merged_spin = merged_bh_array[3,n_mergers_so_far + i]
+                    merged_spin_angle = merged_bh_array[4,n_mergers_so_far + i]
                 #New bh generation is max of generations involved in merger plus 1
-                merged_bh_gen = np.maximum(merged_bh_array[11,int_n_merge],merged_bh_array[12,int_n_merge]) + 1.0 
+                    merged_bh_gen = np.maximum(merged_bh_array[11,n_mergers_so_far + i],merged_bh_array[12,n_mergers_so_far + i]) + 1.0 
                 print("Merger at=",merged_bh_com,merged_mass,merged_spin,merged_spin_angle,merged_bh_gen)
                 # Add to number of mergers
-                number_of_mergers = number_of_mergers + 1
+                n_mergers_so_far += len(merger_indices)
+                number_of_mergers += len(merger_indices)
+
                 # Append new merged BH to arrays of single BH locations, masses, spins, spin angles & gens
                 prograde_bh_locations = np.append(prograde_bh_locations,merged_bh_com)
                 prograde_bh_masses = np.append(prograde_bh_masses,merged_mass)

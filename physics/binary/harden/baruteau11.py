@@ -23,9 +23,10 @@ def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_t
     # For every 10^3 orbits, halve the binary separation.
     # 
     for j in range(0, bindex):
-        #if bin_array[12,j] < 0:
-        #    j = j + 1
-        #else:
+        if bin_array[11,j] < 0:
+                #do nothing -merger happened!
+                print()        
+        else:
             for i in range(0, integer_nbinprop):
                 temp_bh_loc_1 = bin_array[0,j]
                 temp_bh_loc_2 = bin_array[1,j]

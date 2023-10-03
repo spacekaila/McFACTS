@@ -8,7 +8,7 @@
 # TO DO: Sample from a random (isotropic, thermal) distribution of orbits
 # with random initial (a,e,i)
 #Number of BH in disk (n_bh)
-50.
+100.
 #Mode of initial BH mass distribution in M_sun (mode_mbh_init)
 10.
 #Maximum of initial BH mass distribution in M_sun (max_initial_bh_mass)
