@@ -1,8 +1,127 @@
 Input/output documentation
 
 Default input file : model_choice.txt
+The default input file is described here; if you create your own input file, 
+you must use the same nomenclature and ORDER as the default file to set your variables, and can use 
+# to denote comments on lines separate from your inputs.
+Inputs are grouped astrophysically, with accretion disk variables first, nuclear
+star cluster variables second, and assorted other choices (time resolution etc.) last.
 
-Document that shit
+    Parameters
+    ----------
+    mass_smbh : float
+        supermassive black hole mass in units of solar masses
+    disk_model_name : string
+        prefix to filenames for input disk model
+        McFACTS comes with the following example options for disk models:
+        flat: constant surface density & aspect ratio (unphysical)
+        sirko_goodman: from Sirko & Goodman 2003
+        thompson_etal: from Thompson, Quataert & Murray 2005
+        If user has a disk model, it must specify the disk surface density
+           as a function of radius in a file called name_surface_density.txt
+           where the surface density is in units of kg/m^2 and the radius is in
+           units of gravitational radii (R_g=GM_SMBH/c^2).
+           McFACTS assumes the innermost specified radius in the disk surface density
+           input file is the inner edge of the disk, and the outermost specified 
+           radius is the outer edge.
+           User must also supply the disk aspect ratio as a function of radius
+           in a file called name_aspect_ratio.txt
+           Both files must have surface density & aspect ratio specified at the
+               SAME set of radii.
+           Here name = disk_model_name
+    trap_radius : float
+        If the disk has a migration trap, its radius must be specified here
+            to prevent overshooting in coarse grained models. If there is no
+            trap, set trap_radius = 0. (all BH will eventually accrete onto SMBH)
+            see Bellovary et al. 2016 for locations of sirko_goodman or thompson_etal
+                migration trap 
+
+
+# SMBH mass in units of M_sun:
+mass_smbh = 1.e8
+#
+# Choices about the SMBH accretion disk:
+# 
+# If user has a disk model, it must specify the disk surface density
+#   as a function of radius in a file called name_surface_density.txt
+#   where the surface density is in units of kg/m^2 and the radius is in
+#   units of gravitational radii (R_g=GM_SMBH/c^2).
+#   McFACTS assumes the innermost specified radius in the disk surface density
+#   input file is the inner edge of the disk, and the outermost specified 
+#   radius is the outer edge.
+#   User must also supply the disk aspect ratio as a function of radius
+#   in a file called name_aspect_ratio.txt
+#   Both files must have surface density & aspect ratio specified at the
+#       SAME set of radii.
+#   Here name = disk_model_name
+#
+#   McFACTS comes with the following example options for disk models:
+#       flat: constant surface density & aspect ratio (unphysical)
+#       sirko_goodman: from Sirko & Goodman 2003
+#       thompson_etal: from Thompson, Quataert & Murray 2005
+#
+#   If the disk has a migration trap, its radius must be specified below
+#       to prevent overshooting in coarse grained models. If there is no
+#       trap, set trap_radius = 0. (all BH will eventually accrete onto SMBH)
+#
+# Specify prefix to filenames for input disk model
+disk_model_name = 'sirko_goodman'
+# trap radius in r_g
+trap_radius = 700.
+#
+#
+# Choices about Nuclear Star Cluster Population:
+#
+# Initial conditions assume a Pareto initial mass function (user specifies
+#   peak mass and power law index), a Gaussian initial spin distribution, 
+#   the spin torque condition to align with the AGN disk, & mass accretion 
+#   rate of fully embedded stellar mass black holes in terms of the Eddington
+#   ratio.
+#
+# number of BH in disk to start (int)
+n_bh = 60
+# Mode of initial BH mass distribution in M_sun (peak of Pareto fn) (float)
+mode_mbh_init = 10.
+# Pareto (powerlaw) initial BH mass index (float)
+mbh_powerlaw_index = 2.
+# Maximum initial BH mass in distribution in M_sun (float)
+max_initial_bh_mass = 40.
+# Mean of Gaussian initial spin distribution (zero is good) (float)
+mu_spin_distribution = 0.
+# Sigma of Gaussian initial spin distribution (small is good) (float)
+sigma_spin_distribution = 0.1
+# Spin torque condition: fraction of initial mass required to be accreted
+#   before BH spin is torqued fully into alignment with the AGN disk. 
+#   We don't know for sure but Bogdanovic et al. says between
+#   0.01=1% and 0.1=10% is what is required. (float)
+spin_torque_condition = 0.1
+# Accretion rate of fully embedded stellar mass black hole in units of 
+#   Eddington accretion rate. 1.0=embedded BH accreting at Eddington.
+#   (1 is perfectly reasonable fiducial!) (float)
+frac_Eddington_ratio = 1.0
+#
+# Choices about Nuclear Star Cluster initial orbits:
+#
+# Maximum initial eccentricity (upper bound to initial uniform distribution)
+#   this is ecc around SMBH of single orbiter
+#   want to eventually turn this into some physically motivated thing
+#   for now assuming uniform distribution [0.0 .. max_initial_eccentricity] (float)
+max_initial_eccentricity = 0.3
+#
+# Choices about timing:
+#
+# McFACTS evolves populations once per timestep according to chosen physics
+#   Choose a timestep that allows some things to happen, but not everything
+#   to happen in one timestep. Migration timescale across your disk is a
+#   good fiducial: 10kyr=1.e4 is a reasonable choice in a Sirko & Goodman
+#   disk with a lot of 10Msun BH. Timestep is in units of years. Disk 
+#   lifetime is set by choosing your number of timesteps:
+#   lifetime = timestep * number_of_timesteps
+# 
+# timestep in years (float)
+timestep = 1.e4
+# For timestep=1.e4, number_of_timesteps=100 gives us 1Myr disk lifetime (int)
+number_of_timesteps = 20
 
 Output file : output_mergers.dat
 14 column file listing all mergers from a single run of test1.py
@@ -10,31 +129,84 @@ First row is # short parameter listing
 
     Parameters
     ----------
-    CM : What is this?
-        
-    M : 
-        mass of remnant?
-    chi_eff : 
+    CM : float
+        distance of the center of mass of the binary from the SMBH in r_g at time of merger
+    M : float
+        mass of remnant post-merger (mass loss accounted for?)
+    chi_eff : float
         chi_effective for the merger
-    a_tot : 
-        magnitude of spin of remnant?
-    spin_angle : 
-        spin angle of remnant?
-    m1 :
-        mass of (more massive?) progenitor
-    m2 :
-        mass of (less massive?) progenitor
-    a1 :
-        spin magnitude of m1
-    a2 :
-        spin magnitude of m2
-    theta1 :
-        spin angle of m1
-    theta2 :
-        spin angle of m2
-    gen1 :
-        generation of m1 (before merger)
-    gen2 :
+    a_tot : float
+        dimensionless spin magnitude of remnant
+    spin_angle : float
+        spin angle of remnant (wrt disk angular momentum?) in radians? or degrees?
+    m1 : float
+        mass of progenitor A in solar masses at time of merger (should make this more massive one)
+    m2 : float
+        mass of progenitor B in solar masses at time of merger (should make this less massive one)
+    a1 : float
+        dimensionless spin magnitude of m1 at time of merger
+    a2 : float
+        dimensionless spin magnitude of m2 at time of merger
+    theta1 : float
+        spin angle of m1 (wrt disk angular momentum?) in radians? or degrees?
+    theta2 : float
+        spin angle of m2 (wrt disk angular momentum?) in radians? or degrees?
+    gen1 : int?
+        generation of m1 (before merger) (1=natal BH that has never been in a prior merger)
+    gen2 : int?
         generation of m2 (before merger)
-    t_merge :
-        time of merger after onset of AGN (assumed to appear magically at t=0)
+    t_merge : float
+        time of merger after onset of AGN in units of years? (disk assumed to appear magically at t=0)
+
+
+Output file : output_bh_single_ts.dat
+5 column file listing all single orbiters appearing at beginning? of timestep ts in a single run of test1.py
+ts = [0:N] where N = number_of_timesteps from input file
+First row is # short parameter listing
+    r_bh : float
+        distance of object from SMBH in units of r_g at start? of timestep ts
+    m : float
+        mass of object in solar masses at start? of timestep ts
+    a : float
+        dimensionless spin magnitude of object at start? of timestep ts
+    theta : float
+        spin angle of object (wrt disk angular momentum?) in radians?
+    gen : int?
+        generation of object (1=natal BH that has never been in a prior merger)
+
+Output file : output_bh_binary_ts.dat
+16 column file listing all binaries appearing at beginning? of timestep ts in a single run of test1.py
+ts = [0:N] where N = number_of_timesteps from input file
+First row is # short parameter listing
+    R1 : float
+        ?distance of progenitor A from SMBH in units of r_g at start? of timestep ts
+    R2 : float
+        ?distance of progenitor B from SMBH in units of r_g at start? of timestep ts
+    M1 : float
+        mass of progenitor A in solar masses at start? of timestep ts
+    M2 : float
+        mass of progenitor B in solar masses at start? of timestep ts
+    a1 : float
+        dimensionless spin magnitude of M1 at start? of timestep ts
+    a2 : float
+        dimensionless spin magnitude of M2 at start? of timestep ts
+    theta1 : float
+        spin angle of M1 (wrt disk angular momentum?) in radians?
+    theta2 : float
+        spin angle of M2 (wrt disk angular momentum?) in radians?
+    sep : float
+        separation of M1 and M2 in units of r_g_bin (if yes, define)??? at start? of timestep ts
+    com : float
+        ?distance of the center of mass of the binary from SMBH in units of r_g at start? of timestep ts
+    t_gw : float
+        time to binary merger due to purely GW-driven evolution in units of seconds? at start? of timestep ts (Peters formula, put it in here?)
+    merger_flag : int?
+        ?flag to indicate this binary will merge in less than duration ts of timestep (1 or 0???)
+    t_mgr : float?
+        time of merger???
+    gen_1 : int?
+        generation of M1 (1=natal BH that has never been in a prior merger)
+    gen_2 : int?
+        generation of M2
+    bin_ang_mom : float?
+        Orbital angular momentum of the binary--is this an angle? units??? help?

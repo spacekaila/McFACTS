@@ -32,7 +32,7 @@ mass_smbh = 1.e8
 #
 # Specify prefix to filenames for input disk model
 disk_model_name = 'sirko_goodman'
-# trap radius
+# trap radius in r_g
 trap_radius = 700.
 #
 #
@@ -44,26 +44,26 @@ trap_radius = 700.
 #   rate of fully embedded stellar mass black holes in terms of the Eddington
 #   ratio.
 #
-# number of BH in disk to start
+# number of BH in disk to start (int)
 n_bh = 60
-# Mode of initial BH mass distribution in M_sun (peak of Pareto fn)
+# Mode of initial BH mass distribution in M_sun (peak of Pareto fn) (float)
 mode_mbh_init = 10.
-# Pareto (powerlaw) initial BH mass index
+# Pareto (powerlaw) initial BH mass index (float)
 mbh_powerlaw_index = 2.
-# Maximum initial BH mass in distribution in M_sun
+# Maximum initial BH mass in distribution in M_sun (float)
 max_initial_bh_mass = 40.
-# Mean of Gaussian initial spin distribution (zero is good)
+# Mean of Gaussian initial spin distribution (zero is good) (float)
 mu_spin_distribution = 0.
-# Sigma of Gaussian initial spin distribution (small is good)
+# Sigma of Gaussian initial spin distribution (small is good) (float)
 sigma_spin_distribution = 0.1
 # Spin torque condition: fraction of initial mass required to be accreted
 #   before BH spin is torqued fully into alignment with the AGN disk. 
 #   We don't know for sure but Bogdanovic et al. says between
-#   0.01=1% and 0.1=10% is what is required.
+#   0.01=1% and 0.1=10% is what is required. (float)
 spin_torque_condition = 0.1
 # Accretion rate of fully embedded stellar mass black hole in units of 
 #   Eddington accretion rate. 1.0=embedded BH accreting at Eddington.
-#   (1 is perfectly reasonable fiducial!)
+#   (1 is perfectly reasonable fiducial!) (float)
 frac_Eddington_ratio = 1.0
 #
 # Choices about Nuclear Star Cluster initial orbits:
@@ -71,7 +71,7 @@ frac_Eddington_ratio = 1.0
 # Maximum initial eccentricity (upper bound to initial uniform distribution)
 #   this is ecc around SMBH of single orbiter
 #   want to eventually turn this into some physically motivated thing
-#   for now assuming uniform distribution [0.0 .. max_initial_eccentricity]
+#   for now assuming uniform distribution [0.0 .. max_initial_eccentricity] (float)
 max_initial_eccentricity = 0.3
 #
 # Choices about timing:
@@ -84,7 +84,7 @@ max_initial_eccentricity = 0.3
 #   lifetime is set by choosing your number of timesteps:
 #   lifetime = timestep * number_of_timesteps
 # 
-# timestep in years
+# timestep in years (float)
 timestep = 1.e4
-# For timestep=1.e4, number_of_timesteps=100 gives us 1Myr disk lifetime
+# For timestep=1.e4, number_of_timesteps=100 gives us 1Myr disk lifetime (int)
 number_of_timesteps = 20
