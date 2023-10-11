@@ -74,7 +74,7 @@ def main():
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro \
+                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, \
                      = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
