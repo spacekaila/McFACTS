@@ -34,8 +34,25 @@ def merged_mass(mass_1,mass_2,spin_1,spin_2):
     nu =  (primary* secondary)/ (total_mass)**2 # mass_ratio/nu_factor
     nusq = nu*nu
 
+    #mass_1 = -1
+    #mass_2 = -1
+    #if isinstance(m1, np.ndarray):
+    # if len(m1.shape) >0:
+    #    mass_1 = m1[0]
+    #    mass_2 = m2[0]
+    #    total_spin = spin_1[0] + spin_2[0]
+    #else:
+    #    mass_1 = m1
+    #    mass_2 = m2
+    #    total_mass = mass_1 + mass_2
+    #    total_spin=spin_1 + spin_2
+
+    #print(" Mass array ",mass_1 + mass_2)
+    #nu =  (mass_1* mass_2)/ (mass_1+mass_2)**2 # mass_ratio/nu_factor
+    #nusq = nu*nu
+
     mass_factor = 1.0-(0.2*nu)-(0.208*nusq*total_spin)
-    merged_mass = (mass_1+mass_2)*mass_factor
+    merged_mass = (total_mass)*mass_factor
     return merged_mass
 
 
