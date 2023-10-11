@@ -43,7 +43,7 @@ timestep = 1.e4
 # For timestep=1.e4, number_of_timesteps=100 gives us 1Myr disk lifetime
 number_of_timesteps = 100
 #
-# Other physics choices:
+# Other physics choices: 
 #
 # retrograde binaries on/off switch
 retro = 0
