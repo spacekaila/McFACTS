@@ -40,7 +40,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     max_initial_eccentricity = input_variables['max_initial_eccentricity']
     timestep = input_variables['timestep']
     number_of_timesteps = input_variables['number_of_timesteps']
-
+    retro = input_variables['retro']
     print("I put your variables where they belong")
 
     # open the disk model surface density file and read it in
@@ -102,7 +102,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
         mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
             spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                 timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                    disk_outer_radius, surface_density_array, aspect_ratio_array
+                    disk_outer_radius, surface_density_array, aspect_ratio_array, retro \
 
 
 
@@ -180,6 +180,8 @@ def ReadInputs():
     aspect_ratio_array : float array
         Aspect ratio corresponding to radii in disk_model_radius_array
         drawn from modelname_aspect_ratio.txt
+    retro : int
+        Switch (0) turns retrograde BBH into prograde BBH at formation to test (q,X_eff) relation   
 
     """
 

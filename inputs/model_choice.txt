@@ -17,7 +17,7 @@ trap_radius = 700.
 # Nuclear Star Cluster Population:
 #
 # number of BH in disk to start
-n_bh = 60
+n_bh = 200
 # Mode of initial BH mass distribution in M_sun (peak of Pareto fn)
 mode_mbh_init = 10.
 # Pareto (powerlaw) initial BH mass index
