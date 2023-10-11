@@ -104,11 +104,9 @@ def main():
     bh_initial_generations = np.ones((n_bh,),dtype=int)
 
     #3.a Test migration of prograde BH
-    # Disk surface density (assume constant for test)
-    #BARRY: yeah we got fancy options now, let's use them???
-    #disk_surface_density = 1.e5
+    # Disk surface density (in kg/m^2) is a function of radius, where radius is in r_g
     disk_surface_density = surf_dens_func
-    # and disk aspect ratio
+    # and disk aspect ratio is also a function of radius, where radius is in r_g
     disk_aspect_ratio = aspect_ratio_func
     #Housekeeping: Set up time
     initial_time = 0.0
