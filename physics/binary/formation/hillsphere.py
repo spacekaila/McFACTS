@@ -57,16 +57,41 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
 
     new_indx_in = list(range(2*len(index_in)))
     new_indx_out = list(range(2*len(index_out)))
+    #new_indx_in_bin_array = np.array[2*len(index_in),2]
+    #temp_new_bin_array = np.ndarray[2*length_index_in,2]
 
     for ind in range(length_index_in):
         temp_index = index_in[ind]
-        new_indx_in[ind] = temp_index
-        new_indx_in[ind+1] = temp_index+1
+        new_indx_in[2*ind] = temp_index
+        new_indx_in[(2*ind)+1] = temp_index+1
+    #    temp_new_bin_array = 
+    print("new_indx_in",new_indx_in)
+    temp_new_bin_in_array=np.reshape(new_indx_in,(len(index_in),2))
+    print("ordered as bins",temp_new_bin_in_array)
+    # Dynamics Here! Potential Double-binary or triple interaction!
+    # For now! 
+    # 0. Construct array of pairs of indices.
+    # 1. Select binaries based on distance
+    #     For binaries [i-1,i], [i,i+1] compare distance r(i)-r(i-1) to r(i+1)-r(i) and select smallest.
+    #     Remove larger distane pair. E.g. if [i+1,i] is smaller, remove [i-1,i]
+    #    But want to calculate 
+    # 2. Fractional R_Hill for [i-1,i] vs [i,i+1]. Smaller fractional Hill radius wins
+    # 3. TO DO Write a module for DiLaurentii+22 or Rowan+22 or LANL+22 phase space encounter and apply to all encounters 
+    #          over timestep (10kyrs; assume random phase & number of encounters during timestep; pick randomly 
+    #          from phase plots.) Also look at LANL group papers on binding energy of encounter.
+    # 4. Ideally, consider the triple-dynamics encounter 
+
+#    for j in range(2*len(index_in)):    
+#        temp_bin_in = new_indx_in_bin_array[temp_index[]]
    
     for ind in range(length_index_out):
         temp_index = index_out[ind]
-        new_indx_out[ind] = temp_index
-        new_indx_out[ind+1] = temp_index+1
+        new_indx_out[2*ind] = temp_index
+        new_indx_out[(2*ind)+1] = temp_index+1
+
+    print("new_indx_out",new_indx_out)    
+    temp_new_bin_out_array=np.reshape(new_indx_out,(len(index_out),2))
+    print("ordered as bins",temp_new_bin_out_array)
 
     new_indxs = new_indx_in+new_indx_out
     #rindx = np.sort(new_indxs)
@@ -75,11 +100,12 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
 
     new_result = np.asarray(new_indx_out)
     sorted_out_result = np.sort(new_result)
-
+    print("sorted in result",sorted_in_result)
+    print("sorted out result",sorted_out_result)
     # Concatenate the two lists, and remove duplicates
     final_bin_indices = np.array(list(set(list(sorted_in_result) + list(sorted_out_result))))
     sorted_final_bin_indices = np.sort(final_bin_indices)
-
+    print("total final bin indices",sorted_final_bin_indices)
     #print("check if sorted_in & sorted_out arrays are the same")
     check = np.array_equiv(sorted_in_result, sorted_out_result)
     #print(check)

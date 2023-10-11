@@ -74,7 +74,7 @@ def main():
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array \
+                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro \
                      = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
@@ -91,11 +91,8 @@ def main():
     #                  disk_outer_radius, surface_density_array, aspect_ratio_array \
     #                     = ReadInputs.ReadInputs()
     
-    # BARRY: WHAT FRESH HELL IS THIS? THERE ARE INTEGER NUMBER OF BH!
-    # All of them should be in integer usage and will prob improve speed/memory usage
-    # Is there some reason I should not change this for all of them forever?
-    integer_nbh = int(n_bh)
-    print(" Number of BHs ", integer_nbh,n_bh)
+    
+    print(" Number of BHs ", n_bh)
 
     print("Generate initial BH parameter arrays")
     bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(n_bh, disk_outer_radius)
@@ -104,7 +101,7 @@ def main():
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
     #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
-    bh_initial_generations = np.ones((integer_nbh,),dtype=int)
+    bh_initial_generations = np.ones((n_bh,),dtype=int)
 
     #3.a Test migration of prograde BH
     # Disk surface density (assume constant for test)
@@ -124,7 +121,7 @@ def main():
     prograde_bh_locations = bh_initial_locations[prograde_orb_ang_mom_indices]
     sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
     print("Sorted prograde BH locations:", len(sorted_prograde_bh_locations), len(prograde_bh_locations))
-#    print(sorted_prograde_bh_locations)
+    print(sorted_prograde_bh_locations)
 
     #b. Test accretion onto prograde BH
     # Housekeeping: Fractional rate of mass growth per year at 
@@ -159,7 +156,7 @@ def main():
     test_bin_number = n_bins_max
     integer_test_bin_number = int(test_bin_number)
     number_of_mergers = 0
-    int_num_mergers = int(number_of_mergers)
+    #int_num_mergers = int(number_of_mergers)
 
     #Set up empty initial Binary array
     #Initially all zeros, then add binaries plus details as appropriate
@@ -185,7 +182,7 @@ def main():
     time_passed = initial_time
     print("Initial Time(yrs) = ",time_passed)
 
-    n_mergers_so_far=0
+    n_mergers_so_far = 0
     n_timestep_index = 0
     while time_passed < final_time:
         # Record 
@@ -211,6 +208,7 @@ def main():
         #Test for encounters within Hill sphere
         print("Time passed", time_passed)
         print("Number of binaries=", bin_index)
+        #print("Initial binary array", binary_bh_array)
         #If binary exists, harden it. Add a thing here.
         if bin_index > 0:
             #Evolve binaries. 
@@ -249,7 +247,7 @@ def main():
                 merged_spin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
                 merged_chi_eff = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
 #                merged_bh_rec_array = mergerfile.extend_rec_merged_bh(merged_bh_rec_array, n_mergers_so_far,  merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
-                merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
+                merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,n_mergers_so_far)
                 
                 
 
@@ -322,7 +320,7 @@ def main():
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
                 sorted_prograde_bh_location_indices = np.argsort(prograde_bh_locations)
                 number_of_new_bins = (len(close_encounters))/2            
-                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index)
+                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index, retro)
                 bin_index = bin_index + number_of_new_bins
                 bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
                 bh_spins_by_sorted_location = prograde_bh_spins[sorted_prograde_bh_location_indices]
