@@ -33,7 +33,7 @@ star cluster variables second, and assorted other choices (time resolution etc.)
            default : 'sirko_goodman'
     trap_radius : float
         If the disk has a migration trap, its radius must be specified here 
-            in units of graviatational radii (r_g=GM_SMBH/c^2) of the SMBH
+            in units of graviatational radii (R_g=GM_SMBH/c^2) of the SMBH
             to prevent overshooting in coarse grained models. If there is no
             trap, set trap_radius = 0. (all BH will eventually accrete onto SMBH)
             see Bellovary et al. 2016 for locations of sirko_goodman or thompson_etal
@@ -172,8 +172,10 @@ First row is # short parameter listing
         time to binary merger due to purely GW-driven evolution in units of seconds? at start of timestep ts (Peters formula, put it in here?)
     merger_flag : int
         flag to indicate this binary will merge in less than duration ts of timestep given the Baruteau time to merger is less than ts (-2 will merge, 0 will not merge)
-    t_mgr : float?
-        time of merger???
+    t_mgr : float
+        time of merger in years? since t=0 (start of AGN phase)
+    mystery variable : FuckKnows
+        unlabelled... seriously, this is never actually set anywhere... placeholder for eccentricity?
     gen_1 : int
         generation of M1 (1=natal BH that has never been in a prior merger)
     gen_2 : int
