@@ -93,6 +93,28 @@ def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_conditio
     return bin_array
 
 def com_migration(bin_array, disk_surf_model, disk_aspect_ratio_model, timestep, integer_nbinprop, bin_index):
+    """_summary_
+
+    Parameters
+    ----------
+    bin_array : _type_
+        _description_
+    disk_surf_model : _type_
+        _description_
+    disk_aspect_ratio_model : _type_
+        _description_
+    timestep : _type_
+        _description_
+    integer_nbinprop : _type_
+        _description_
+    bin_index : _type_
+        _description_
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     # !!!This should be re-written to do computations NOT in the loop 
     # (especially the surface density & aspect ratio)
     # Saavik has some worries about the functional forms working correctly
