@@ -40,7 +40,7 @@ def extend_rec_merged_bh(merged_rec_array, n_mergers_so_far, merger_indices,chi,
     return merged_rec_array
 
 
-def merged_bh(merged_array,bin_array, merger_indices_here,merged_chi_eff,merged_mass,merged_spin,nprops_mergers,num_mergers):
+def merged_bh(merged_array,bin_array, merger_indices_here,chi_here,mass_here,spin_here,nprops_mergers,num_mergers):
     """
     Recording merger event.  Designed only to handle one event at a time, with hardcoded labels
     """
