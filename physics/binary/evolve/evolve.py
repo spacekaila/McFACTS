@@ -194,6 +194,65 @@ def com_migration(bin_array, disk_surf_model, disk_aspect_ratio_model, timestep,
 
     return bin_array
 
+def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model, timestep):
+    """This function calculates how far the center of mass of a binary migrates in an AGN gas disk in a time
+    of length timestep, assuming a gas disk surface density and aspect ratio profile, for
+    objects of specified masses and starting locations, and returns their new locations
+    after migration over one timestep.
 
+    This function replaces com_migration which did not include smbh mass and was unreadable.
 
+    Parameters
+    ----------
+    mass_smbh : float
+        mass of supermassive black hole in units of solar masses
+    bin_array : 2d float array (?)
+        Bane of my existence, giant pain in the ass. All the binary parameters hacked into one.
+    disk_surf_model : function
+        returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
+        can accept a simple float (constant), but this is deprecated
+    disk_aspect_ratio_model : function
+        returns AGN gas disk aspect ratio given a distance from the SMBH in r_g
+        can accept a simple float (constant), but this is deprecated
+    timestep : float
+        size of timestep in years
 
+    Returns
+    -------
+    bin_array : 2d float array (?)
+        Bane of my existence, giant pain in the ass. All the binary parameters hacked into one.
+    """
+    
+    # get locations of center of mass of binary from bin_array
+    bin_com = bin_array[9,:]
+    # get masses of each binary by adding their component masses
+    bin_mass = bin_array[2,:] + bin_array[3,:]
+    # get surface density function, or deal with it if only a float
+    if isinstance(disk_surf_model, float):
+        disk_surface_density = disk_surf_model
+    else:
+        disk_surface_density = disk_surf_model(bin_com)
+    # ditto for aspect ratio
+    if isinstance(disk_aspect_ratio_model, float):
+        disk_aspect_ratio = disk_aspect_ratio_model
+    else:
+        disk_aspect_ratio = disk_aspect_ratio_model(bin_com)
+
+    # compute migration timescale for each binary in seconds
+    # eqn from Paardekooper 2014, rewritten for R in terms of r_g of SMBH = GM_SMBH/c^2
+    # tau = (pi/2) h^2/(q_d*q) * (1/Omega)
+    #   where h is aspect ratio, q is m/M_SMBH, q_d = pi R^2 disk_surface_density/M_SMBH
+    #   and Omega is the Keplerian orbital frequency around the SMBH
+    # here mass_smbh/prograde_bh_masses are both in M_sun, so units cancel
+    # c, G and disk_surface_density in SI units
+    tau_mig = ((disk_aspect_ratio**2)* scipy.constants.c/(2.0*scipy.constants.G) * (mass_smbh/bin_mass) / disk_surface_density) / np.sqrt(bin_com)
+    # ratio of timestep to tau_mig (timestep in years so convert)
+    dt = timestep * scipy.constants.year / tau_mig
+    # migration distance is original locations times fraction of tau_mig elapsed
+    migration_distance = bin_com * dt
+    # new locations are original ones - distance traveled
+    bh_new_locations = bin_com - migration_distance
+    # send locations back to bin_array and DONE!
+    bin_array[9,:] = bh_new_locations
+
+    return bin_array
