@@ -80,6 +80,35 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     #          over timestep (10kyrs; assume random phase & number of encounters during timestep; pick randomly 
     #          from phase plots.) Also look at LANL group papers on binding energy of encounter.
     # 4. Ideally, consider the triple-dynamics encounter 
+    
+    # Search for repeat indices in binary array 
+    unique_element,unique_index,unique_ct = np.unique(temp_new_bin_in_array,return_inverse = True,return_counts = True)
+    print("unique elements",unique_element)
+    print("unique index",unique_index)
+    print("unique_count",unique_ct)
+
+    repeats = unique_ct > 1
+    repeat_indices = unique_element[repeats]
+    print("repeat_indices",repeat_indices)
+    print("separations",separations)
+    print("sorted Hill spheres -last (Rh1,Rh2,..)",sorted_hill_spheres_minus_last)
+    print("difference:")
+    print("separations inward",comparison_distance_inwards)
+    print("separations outward",comparison_distance_outwards)
+    print("separations inward (repeat_indices)",comparison_distance_inwards[repeat_indices])
+    print("separations outward (repeat indices)",comparison_distance_outwards[repeat_indices])
+    #Compare nearest neighbour separations for BH in repeat_indices
+    # E.g. separations =[r2-r1,r3-r2,r3-4]. If BH at r2 repeats in binary array 
+    # e.g. bin_array=[[r1,r2] [r2,r3]..] then compare separations[r2-r1] to separations[r3-r2]
+    # If r2-r1 < r3-r2 then make [r1,r2] the binary and remove [r2,r3]
+    
+    #if separations[repeat_indices] < separations[repeat_indices + 1]:
+    #    temp_new_bin_in_array = np.delete(temp_new_bin_in_array,repeat_indices + 1)
+    #    print("temp_bin_array",temp_new_bin_in_array)
+
+#    for j in range(2*len(index_in)):    
+#        temp_bin_in = new_indx_in_bin_array[temp_index[]]
+   
 
 #    for j in range(2*len(index_in)):    
 #        temp_bin_in = new_indx_in_bin_array[temp_index[]]
