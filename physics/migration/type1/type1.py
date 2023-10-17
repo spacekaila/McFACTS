@@ -42,7 +42,7 @@ def dr_migration(prograde_bh_locations, prograde_bh_masses, disk_surf_model, dis
         disk_aspect_ratio = disk_aspect_ratio_model
     else:
         disk_aspect_ratio = disk_aspect_ratio_model(prograde_bh_locations)
-    #Normalization for scaling everything
+    # Normalization for scaling everything
     sg_norm = 3.8e7
     #scaled mass= BH mass/lower bound mass (e.g. 5Msun, upper end of lower mass gap)
     scaled_mass = 5.0
