@@ -173,12 +173,16 @@ First row is # short parameter listing
     merger_flag : int
         flag to indicate this binary will merge in less than duration ts of timestep given the Baruteau time to merger is less than ts (-2 will merge, 0 will not merge)
     t_mgr : float
-        time of merger in years? since t=0 (start of AGN phase)
+        time of merger in years since t=0 (start of AGN phase)
     mystery variable : FuckKnows
         unlabelled... seriously, this is never actually set anywhere... placeholder for eccentricity?
     gen_1 : int
         generation of M1 (1=natal BH that has never been in a prior merger)
     gen_2 : int
         generation of M2
-    bin_ang_mom : float?
-        Orbital angular momentum of the binary--is this an angle? units??? help?
+    bin_ang_mom : int
+        Orbital angular momentum of the binary direction; +1=prograde, -1=retrograde
+        This is referring to the orbital angular momentum of the binary around its
+        own center of mass. Check this with Barry.
+        Note binaries that form with bin_ang_mom = -1 will be flipped to +1 if retro = 0
+        switch is set in your input file.
