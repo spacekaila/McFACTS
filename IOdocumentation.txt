@@ -32,7 +32,8 @@ star cluster variables second, and assorted other choices (time resolution etc.)
            Here name = disk_model_name
            default : 'sirko_goodman'
     trap_radius : float
-        If the disk has a migration trap, its radius must be specified here
+        If the disk has a migration trap, its radius must be specified here 
+            in units of graviatational radii (R_g=GM_SMBH/c^2) of the SMBH
             to prevent overshooting in coarse grained models. If there is no
             trap, set trap_radius = 0. (all BH will eventually accrete onto SMBH)
             see Bellovary et al. 2016 for locations of sirko_goodman or thompson_etal
@@ -101,13 +102,13 @@ First row is # short parameter listing
     CM : float
         distance of the center of mass of the binary from the SMBH in r_g at time of merger
     M : float
-        mass of remnant post-merger (mass loss accounted for?)
+        mass of remnant post-merger (mass loss accounted for via Tichy & Maronetti 08)
     chi_eff : float
         chi_effective for the merger
     a_tot : float
         dimensionless spin magnitude of remnant
     spin_angle : float
-        spin angle of remnant (wrt disk angular momentum?) in radians? or degrees?
+        spin angle of remnant (wrt disk angular momentum) in radians
     m1 : float
         mass of progenitor A in solar masses at time of merger (should make this more massive one)
     m2 : float
@@ -117,15 +118,15 @@ First row is # short parameter listing
     a2 : float
         dimensionless spin magnitude of m2 at time of merger
     theta1 : float
-        spin angle of m1 (wrt disk angular momentum?) in radians? or degrees?
+        spin angle of m1 (wrt disk angular momentum) in radians
     theta2 : float
-        spin angle of m2 (wrt disk angular momentum?) in radians? or degrees?
-    gen1 : int?
+        spin angle of m2 (wrt disk angular momentum) in radians
+    gen1 : int
         generation of m1 (before merger) (1=natal BH that has never been in a prior merger)
-    gen2 : int?
+    gen2 : int
         generation of m2 (before merger)
     t_merge : float
-        time of merger after onset of AGN in units of years? (disk assumed to appear magically at t=0)
+        time of merger after onset of AGN in units of years (disk assumed to appear magically at t=0)
 
 
 Output file : output_bh_single_ts.dat
@@ -133,14 +134,14 @@ Output file : output_bh_single_ts.dat
 ts = [0:N] where N = number_of_timesteps from input file
 First row is # short parameter listing
     r_bh : float
-        distance of object from SMBH in units of r_g at start? of timestep ts
+        distance of object from SMBH in units of r_g at start of timestep ts
     m : float
-        mass of object in solar masses at start? of timestep ts
+        mass of object in solar masses at start of timestep ts
     a : float
-        dimensionless spin magnitude of object at start? of timestep ts
+        dimensionless spin magnitude of object at start of timestep ts
     theta : float
-        spin angle of object (wrt disk angular momentum?) in radians?
-    gen : int?
+        spin angle of object (wrt disk angular momentum) in radians
+    gen : int
         generation of object (1=natal BH that has never been in a prior merger)
 
 Output file : output_bh_binary_ts.dat
@@ -148,34 +149,40 @@ Output file : output_bh_binary_ts.dat
 ts = [0:N] where N = number_of_timesteps from input file
 First row is # short parameter listing
     R1 : float
-        ?distance of progenitor A from SMBH in units of r_g at start? of timestep ts
+        distance of progenitor A from SMBH in units of r_g_SMBH at start of timestep ts
     R2 : float
-        ?distance of progenitor B from SMBH in units of r_g at start? of timestep ts
+        distance of progenitor B from SMBH in units of r_g_SMBH at start of timestep ts
     M1 : float
-        mass of progenitor A in solar masses at start? of timestep ts
+        mass of progenitor A in solar masses at start of timestep ts
     M2 : float
-        mass of progenitor B in solar masses at start? of timestep ts
+        mass of progenitor B in solar masses at start of timestep ts
     a1 : float
-        dimensionless spin magnitude of M1 at start? of timestep ts
+        dimensionless spin magnitude of M1 at start of timestep ts
     a2 : float
-        dimensionless spin magnitude of M2 at start? of timestep ts
+        dimensionless spin magnitude of M2 at start of timestep ts
     theta1 : float
-        spin angle of M1 (wrt disk angular momentum?) in radians?
+        spin angle of M1 (wrt disk angular momentum) in radians
     theta2 : float
-        spin angle of M2 (wrt disk angular momentum?) in radians?
+        spin angle of M2 (wrt disk angular momentum) in radians
     sep : float
-        separation of M1 and M2 in units of r_g_bin (if yes, define)??? at start? of timestep ts
+        separation of M1 and M2 in units of r_g_SMBH at start of timestep ts
     com : float
-        ?distance of the center of mass of the binary from SMBH in units of r_g at start? of timestep ts
+        distance of the center of mass of the binary from SMBH in units of r_g_SMBH at start of timestep ts
     t_gw : float
-        time to binary merger due to purely GW-driven evolution in units of seconds? at start? of timestep ts (Peters formula, put it in here?)
-    merger_flag : int?
-        ?flag to indicate this binary will merge in less than duration ts of timestep (1 or 0???)
-    t_mgr : float?
-        time of merger???
-    gen_1 : int?
+        time to binary merger due to purely GW-driven evolution in units of seconds? at start of timestep ts (Peters formula, put it in here?)
+    merger_flag : int
+        flag to indicate this binary will merge in less than duration ts of timestep given the Baruteau time to merger is less than ts (-2 will merge, 0 will not merge)
+    t_mgr : float
+        time of merger in years since t=0 (start of AGN phase)
+    mystery variable : FuckKnows
+        unlabelled... seriously, this is never actually set anywhere... placeholder for eccentricity?
+    gen_1 : int
         generation of M1 (1=natal BH that has never been in a prior merger)
-    gen_2 : int?
+    gen_2 : int
         generation of M2
-    bin_ang_mom : float?
-        Orbital angular momentum of the binary--is this an angle? units??? help?
+    bin_ang_mom : int
+        Orbital angular momentum of the binary direction; +1=prograde, -1=retrograde
+        This is referring to the orbital angular momentum of the binary around its
+        own center of mass. Check this with Barry.
+        Note binaries that form with bin_ang_mom = -1 will be flipped to +1 if retro = 0
+        switch is set in your input file.
