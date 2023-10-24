@@ -212,6 +212,8 @@ def main():
             #Evolve binaries. 
             #Migrate binaries
             binary_bh_array = evolve.com_migration(binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, integer_nbinprop, bin_index)
+            # This is the new function but has not yet been tested; should replace com_migration line above, when checked
+            #binary_bh_array = evolve.bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model, timestep)
             #Accrete gas onto binaries
             binary_bh_array = evolve.change_bin_mass(binary_bh_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index)
             #Spin up binary components
