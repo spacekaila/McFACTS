@@ -337,7 +337,7 @@ def main():
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
                 sorted_prograde_bh_location_indices = np.argsort(prograde_bh_locations)
                 number_of_new_bins = (len(close_encounters)) // 2
-                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index)
+                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index, retro)
                 bin_index = bin_index + number_of_new_bins
                 bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
                 bh_spins_by_sorted_location = prograde_bh_spins[sorted_prograde_bh_location_indices]
