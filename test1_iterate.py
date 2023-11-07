@@ -31,6 +31,7 @@ from outputs import mergerfile
 verbose=False
 n_bins_max = 1000
 n_bins_max_out = 100
+number_of_iterations = 2
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom"
 merger_field_names=' '.join(mergerfile.names_rec)
 
@@ -107,6 +108,11 @@ def main():
 
 
     for iteration in range(number_of_iterations):
+
+        # can index other parameter lists here if needed.
+        # galaxy_type = galaxy_models[iteration] # e.g. star forming/spiral vs. elliptical
+
+
 
         print("Generate initial BH parameter arrays")
         bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(n_bh, disk_outer_radius)
@@ -368,13 +374,13 @@ def main():
             
         np.savetxt(opts.fname_output_mergers, merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
-        pop_bh_initial_masses.append(bh_initial_masses)
-        pop_prograde_bh_locations.append(prograde_bh_locations)
-        pop_prograde_bh_masses.append(prograde_bh_masses)
-        pop_prograde_bh_spins.append(prograde_bh_spins)
-        pop_prograde_bh_spin_angles.append(prograde_bh_spin_angles)
-        pop_merged_bh_array.append(merged_bh_array)
-        pop_binary_bh_array.append(binary_bh_array)
+        pop_bh_initial_masses.append(bh_initial_masses.T)
+        pop_prograde_bh_locations.append(prograde_bh_locations.T)
+        pop_prograde_bh_masses.append(prograde_bh_masses.T)
+        pop_prograde_bh_spins.append(prograde_bh_spins.T)
+        pop_prograde_bh_spin_angles.append(prograde_bh_spin_angles.T)
+        pop_merged_bh_array.append(merged_bh_array.T)
+        pop_binary_bh_array.append(binary_bh_array.T)
         pop_number_of_mergers.append(number_of_mergers)
 
 
@@ -382,7 +388,7 @@ def main():
     numbins = 100
     plt.hist(bh_initial_masses, bins=numbins, align='left', label='Initial', color='grey', alpha=0.5)
     plt.hist(bh_masses_by_sorted_location, bins=numbins, align='left', label='Final', color='purple', alpha=0.5)
-    plt.hist(binary_bh_array[2:4,:bin_index], bins=numbins, align='left', label='Final', color=['purple'], alpha=0.5)
+    # plt.hist(binary_bh_array[2:4,:bin_index], bins=numbins, align='left', label='Final', color=['purple'], alpha=0.5)
     plt.title(f'Black Hole Mass Evolution Over {final_time:.1e} years\n'+
               f'Number of Mergers: {number_of_mergers}')
     plt.ylabel('Number')
@@ -391,16 +397,17 @@ def main():
     # plt.savefig("./mass_evolution.png", format='png')
     plt.close()
     
-
-    print(len(pop_prograde_bh_locations))
-    print(len(pop_bh_initial_masses))
-    print(len(pop_prograde_bh_locations))
-    print(len(pop_prograde_bh_masses))
-    print(len(pop_prograde_bh_spins))
-    print(len(pop_prograde_bh_spin_angles))
-    print(len(pop_merged_bh_array))
-    print(len(pop_binary_bh_array))
-    print(len(pop_number_of_mergers))
+    print('Merger Population')
+    print(np.asarray(pop_merged_bh_array))
+    # print(len(pop_prograde_bh_locations))
+    # print(len(pop_bh_initial_masses))
+    # print(len(pop_prograde_bh_locations))
+    # print(len(pop_prograde_bh_masses))
+    # print(len(pop_prograde_bh_spins))
+    # print(len(pop_prograde_bh_spin_angles))
+    # print(len(pop_merged_bh_array))
+    # print(len(pop_binary_bh_array))
+    # print(len(pop_number_of_mergers))
     
     # Plot Inital and Final Positions as function of mass
     # plt.scatter(sorted_prograde_bh_locations, bh_masses_by_sorted_location)
