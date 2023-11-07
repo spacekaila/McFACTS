@@ -111,7 +111,8 @@ def main():
 
         # can index other parameter lists here if needed.
         # galaxy_type = galaxy_models[iteration] # e.g. star forming/spiral vs. elliptical
-
+        # NSC mass
+        # SMBH mass
 
 
         print("Generate initial BH parameter arrays")
