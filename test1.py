@@ -14,7 +14,7 @@ from setup import setupdiskblackholes
 from physics.migration.type1 import type1
 from physics.accretion.eddington import changebhmass
 from physics.accretion.torque import changebh
-#from physics.feedback import hankla22
+from physics.feedback.hankla21 import feedback_hankla21
 #from physics.dynamics import wang22
 from physics.binary.formation import hillsphere
 from physics.binary.formation import add_new_binary
@@ -70,11 +70,11 @@ def main():
     fname = 'inputs/model_choice.txt'
     if opts.use_ini:
         fname = opts.use_ini
-    mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
+    mass_smbh, trap_radius, disk_outer_radius, alpha, n_bh, mode_mbh_init, max_initial_bh_mass, \
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, \
+                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback\
                      = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
@@ -193,7 +193,10 @@ def main():
             np.savetxt("output_bh_binary_{}.dat".format(n_timestep_index),binary_bh_array[:,:n_mergers_so_far+1].T,header=binary_field_names)
             n_timestep_index +=1
 
+        
         #Migrate
+        # First find ratio of feedback heating torque to migration torque
+        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio)
         prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep)
         #Accrete
         prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)

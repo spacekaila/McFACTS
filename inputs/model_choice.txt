@@ -12,7 +12,10 @@ mass_smbh = 1.e8
 disk_model_name = 'sirko_goodman'
 # trap radius in r_g
 trap_radius = 700.
-#
+# disk outer radius in r_g
+disk_outer_radius = 50000.
+# disk alpha parameter (viscosity parameter, alpha=0.01 in sirko_goodman)
+alpha = 0.01
 #
 # Nuclear Star Cluster Population:
 #
@@ -47,3 +50,5 @@ number_of_timesteps = 6
 #
 # retrograde binaries on/off switch
 retro = 0
+# feedback on/off switch
+feedback = 0
