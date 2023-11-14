@@ -1,3 +1,6 @@
+import os
+import pathlib
+
 from cgi import print_arguments
 import numpy as np
 import math
@@ -41,8 +44,16 @@ parser.add_argument("--fname-output-mergers",default="output_mergers.dat",help="
 parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(index).dat",help="output of BH index file ")
 parser.add_argument("--no-snapshots", action='store_true')
 parser.add_argument("--verbose",action='store_true')
+parser.add_argument("-w", "--workdir", default=pathlib.Path().resolve(), help="Set the working directory for saving output. Default: This file\'s location", type=str)
 opts=  parser.parse_args()
 verbose=opts.verbose
+
+workdir = opts.workdir
+try: # check if working directory for output exists
+    os.stat(opts.workdir)
+except FileNotFoundError as e:
+    raise e
+print(f"Output will be saved to {opts.workdir}")
 
 def main():
     """
@@ -188,9 +199,9 @@ def main():
             n_bh_out_size = len(prograde_bh_locations)
             svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations[:n_bh_out_size]]))
             # Single output:  does work
-            np.savetxt("output_bh_single_{}.dat".format(n_timestep_index), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T,prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta gen")
+            np.savetxt(os.path.join(workdir, "output_bh_single_{}.dat".format(n_timestep_index)), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T,prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta gen")
             # Binary output: does not work
-            np.savetxt("output_bh_binary_{}.dat".format(n_timestep_index),binary_bh_array[:,:n_mergers_so_far+1].T,header=binary_field_names)
+            np.savetxt(os.path.join(workdir, "output_bh_binary_{}.dat".format(n_timestep_index)), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
             n_timestep_index +=1
 
         #Migrate
@@ -352,7 +363,7 @@ def main():
     if True and number_of_mergers > 0: #verbose:
         print(merged_bh_array[:,:number_of_mergers].T)
         
-    np.savetxt(opts.fname_output_mergers, merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
+    np.savetxt(os.path.join(workdir, opts.fname_output_mergers), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
 
 if __name__ == "__main__":
