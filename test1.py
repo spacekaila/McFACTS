@@ -44,22 +44,21 @@ parser.add_argument("--fname-output-mergers",default="output_mergers.dat",help="
 parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(index).dat",help="output of BH index file ")
 parser.add_argument("--no-snapshots", action='store_true')
 parser.add_argument("--verbose",action='store_true')
-parser.add_argument("-w", "--workdir", default=pathlib.Path().parent.resolve(), help="Set the working directory for saving output. Default: current working directory", type=str)
+parser.add_argument("-w", "--work-directory", default=pathlib.Path().parent.resolve(), help="Set the working directory for saving output. Default: current working directory", type=str)
 opts=  parser.parse_args()
 verbose=opts.verbose
 
 # Get the parent path to this file and cd to that location for runtime
-runtimedir = pathlib.Path(__file__).parent.resolve()
-os.chdir(runtimedir)
-print("Runtime directory:", runtimedir)
+runtime_directory = pathlib.Path(__file__).parent.resolve()
+os.chdir(runtime_directory)
 
 # Get the user-defined or default working directory / output location
-workdir = pathlib.Path(opts.workdir).resolve()
+work_directory = pathlib.Path(opts.work_directory).resolve()
 try: # check if working directory for output exists
-    os.stat(workdir)
+    os.stat(work_directory)
 except FileNotFoundError as e:
     raise e
-print(f"Output will be saved to {workdir}")
+print(f"Output will be saved to {work_directory}")
 
 def main():
     """
@@ -205,9 +204,9 @@ def main():
             n_bh_out_size = len(prograde_bh_locations)
             svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations[:n_bh_out_size]]))
             # Single output:  does work
-            np.savetxt(os.path.join(workdir, "output_bh_single_{}.dat".format(n_timestep_index)), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T,prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta gen")
+            np.savetxt(os.path.join(work_directory, "output_bh_single_{}.dat".format(n_timestep_index)), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T,prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta gen")
             # Binary output: does not work
-            np.savetxt(os.path.join(workdir, "output_bh_binary_{}.dat".format(n_timestep_index)), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
+            np.savetxt(os.path.join(work_directory, "output_bh_binary_{}.dat".format(n_timestep_index)), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
             n_timestep_index +=1
 
         #Migrate
@@ -369,7 +368,7 @@ def main():
     if True and number_of_mergers > 0: #verbose:
         print(merged_bh_array[:,:number_of_mergers].T)
         
-    np.savetxt(os.path.join(workdir, opts.fname_output_mergers), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
+    np.savetxt(os.path.join(work_directory, opts.fname_output_mergers), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
 
 if __name__ == "__main__":
