@@ -44,7 +44,7 @@ parser.add_argument("--fname-output-mergers",default="output_mergers.dat",help="
 parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(index).dat",help="output of BH index file ")
 parser.add_argument("--no-snapshots", action='store_true')
 parser.add_argument("--verbose",action='store_true')
-parser.add_argument("-w", "--workdir", default=pathlib.Path().parent.resolve(), help="Set the working directory for saving output. Default: This file\'s location", type=str)
+parser.add_argument("-w", "--workdir", default=pathlib.Path().parent.resolve(), help="Set the working directory for saving output. Default: current working directory", type=str)
 opts=  parser.parse_args()
 verbose=opts.verbose
 
