@@ -37,23 +37,29 @@ n_bins_max_out = 100
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom"
 merger_field_names=' '.join(mergerfile.names_rec)
 
-
+# parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--use-ini",help="Filename of configuration file", default=None)
 parser.add_argument("--fname-output-mergers",default="output_mergers.dat",help="output merger file (if any)")
 parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(index).dat",help="output of BH index file ")
 parser.add_argument("--no-snapshots", action='store_true')
 parser.add_argument("--verbose",action='store_true')
-parser.add_argument("-w", "--workdir", default=pathlib.Path().resolve(), help="Set the working directory for saving output. Default: This file\'s location", type=str)
+parser.add_argument("-w", "--workdir", default=pathlib.Path().parent.resolve(), help="Set the working directory for saving output. Default: This file\'s location", type=str)
 opts=  parser.parse_args()
 verbose=opts.verbose
 
-workdir = opts.workdir
+# Get the parent path to this file and cd to that location for runtime
+runtimedir = pathlib.Path(__file__).parent.resolve()
+os.chdir(runtimedir)
+print("Runtime directory:", runtimedir)
+
+# Get the user-defined or default working directory / output location
+workdir = pathlib.Path(opts.workdir).resolve()
 try: # check if working directory for output exists
-    os.stat(opts.workdir)
+    os.stat(workdir)
 except FileNotFoundError as e:
     raise e
-print(f"Output will be saved to {opts.workdir}")
+print(f"Output will be saved to {workdir}")
 
 def main():
     """
@@ -78,7 +84,7 @@ def main():
     # Setting up automated input parameters
     # see ReadInputs.py for documentation of variable names/types/etc.
 
-    fname = 'inputs/model_choice.txt'
+    fname = "inputs/model_choice.txt"
     if opts.use_ini:
         fname = opts.use_ini
     mass_smbh, trap_radius, n_bh, mode_mbh_init, max_initial_bh_mass, \
