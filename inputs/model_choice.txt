@@ -51,4 +51,4 @@ number_of_timesteps = 6
 # retrograde binaries on/off switch
 retro = 0
 # feedback on/off switch
-feedback = 0
+feedback = 1

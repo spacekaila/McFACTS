@@ -1,6 +1,6 @@
 import numpy as np
 
-def feedback_hankla(prograde_bh_locations, disk_surf_model, frac_Eddington_ratio):
+def feedback_hankla(prograde_bh_locations, disk_surf_model, frac_Eddington_ratio, alpha):
     """_summary_
     This feedback model uses Eqn. 28 in Hankla, Jiang & Armitage (2020)
     which yields the ratio of heating torque to migration torque.
@@ -54,10 +54,11 @@ def feedback_hankla(prograde_bh_locations, disk_surf_model, frac_Eddington_ratio
     #kappa = 10^0.76 cm^2/g = 10^(0.76) (10^-2m)^2/10^-3kg=10^(0.76-1)=10^(-0.24) m^2/kg to match units of Sigma
     kappa = 10**(-0.24)
     #Define alpha parameter for disk in Readinputs.py
-    alpha = 0.01
+    #alpha = 0.01
 
     Ratio_feedback_migration_torque = 0.07 *(1/kappa)* ((alpha)**(-1.5))*frac_Eddington_ratio*np.sqrt(prograde_bh_locations)/disk_surface_density
 
+    print((1/kappa),((alpha)**(-1.5)),frac_Eddington_ratio)
     print("Ratio", Ratio_feedback_migration_torque) 
     print("BH locations", prograde_bh_locations) 
 

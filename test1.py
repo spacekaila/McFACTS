@@ -195,9 +195,14 @@ def main():
 
         
         #Migrate
-        # First find ratio of feedback heating torque to migration torque
-        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio)
-        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep)
+        # First if feedback present, find ratio of feedback heating torque to migration torque
+        print("feedback",feedback)
+        if feedback > 0:
+            ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
+        else:
+            ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
+
+        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques)
         #Accrete
         prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
         #Spin up    
