@@ -196,7 +196,7 @@ def main():
         
         #Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
-        print("feedback",feedback)
+        # print("feedback",feedback)
         if feedback > 0:
             ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
         else:
