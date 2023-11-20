@@ -202,7 +202,7 @@ def main():
         else:
             ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
 
-        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques)
+        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius)
         #Accrete
         prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
         #Spin up    

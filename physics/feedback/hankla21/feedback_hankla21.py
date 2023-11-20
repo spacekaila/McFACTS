@@ -59,7 +59,7 @@ def feedback_hankla(prograde_bh_locations, disk_surf_model, frac_Eddington_ratio
     Ratio_feedback_migration_torque = 0.07 *(1/kappa)* ((alpha)**(-1.5))*frac_Eddington_ratio*np.sqrt(prograde_bh_locations)/disk_surface_density
 
     print((1/kappa),((alpha)**(-1.5)),frac_Eddington_ratio)
-    print("Ratio", Ratio_feedback_migration_torque) 
-    print("BH locations", prograde_bh_locations) 
+    #print("Ratio", Ratio_feedback_migration_torque) 
+    #print("BH locations", prograde_bh_locations) 
 
     return Ratio_feedback_migration_torque  

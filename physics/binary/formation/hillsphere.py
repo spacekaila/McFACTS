@@ -65,9 +65,9 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
         new_indx_in[2*ind] = temp_index
         new_indx_in[(2*ind)+1] = temp_index+1
     #    temp_new_bin_array = 
-    print("new_indx_in",new_indx_in)
+    #print("new_indx_in",new_indx_in)
     temp_new_bin_in_array=np.reshape(new_indx_in,(len(index_in),2))
-    print("ordered as bins",temp_new_bin_in_array)
+    #print("ordered as bins",temp_new_bin_in_array)
     
     test_remove_bin = new_indx_in
     
@@ -93,20 +93,20 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     duplicate_indices,dup_index,dup_ct = np.unique(unique_index, return_inverse = True, return_counts = True)
     rep_idx = dup_ct >1
     dupl_indices = duplicate_indices[rep_idx]
-    print("indices of repeats",dupl_indices)
+    #print("indices of repeats",dupl_indices)
     
 
     #return all those elements that only occur once
     new_array = unique_element[unique_ct == 1]
-    print("new array",new_array)
+    #print("new array",new_array)
     #return the index where the element occurs first e.g. if element 59 occurs at index 9,10 in the array and
     #element 60 occurs at index 11,12, then index returned is =[...8,9,11,13,...]
     unique_values,indices_list = np.unique(temp_new_bin_in_array, return_index=True)
     #unique_values,repeat_indices_list = np.unique(temp_new_bin_in_array, )
-    print("indices list",indices_list)   
+    #print("indices list",indices_list)   
 
     
-    print("repeat_indices",repeat_indices)
+    #print("repeat_indices",repeat_indices)
     #test_remove_bin=np.delete(test_remove_bin,repeat_indices)
     #print("test remove bin",test_remove_bin)
 
@@ -115,19 +115,19 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     temp_dist_outer_bin_in = comparison_distance_inwards[repeat_indices]
     temp_dist_outer_bin_out = comparison_distance_outwards[repeat_indices]
     smallest_sep_outer_bin = np.fmin(temp_dist_outer_bin_in,temp_dist_outer_bin_out)
-    print("outer bin",smallest_sep_outer_bin)
+    #print("outer bin",smallest_sep_outer_bin)
     #Inner bin (i-1,i) here
     temp_dist_in_minus1 = comparison_distance_inwards[repeat_indices-1]
     temp_dist_out_minus1 = comparison_distance_outwards[repeat_indices-1]
     temp_dist_inner_bin = np.fmin(temp_dist_in_minus1,temp_dist_out_minus1)
-    print("inner bin",temp_dist_inner_bin)
+    #print("inner bin",temp_dist_inner_bin)
     #print("repeat_indices",repeat_indices)
     #These are the indices of binaries to be deleted. 
     #element_to_be_kept = np.where(smallest_sep_outer_bin < temp_dist_inner_bin, repeat_indices, repeat_indices + 1)
     #element_to_be_deleted = np.where(smallest_sep_outer_bin > temp_dist_inner_bin,repeat_indices,repeat_indices + 1)
 
     new_test_remove_bin = test_remove_bin
-    print("test_remove_bin",new_test_remove_bin)
+    #print("test_remove_bin",new_test_remove_bin)
     #set up array of indices to be removed
     idx_array=np.zeros(len(2*dupl_indices))
 
@@ -142,7 +142,7 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
             #idx_array[value]=idx - 1
             #idx_array[value+1]=idx
             new_test_remove_bin = np.delete(new_test_remove_bin,remove_indxs)
-            print("test remove",new_test_remove_bin)
+            #print("test remove",new_test_remove_bin)
         else:
             #delete outer bin
             remove_indxs=[idx+1,idx+2]
@@ -151,9 +151,9 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
             #idx_array[value]=idx+2
 
             new_test_remove_bin = np.delete(new_test_remove_bin,remove_indxs)
-            print("test remove",new_test_remove_bin)
+            #print("test remove",new_test_remove_bin)
     
-    print("idx_array",idx_array)
+    #print("idx_array",idx_array)
 
     # Say [10,11,15] Not 9-10;so 10-11 then 13:14.  
     # New=[0:9,11:14,15:end]
@@ -185,9 +185,9 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
         new_indx_out[2*ind] = temp_index
         new_indx_out[(2*ind)+1] = temp_index+1
 
-    print("new_indx_out",new_indx_out)    
+    #print("new_indx_out",new_indx_out)    
     temp_new_bin_out_array=np.reshape(new_indx_out,(len(index_out),2))
-    print("ordered as bins",temp_new_bin_out_array)
+    #print("ordered as bins",temp_new_bin_out_array)
 
     new_indxs = new_indx_in+new_indx_out
     #rindx = np.sort(new_indxs)
@@ -197,12 +197,12 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
 
     new_result = np.asarray(new_indx_out)
     sorted_out_result = np.sort(new_result)
-    print("sorted in result",sorted_in_result)
-    print("sorted out result",sorted_out_result)
+    #print("sorted in result",sorted_in_result)
+    #print("sorted out result",sorted_out_result)
     # Concatenate the two lists, and remove duplicates
     final_bin_indices = np.array(list(set(list(sorted_in_result) + list(sorted_out_result))))
     sorted_final_bin_indices = np.sort(final_bin_indices)
-    print("total final bin indices",sorted_final_bin_indices)
+    #print("total final bin indices",sorted_final_bin_indices)
     #print("check if sorted_in & sorted_out arrays are the same")
     check = np.array_equiv(sorted_in_result, sorted_out_result)
     #print(check)
@@ -214,7 +214,7 @@ def encounter_test(prograde_bh_locations, bh_hill_sphere):
     final_1d_indx_array = sorted_in_result.flatten()
     sorted_final_1d_indx_array = np.sort(final_1d_indx_array)
 
-    if len(sorted_final_1d_indx_array) > 0:
-         print("Binary", sorted_final_1d_indx_array)
+    #if len(sorted_final_1d_indx_array) > 0:
+    #     print("Binary", sorted_final_1d_indx_array)
 
     return sorted_final_1d_indx_array
