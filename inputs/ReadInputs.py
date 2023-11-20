@@ -122,6 +122,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     number_of_timesteps = input_variables['number_of_timesteps']
     retro = input_variables['retro']
     feedback = input_variables['feedback']
+    capture_time = input_variables['capture_time']
+    outer_capture_radius = input_variables['outer_capture_radius']
     print("I put your variables where they belong")
 
     # open the disk model surface density file and read it in
@@ -202,7 +204,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
         mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
             spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                 timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                    disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback \
+                    disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius \
 
 
 

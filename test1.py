@@ -74,7 +74,7 @@ def main():
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback\
+                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius\
                      = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
@@ -196,7 +196,7 @@ def main():
         
         #Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
-        # print("feedback",feedback)
+        #print("feedback",feedback)
         if feedback > 0:
             ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
         else:
@@ -346,6 +346,24 @@ def main():
         #Empty close encounters
         empty = []
         close_encounters = np.array(empty)
+
+        #After this time period, was there a disk capture via orbital grind-down?
+        capture = time_passed % capture_time
+        if capture == 0:
+            bh_capture_location = setupdiskblackholes.setup_disk_blackholes_location(1, outer_capture_radius)
+            bh_capture_mass = setupdiskblackholes.setup_disk_blackholes_masses(1, mode_mbh_init, max_initial_bh_mass, mbh_powerlaw_index)
+            bh_capture_spin = setupdiskblackholes.setup_disk_blackholes_spins(1, mu_spin_distribution, sigma_spin_distribution)
+            bh_capture_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(1, bh_capture_spin)
+            print("CAPTURED BH",bh_capture_location,bh_capture_mass,bh_capture_spin,bh_capture_spin_angle)
+            # Append captured BH to existing singleton arrays. Assume prograde and 1st gen BH.
+            prograde_bh_locations = np.append(prograde_bh_locations,bh_capture_location) 
+            prograde_bh_masses = np.append(prograde_bh_masses,bh_capture_mass)
+            prograde_bh_spins = np.append(prograde_bh_spins,bh_capture_spin)
+            prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,bh_capture_spin_angle) 
+            prograde_bh_generations = np.append(prograde_bh_generations,1)
+              
+
+
         time_passed = time_passed + timestep
     #End Loop of Timesteps at Final Time, end all changes & print out results
     
