@@ -322,7 +322,15 @@ def main():
                 print("Make binary at time ", time_passed)
                 # number of new binaries is length of 2nd dimension of close_encounters2
                 number_of_new_bins = np.shape(close_encounters2)[1]
+                # make new binaries
                 binary_bh_array = add_new_binary.add_to_binary_array2(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters2, bin_index, retro)
+                bin_index = bin_index + number_of_new_bins
+                # delete corresponding entries for new binary members from singleton arrays
+                prograde_bh_locations = np.delete(prograde_bh_locations, close_encounters2)
+                prograde_bh_masses = np.delete(prograde_bh_masses, close_encounters2)
+                prograde_bh_spins = np.delete(prograde_bh_spins, close_encounters2)
+                prograde_bh_spin_angles = np.delete(prograde_bh_spin_angles, close_encounters2)
+                prograde_bh_generations = np.delete(prograde_bh_generations, close_encounters2)
             if len(close_encounters) > 0:
                 print("Make binary at time ", time_passed)
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
@@ -348,6 +356,7 @@ def main():
         #Empty close encounters
         empty = []
         close_encounters = np.array(empty)
+        close_encounters2 = np.array(empty)
         time_passed = time_passed + timestep
     #End Loop of Timesteps at Final Time, end all changes & print out results
     
