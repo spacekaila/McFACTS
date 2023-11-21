@@ -314,11 +314,15 @@ def main():
         #If a close encounter within mutual Hill sphere add a new Binary
 
             close_encounters = hillsphere.encounter_test(prograde_bh_locations, bh_hill_sphere)
+            # check which binaries should get made
             close_encounters2 = hillsphere.binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh)
             print(close_encounters2)
             # print(close_encounters)
             if len(close_encounters2) > 0:
                 print("Make binary at time ", time_passed)
+                # number of new binaries is length of 2nd dimension of close_encounters2
+                number_of_new_bins = np.shape(close_encounters2)[1]
+                binary_bh_array = add_new_binary.add_to_binary_array2(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters2, bin_index, retro)
             if len(close_encounters) > 0:
                 print("Make binary at time ", time_passed)
                 sorted_prograde_bh_locations = np.sort(prograde_bh_locations)

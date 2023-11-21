@@ -158,7 +158,7 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh):
     smallest separation pairs (in units of their mutual Hill sphere) to form a set of
     actual binaries (this module does handle cases where 3 or more bodies *might* form
     some set of binaries which would be mutually exclusive; however it does not handle
-    or even flag the implied triple system dynamics). Returns an Nx2 array of the relevant
+    or even flag the implied triple system dynamics). Returns a 2xN array of the relevant
     binary indices, for further handling to form actual binaries & assign additional
     parameters (e.g. angular momentum of the binary).
 
@@ -198,16 +198,6 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh):
     minimum_formation_criteria = separations - R_Hill_possible_binaries
     # collect indices of possible real binaries (where separation is less than mutual Hill sphere)
     index_formation_criteria = np.where(minimum_formation_criteria < 0)
-    print(index_formation_criteria)
-    # check for obviously independent binaries that are OK to form without further checks
-    # versus sequences (ie mutually exclusive but temporarily repeated 'binaries')
-    #check_seq = np.diff(index_formation_criteria)
-    #print(check_seq)
-    #binary_index_definite = np.extract(check_seq > 1, index_formation_criteria)
-    #binary_index_check = np.extract(check_seq == 1, index_formation_criteria)
-    #print(binary_index_definite)
-    #print(binary_index_check)
-    #actually I think that's too much work--the below algo should find all the binaries anyway...
 
     # Now deal with sequences: compute separation/R_Hill for all
     sequences_to_test = (separations[index_formation_criteria])/(R_Hill_possible_binaries[index_formation_criteria])
@@ -240,5 +230,6 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh):
     # these are checked_binary_index, checked_binary_index+1
     all_binary_indices = np.array([sorted_bh_location_indices[checked_binary_index], sorted_bh_location_indices[checked_binary_index+1]])
     print(np.shape(all_binary_indices))
+    print(np.shape(all_binary_indices)[1])
 
     return all_binary_indices
