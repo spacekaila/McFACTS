@@ -100,6 +100,8 @@ def main():
     bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution)
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
+    bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_thermal(n_bh)
+    #print("orb ecc",bh_initial_orb_ecc)
     #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
     bh_initial_generations = np.ones((n_bh,),dtype=int)
 
@@ -361,7 +363,7 @@ def main():
             prograde_bh_spins = np.append(prograde_bh_spins,bh_capture_spin)
             prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,bh_capture_spin_angle) 
             prograde_bh_generations = np.append(prograde_bh_generations,1)
-              
+
 
 
         time_passed = time_passed + timestep
