@@ -55,5 +55,5 @@ feedback = 1
 # Disk capture 
 # capture time in years (float). Secunda et al. (2021) assume capture rate 1/0.1Myr
 capture_time = 1.e5
-# Disk capture outer radius (in units of r_g). Secunda et al. (2021) assume 1000r_g from Fabj et al. (2020)
-outer_capture_radius = 1.e3
+# Disk capture outer radius (in units of r_g). Secunda et al. (2021) assume <2000r_g from Fabj et al. (2020)
+outer_capture_radius = 2.e3
