@@ -174,7 +174,7 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh):
 
     Returns
     -------
-    all_binary_indices : [N,2] int array
+    all_binary_indices : [2,N] int array
         array of indices corresponding to locations in prograde_bh_locations, prograde_bh_masses,
         prograde_bh_spins, prograde_bh_spin_angles, and prograde_bh_generations which corresponds
         to binaries that form in this timestep. it has a length of the number of binaries to form (N)
@@ -188,9 +188,9 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh):
     # Find the distances between [r1,r2,r3,r4,..] as [r2-r1,r3-r2,r4-r3,..]=[delta1,delta2,delta3..]
     # Note length of separations is 1 less than prograde_bh_locations
     separations = np.diff(sorted_bh_locations)
-    # Now compute mutual hill spheres of all possible binaries SYNTAX UNTESTED!!!
+    # Now compute mutual hill spheres of all possible binaries
     # same length as separations
-    R_Hill_possible_binaries = sorted_bh_locations[:-1] + separations/2.0 * \
+    R_Hill_possible_binaries = (sorted_bh_locations[:-1] + separations/2.0) * \
         pow(((prograde_bh_masses[sorted_bh_location_indices[:-1]] + \
               prograde_bh_masses[sorted_bh_location_indices[1:]]) / \
                 (mass_smbh * 3.0)), (1.0/3.0))
@@ -198,18 +198,28 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh):
     minimum_formation_criteria = separations - R_Hill_possible_binaries
     # collect indices of possible real binaries (where separation is less than mutual Hill sphere)
     index_formation_criteria = np.where(minimum_formation_criteria < 0)
+    print(index_formation_criteria)
     # check for obviously independent binaries that are OK to form without further checks
     # versus sequences (ie mutually exclusive but temporarily repeated 'binaries')
-    binary_index_definite = np.extract((index_formation_criteria[:-1]-index_formation_criteria[1:])>1, index_formation_criteria)
-    binary_index_check = np.extract((index_formation_criteria[:-1]-index_formation_criteria[1:])==1, index_formation_criteria)
+    #check_seq = np.diff(index_formation_criteria)
+    #print(check_seq)
+    #binary_index_definite = np.extract(check_seq > 1, index_formation_criteria)
+    #binary_index_check = np.extract(check_seq == 1, index_formation_criteria)
+    #print(binary_index_definite)
+    #print(binary_index_check)
+    #actually I think that's too much work--the below algo should find all the binaries anyway...
 
     # Now deal with sequences: compute separation/R_Hill for all
-    sequences_to_test = (separations[binary_index_check])/(R_Hill_possible_binaries[binary_index_check])
+    sequences_to_test = (separations[index_formation_criteria])/(R_Hill_possible_binaries[index_formation_criteria])
+    print(sequences_to_test)
     # sort sep/R_Hill for all 'binaries' that need checking & store indices
     sorted_sequences = np.sort(sequences_to_test)
+    print(sorted_sequences)
     sorted_sequences_indices = np.argsort(sequences_to_test)
+    print(sorted_sequences_indices)
     # the smallest sep/R_Hill should always form a binary, so
-    checked_binary_index = sorted_sequences_indices[0]
+    checked_binary_index = np.array([sorted_sequences_indices[0]])
+    print(checked_binary_index)
     for i in range(len(sorted_sequences)):
         # if we haven't already counted it
         if (sorted_sequences_indices[i] not in checked_binary_index):
@@ -220,16 +230,15 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh):
                     # and the implicit partner of this thing isn't already an implicit partner we've counted
                     if (sorted_sequences_indices[i]+1 not in checked_binary_index+1):
                         # then you can count it as a real binary
-                        checked_binary_index = np.append(sorted_sequences_indices[i])
+                        checked_binary_index = np.append(checked_binary_index, sorted_sequences_indices[i])
 
-
+    print("THIS IS SAAVIK'S OUTPUT!!")
     # create array of all real binaries
     # BUT what are we returning? need indices of original arrays
     # that go to singleton vs binary assignments--actual binary formation *should* happen elsewhere!
     # I have the indices of the sorted_bh_locations array that correspond to actual binaries
-    # these are binary_index_definite, binary_index_definite+1
-    # and checked_binary_index, checked_binary_index+1
-    all_binary_indices = np.array([sorted_bh_location_indices[binary_index_definite], sorted_bh_location_indices[binary_index_definite+1]])\
-        + np.array([sorted_bh_location_indices[checked_binary_index], sorted_bh_location_indices[checked_binary_index+1]])
+    # these are checked_binary_index, checked_binary_index+1
+    all_binary_indices = np.array([sorted_bh_location_indices[checked_binary_index], sorted_bh_location_indices[checked_binary_index+1]])
+    print(np.shape(all_binary_indices))
 
     return all_binary_indices
