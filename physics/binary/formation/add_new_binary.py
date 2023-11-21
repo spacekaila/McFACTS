@@ -108,7 +108,7 @@ def add_to_binary_array2(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_a
     num_new_bins = np.shape(close_encounters)[1]
 
     # If there are new binaries, actually form them!
-    if number_of_new_bins > 0:
+    if num_new_bins > 0:
         # send close encounter indices to new array
         array_of_indices = close_encounters
         print("Close encounters ", np.shape(close_encounters)[1], array_of_indices)
@@ -134,7 +134,7 @@ def add_to_binary_array2(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_a
                 temp_bin_mass = temp_mass_1 + temp_mass_2
                 bin_array[9,j] = temp_loc_1 + (temp_bin_separation*temp_mass_2/temp_bin_mass)
                 #Set up binary generations
-                bin_array[i+14,j] = bh_gens_by_sorted_location[thing1]
+                bin_array[i+14,j] = bh_gens[thing1]
                 #Set up bin orb. ang. mom. (randomly +1 (pro) or -1(retrograde))
                 #random number
                 random_uniform_number = rng.random()

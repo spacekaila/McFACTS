@@ -331,31 +331,31 @@ def main():
                 prograde_bh_spins = np.delete(prograde_bh_spins, close_encounters2)
                 prograde_bh_spin_angles = np.delete(prograde_bh_spin_angles, close_encounters2)
                 prograde_bh_generations = np.delete(prograde_bh_generations, close_encounters2)
-            if len(close_encounters) > 0:
-                print("Make binary at time ", time_passed)
-                sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
-                sorted_prograde_bh_location_indices = np.argsort(prograde_bh_locations)
-                number_of_new_bins = (len(close_encounters))/2            
-                binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index, retro)
-                bin_index = bin_index + number_of_new_bins
-                bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
-                bh_spins_by_sorted_location = prograde_bh_spins[sorted_prograde_bh_location_indices]
-                bh_spin_angles_by_sorted_location = prograde_bh_spin_angles[sorted_prograde_bh_location_indices]
-                #Delete binary info from individual BH arrays
-                sorted_prograde_bh_locations = np.delete(sorted_prograde_bh_locations, close_encounters)
-                bh_masses_by_sorted_location = np.delete(bh_masses_by_sorted_location, close_encounters)
-                bh_spins_by_sorted_location = np.delete(bh_spins_by_sorted_location, close_encounters)
-                bh_spin_angles_by_sorted_location = np.delete(bh_spin_angles_by_sorted_location, close_encounters)
-                #Reset arrays
-                prograde_bh_locations = sorted_prograde_bh_locations
-                prograde_bh_masses = bh_masses_by_sorted_location
-                prograde_bh_spins = bh_spins_by_sorted_location
-                prograde_bh_spin_angles = bh_spin_angles_by_sorted_location
+            #if len(close_encounters) > 0:
+            #    print("Make binary at time ", time_passed)
+            #    sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
+            #    sorted_prograde_bh_location_indices = np.argsort(prograde_bh_locations)
+            #    number_of_new_bins = (len(close_encounters))/2            
+            #    binary_bh_array = add_new_binary.add_to_binary_array(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters, bin_index, retro)
+            #    bin_index = bin_index + number_of_new_bins
+            #    bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
+            #    bh_spins_by_sorted_location = prograde_bh_spins[sorted_prograde_bh_location_indices]
+            #    bh_spin_angles_by_sorted_location = prograde_bh_spin_angles[sorted_prograde_bh_location_indices]
+            #    #Delete binary info from individual BH arrays
+            #    sorted_prograde_bh_locations = np.delete(sorted_prograde_bh_locations, close_encounters)
+            #    bh_masses_by_sorted_location = np.delete(bh_masses_by_sorted_location, close_encounters)
+            #    bh_spins_by_sorted_location = np.delete(bh_spins_by_sorted_location, close_encounters)
+            #    bh_spin_angles_by_sorted_location = np.delete(bh_spin_angles_by_sorted_location, close_encounters)
+            #    #Reset arrays
+            #    prograde_bh_locations = sorted_prograde_bh_locations
+            #    prograde_bh_masses = bh_masses_by_sorted_location
+            #    prograde_bh_spins = bh_spins_by_sorted_location
+            #    prograde_bh_spin_angles = bh_spin_angles_by_sorted_location
 
         #Iterate the time step
         #Empty close encounters
         empty = []
-        close_encounters = np.array(empty)
+        #close_encounters = np.array(empty)
         close_encounters2 = np.array(empty)
         time_passed = time_passed + timestep
     #End Loop of Timesteps at Final Time, end all changes & print out results
