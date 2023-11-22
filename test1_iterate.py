@@ -42,8 +42,18 @@ parser.add_argument("--fname-output-mergers",default="output_mergers.dat",help="
 parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(index).dat",help="output of BH index file ")
 parser.add_argument("--no-snapshots", action='store_true')
 parser.add_argument("--verbose",action='store_true')
+parser.add_argument("--seed", type=int, default=None, help="Set the random seed. Randomly sets one if not passed. Default: None")
 opts=  parser.parse_args()
 verbose=opts.verbose
+
+# set the seed for random number generation and reproducibility
+if opts.seed == None:
+    opts.seed = np.random.randint(low=0, high=1e9)
+    print(f'Random number generator seed set to: {opts.seed}')
+rng = np.random.default_rng(opts.seed)
+print(rng.integers(1,10,2))
+
+
 
 def main():
     """
@@ -384,6 +394,8 @@ def main():
         pop_binary_bh_array.append(binary_bh_array.T)
         pop_number_of_mergers.append(number_of_mergers)
 
+        # increment the random number generator seed for the next iteration
+        opts.seed += 1
 
     # Plot intial and final mass distributions
     numbins = 100
