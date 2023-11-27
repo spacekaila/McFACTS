@@ -16,6 +16,7 @@ from physics.accretion.eddington import changebhmass
 from physics.accretion.torque import changebh
 from physics.feedback.hankla21 import feedback_hankla21
 #from physics.dynamics import wang22
+from physics.eccentricity import orbital_ecc
 from physics.binary.formation import hillsphere
 from physics.binary.formation import add_new_binary
 #from physics.binary.formation import secunda20
@@ -74,7 +75,7 @@ def main():
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius\
+                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc\
                      = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
@@ -122,6 +123,8 @@ def main():
     sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
     print("Sorted prograde BH locations:", len(sorted_prograde_bh_locations), len(prograde_bh_locations))
     print(sorted_prograde_bh_locations)
+    # Orbital eccentricities
+    prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
 
     #b. Test accretion onto prograde BH
     # Housekeeping: Fractional rate of mass growth per year at 
@@ -188,9 +191,9 @@ def main():
         # Record 
         if not(opts.no_snapshots):
             n_bh_out_size = len(prograde_bh_locations)
-            svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations[:n_bh_out_size]]))
+            svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
             # Single output:  does work
-            np.savetxt("output_bh_single_{}.dat".format(n_timestep_index), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T,prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta gen")
+            np.savetxt("output_bh_single_{}.dat".format(n_timestep_index), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
             # Binary output: does not work
             np.savetxt("output_bh_binary_{}.dat".format(n_timestep_index),binary_bh_array[:,:n_mergers_so_far+1].T,header=binary_field_names)
             n_timestep_index +=1
@@ -211,6 +214,10 @@ def main():
         prograde_bh_spins = changebh.change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_condition, timestep)
         #Torque spin angle
         prograde_bh_spin_angles = changebh.change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep)
+        #Damp BH orbital eccentricity
+        prograde_bh_orb_ecc = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
+        print("bh new ECC",prograde_bh_orb_ecc)
+        
         #Calculate size of Hill sphere
         bh_hill_sphere = hillsphere.calculate_hill_sphere(prograde_bh_locations, prograde_bh_masses, mass_smbh)
         #Test for encounters within Hill sphere
@@ -291,11 +298,13 @@ def main():
                 number_of_mergers += len(merger_indices)
 
                 # Append new merged BH to arrays of single BH locations, masses, spins, spin angles & gens
+                # For now add 1 new orb ecc term of 0.01. TO DO: calculate v_kick and resulting perturbation to orb ecc.
                 prograde_bh_locations = np.append(prograde_bh_locations,merged_bh_com)
                 prograde_bh_masses = np.append(prograde_bh_masses,merged_mass)
                 prograde_bh_spins = np.append(prograde_bh_spins,merged_spin)
                 prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,merged_spin_angle)
                 prograde_bh_generations = np.append(prograde_bh_generations,merged_bh_gen)
+                prograde_bh_orb_ecc = np.append(prograde_bh_orb_ecc,0.01)
                 sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
                 if verbose:
                     print("New BH locations", sorted_prograde_bh_locations)
@@ -333,16 +342,19 @@ def main():
                 bh_masses_by_sorted_location = prograde_bh_masses[sorted_prograde_bh_location_indices]
                 bh_spins_by_sorted_location = prograde_bh_spins[sorted_prograde_bh_location_indices]
                 bh_spin_angles_by_sorted_location = prograde_bh_spin_angles[sorted_prograde_bh_location_indices]
+                bh_orb_ecc_by_sorted_location = prograde_bh_orb_ecc[sorted_prograde_bh_location_indices]
                 #Delete binary info from individual BH arrays
                 sorted_prograde_bh_locations = np.delete(sorted_prograde_bh_locations, close_encounters)
                 bh_masses_by_sorted_location = np.delete(bh_masses_by_sorted_location, close_encounters)
                 bh_spins_by_sorted_location = np.delete(bh_spins_by_sorted_location, close_encounters)
                 bh_spin_angles_by_sorted_location = np.delete(bh_spin_angles_by_sorted_location, close_encounters)
+                bh_orb_ecc_by_sorted_location = np.delete(bh_orb_ecc_by_sorted_location, close_encounters)
                 #Reset arrays
                 prograde_bh_locations = sorted_prograde_bh_locations
                 prograde_bh_masses = bh_masses_by_sorted_location
                 prograde_bh_spins = bh_spins_by_sorted_location
                 prograde_bh_spin_angles = bh_spin_angles_by_sorted_location
+                prograde_bh_orb_ecc = bh_orb_ecc_by_sorted_location
 
         #Iterate the time step
         #Empty close encounters
@@ -350,19 +362,24 @@ def main():
         close_encounters = np.array(empty)
 
         #After this time period, was there a disk capture via orbital grind-down?
+        # To do: What eccentricity do we want the captured BH to have? Right now ecc=0.0? Should it be ecc<h at a?             
+        # Assume 1st gen BH captured and orb ecc =0.0
         capture = time_passed % capture_time
         if capture == 0:
             bh_capture_location = setupdiskblackholes.setup_disk_blackholes_location(1, outer_capture_radius)
             bh_capture_mass = setupdiskblackholes.setup_disk_blackholes_masses(1, mode_mbh_init, max_initial_bh_mass, mbh_powerlaw_index)
             bh_capture_spin = setupdiskblackholes.setup_disk_blackholes_spins(1, mu_spin_distribution, sigma_spin_distribution)
             bh_capture_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(1, bh_capture_spin)
+            bh_capture_gen = 1
+            bh_capture_orb_ecc = 0.0
             print("CAPTURED BH",bh_capture_location,bh_capture_mass,bh_capture_spin,bh_capture_spin_angle)
             # Append captured BH to existing singleton arrays. Assume prograde and 1st gen BH.
             prograde_bh_locations = np.append(prograde_bh_locations,bh_capture_location) 
             prograde_bh_masses = np.append(prograde_bh_masses,bh_capture_mass)
             prograde_bh_spins = np.append(prograde_bh_spins,bh_capture_spin)
             prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,bh_capture_spin_angle) 
-            prograde_bh_generations = np.append(prograde_bh_generations,1)
+            prograde_bh_generations = np.append(prograde_bh_generations,bh_capture_gen)
+            prograde_bh_orb_ecc = np.append(prograde_bh_orb_ecc,bh_capture_orb_ecc)
 
 
 
