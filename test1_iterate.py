@@ -50,10 +50,7 @@ verbose = opts.verbose
 if opts.seed == None:
     opts.seed = np.random.randint(low=0, high=int(1e22))
     print(f'Random number generator seed set to: {opts.seed}')
-rng = np.random.default_rng(opts.seed) # As a global object, rng can be called within a function without passing it.
 
-# generate list for 
-mc_info = [opts.seed]
 
 def main():
     """
@@ -115,9 +112,8 @@ def main():
     pop_binary_bh_array = []
     pop_number_of_mergers = []
 
-
-
     for iteration in range(number_of_iterations):
+        rng = np.random.default_rng(opts.seed + iteration)
 
         # can index other parameter lists here if needed.
         # galaxy_type = galaxy_models[iteration] # e.g. star forming/spiral vs. elliptical
@@ -213,6 +209,7 @@ def main():
 
         n_mergers_so_far = 0
         n_timestep_index = 0
+        n_merger_limit = 1e4
         while time_passed < final_time:
             # Record 
             if not(opts.no_snapshots):
@@ -365,10 +362,16 @@ def main():
                     prograde_bh_spins = bh_spins_by_sorted_location
                     prograde_bh_spin_angles = bh_spin_angles_by_sorted_location
 
-            #Iterate the time step
             #Empty close encounters
             empty = []
             close_encounters = np.array(empty)
+
+            # end run if number of mergers reaches the limit
+            if number_of_mergers >= n_merger_limit:
+                print(f"Number of mergers ({number_of_mergers}) reached the limit of {n_merger_limit}.")
+                break
+            
+            #Iterate the time step
             time_passed = time_passed + timestep
         #End Loop of Timesteps at Final Time, end all changes & print out results
         
@@ -380,7 +383,7 @@ def main():
         print("Number of binaries = ",bin_index)
         print("Total number of mergers = ",number_of_mergers)
         print("Mergers", merged_bh_array.shape)
-        if True and number_of_mergers > 0: #verbose:
+        if verbose and number_of_mergers > 0: #verbose:
             print(merged_bh_array[:,:number_of_mergers].T)
             
         np.savetxt(opts.fname_output_mergers, merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
