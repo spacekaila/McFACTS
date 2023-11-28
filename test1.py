@@ -125,6 +125,7 @@ def main():
     print(sorted_prograde_bh_locations)
     # Orbital eccentricities
     prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
+    print("Prograde orbital eccentricities")
 
     #b. Test accretion onto prograde BH
     # Housekeeping: Fractional rate of mass growth per year at 
@@ -216,7 +217,7 @@ def main():
         prograde_bh_spin_angles = changebh.change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep)
         #Damp BH orbital eccentricity
         prograde_bh_orb_ecc = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
-        print("bh new ECC",prograde_bh_orb_ecc)
+        #print("bh new ECC",prograde_bh_orb_ecc)
         
         #Calculate size of Hill sphere
         bh_hill_sphere = hillsphere.calculate_hill_sphere(prograde_bh_locations, prograde_bh_masses, mass_smbh)
@@ -228,6 +229,13 @@ def main():
         if bin_index > 0:
             #Evolve binaries. 
             #Migrate binaries
+            # First if feedback present, find ratio of feedback heating torque to migration torque
+            #print("feedback",feedback)
+            if feedback > 0:
+                ratio_heat_mig_torques_bin_com = evolve.com_feedback_hankla(binary_bh_array, surf_dens_func, frac_Eddington_ratio, alpha)
+            else:
+                ratio_heat_mig_torques_bin_com = np.ones(len(binary_bh_array[9,:]))   
+
             binary_bh_array = evolve.com_migration(binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, integer_nbinprop, bin_index)
             #Accrete gas onto binaries
             binary_bh_array = evolve.change_bin_mass(binary_bh_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index)

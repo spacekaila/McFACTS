@@ -64,17 +64,17 @@ def orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, di
     normalized_bh_locations = prograde_bh_locations/1.e4
     normalized_disk_surf_model = disk_surface_density/1.e5
     normalized_aspect_ratio = disk_aspect_ratio/0.03
-    print("normalized mass ratio",normalized_mass_ratio)
-    print("normalized_bh_locations",normalized_bh_locations)
-    print("normalized_disk_surf_model",normalized_disk_surf_model)
-    print("normalized_aspect_ratio",normalized_aspect_ratio)
+    #print("normalized mass ratio",normalized_mass_ratio)
+    #print("normalized_bh_locations",normalized_bh_locations)
+    #print("normalized_disk_surf_model",normalized_disk_surf_model)
+    #print("normalized_aspect_ratio",normalized_aspect_ratio)
     #Calculate the 1-d array of damping times
     t_damp =1.e5*(1.0/normalized_mass_ratio)*(normalized_aspect_ratio**4)*(1.0/normalized_disk_surf_model)*(1.0/np.sqrt(normalized_bh_locations))
     #timescale ratio
     timescale_ratio = timestep/t_damp
-    print("tdamp",t_damp)
-    print("timescale_ratio",timescale_ratio)
+    #print("tdamp",t_damp)
+    #print("timescale_ratio",timescale_ratio)
     new_bh_orb_ecc = bh_orb_ecc*np.exp(-timescale_ratio)
     new_bh_orb_ecc = np.where(new_bh_orb_ecc<crit_ecc, crit_ecc,new_bh_orb_ecc)
-    print("Old ecc, New ecc",bh_orb_ecc,new_bh_orb_ecc)
+    #print("Old ecc, New ecc",bh_orb_ecc,new_bh_orb_ecc)
     return new_bh_orb_ecc
