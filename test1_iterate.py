@@ -400,6 +400,11 @@ def main():
         # increment the random number generator seed for the next iteration
         opts.seed += 1
 
+    # save all mergers from Monte Carlo
+    basename, extension = os.path.splitext(opts.fname_output_mergers)
+    population_header = f"Initial seed: {opts.seed}\n{merger_field_names}"
+    np.savetxt(f"{basename}_population{extension}" , merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
+
     # Plot intial and final mass distributions
     numbins = 100
     plt.hist(bh_initial_masses, bins=numbins, align='left', label='Initial', color='grey', alpha=0.5)
