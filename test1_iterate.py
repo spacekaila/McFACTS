@@ -43,17 +43,17 @@ parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(
 parser.add_argument("--no-snapshots", action='store_true')
 parser.add_argument("--verbose",action='store_true')
 parser.add_argument("--seed", type=int, default=None, help="Set the random seed. Randomly sets one if not passed. Default: None")
-opts=  parser.parse_args()
-verbose=opts.verbose
+opts = parser.parse_args()
+verbose = opts.verbose
 
 # set the seed for random number generation and reproducibility
 if opts.seed == None:
-    opts.seed = np.random.randint(low=0, high=1e9)
+    opts.seed = np.random.randint(low=0, high=int(1e22))
     print(f'Random number generator seed set to: {opts.seed}')
-rng = np.random.default_rng(opts.seed)
-print(rng.integers(1,10,2))
+rng = np.random.default_rng(opts.seed) # As a global object, rng can be called within a function without passing it.
 
-
+# generate list for 
+mc_info = [opts.seed]
 
 def main():
     """
