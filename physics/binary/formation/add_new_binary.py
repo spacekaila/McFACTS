@@ -35,12 +35,12 @@ def add_to_binary_array2(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_a
             binary semi-major axis in units of r_g of SMBH
             [9,j]: float
             binary center of mass location wrt SMBH in r_g
-            [10,j]: ?
-            not set here
-            [11,j]: ?
-            not set here
-            [12,j]: ?
-            not set here
+            [10,j]: float
+            time to merger through GW alone (not set here)
+            [11,j]: int
+            merger flag = -2 if merging this timestep, else = 0 (not set here)
+            [12,j]: float
+            time of merger if binary has already merged (not set here)
             [13,j]: ?
             not set here
             [14,j]: int

@@ -193,37 +193,35 @@ def main():
             np.savetxt("output_bh_binary_{}.dat".format(n_timestep_index),binary_bh_array[:,:n_mergers_so_far+1].T,header=binary_field_names)
             n_timestep_index +=1
 
-        #Migrate
+        # Do things to the single objects:
+        # Migrate
         prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep)
-        #Accrete
+        # Accrete
         prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
-        #Spin up    
+        # Spin up
         prograde_bh_spins = changebh.change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_condition, timestep)
-        #Torque spin angle
+        # Torque spin angle
         prograde_bh_spin_angles = changebh.change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep)
-        #Calculate size of Hill sphere
-        bh_hill_sphere = hillsphere.calculate_hill_sphere(prograde_bh_locations, prograde_bh_masses, mass_smbh)
-        #Test for encounters within Hill sphere
-        print("Time passed", time_passed)
-        print("Number of binaries=", bin_index)
-        #print("Initial binary array", binary_bh_array)
-        #If binary exists, harden it. Add a thing here.
+        
+        # Do things to the binaries--first check if there are any:
         if bin_index > 0:
-            #Evolve binaries. 
-            #Migrate binaries
-            binary_bh_array = evolve.com_migration(binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, integer_nbinprop, bin_index)
-            # This is the new function but has not yet been tested; should replace com_migration line above, when checked
-            #binary_bh_array = evolve.bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model, timestep)
-            #Accrete gas onto binaries
+            # If there are binaries, evolve them
+            # Harden binaries
+            binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
+            print("Harden binary")
+            print("Time passed = ", time_passed)
+            # Accrete gas onto binary components
             binary_bh_array = evolve.change_bin_mass(binary_bh_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index)
-            #Spin up binary components
+            # Spin up binary components
             binary_bh_array = evolve.change_bin_spin_magnitudes(binary_bh_array, frac_Eddington_ratio, spin_torque_condition, timestep, integer_nbinprop, bin_index)
-            #Torque binary spin components
+            # Torque angle of binary spin components
             binary_bh_array = evolve.change_bin_spin_angles(binary_bh_array, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep, integer_nbinprop, bin_index)
-
-            #Check and see if merger flagged (row 11, if negative)
-            merger_flags=binary_bh_array[11,:]
-            any_merger=np.count_nonzero(merger_flags) 
+            # Migrate binaries center of mass
+            binary_bh_array = evolve.bin_migration(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep)
+            
+            #Check and see if merger flagged during hardening (row 11, if negative)
+            merger_flags = binary_bh_array[11,:]
+            any_merger = np.count_nonzero(merger_flags) 
             if verbose:
                 print(merger_flags)
             merger_indices = np.where(merger_flags < 0.0)
@@ -234,7 +232,7 @@ def main():
             #print(binary_bh_array[:,merger_indices])
             if any_merger > 0:
                 print("Merger!")
-                #Calculate merger properties
+                # send properties of merging objects to static variable names
                 mass_1 = binary_bh_array[2,merger_indices]
                 mass_2 = binary_bh_array[3,merger_indices]
                 spin_1 = binary_bh_array[4,merger_indices]
@@ -243,24 +241,18 @@ def main():
                 angle_2 = binary_bh_array[7,merger_indices]
                 bin_ang_mom = binary_bh_array[16,merger_indices]
 
+                # calculate merger properties
                 merged_mass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
                 merged_spin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
                 merged_chi_eff = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
-#                merged_bh_rec_array = mergerfile.extend_rec_merged_bh(merged_bh_rec_array, n_mergers_so_far,  merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
                 merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
-                
-                
-
+                # do another thing
                 merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
-                #print(merger_array)
                 #Reset merger marker to zero
                 #n_mergers_so_far=int(number_of_mergers)
                 #Remove merged binary from binary array. Delete column where merger_indices is the label.
                 print("!Merger properties!",binary_bh_array[:,merger_indices],merger_array[:,merger_indices],merged_bh_array)
                 binary_bh_array=np.delete(binary_bh_array,merger_indices,1)
-                
-                #binary_bh_array[:,merger_indices] = 0.0
-                #binary_bh_array[11,n_mergers_so_far] = 0
                 
                 #Reduce number of binaries by number of mergers
                 bin_index = bin_index - len(merger_indices)
@@ -270,7 +262,7 @@ def main():
                 
                 print("num mergers this timestep",num_mergers_this_timestep)
                 print("n_mergers_so_far",n_mergers_so_far)    
-                for i in range (0,num_mergers_this_timestep):
+                for i in range (0, num_mergers_this_timestep):
                     merged_bh_com = merged_bh_array[0,n_mergers_so_far + i]
                     merged_mass = merged_bh_array[1,n_mergers_so_far + i]
                     merged_spin = merged_bh_array[3,n_mergers_so_far + i]
@@ -299,17 +291,16 @@ def main():
             else:                
                 # No merger
                 # Harden binary
-                binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
-                print("Harden binary")
-                print("Time passed = ", time_passed)
+                # do nothing! hardening should happen FIRST (and now it does!)
+                #binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
+                #print("Harden binary")
+                #print("Time passed = ", time_passed)
                 if bin_index>0: # verbose:
                     print(" BH binaries ", bin_index,  binary_bh_array[:,:int(bin_index)].shape)
                     print(binary_bh_array[:,:int(bin_index)].T)  # this makes printing work as expected
         else:
             
             # No Binaries present in bin_array. Nothing to do.
-        
-
 
         #If a close encounter within mutual Hill sphere add a new Binary
 

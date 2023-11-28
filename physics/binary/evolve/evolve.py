@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 
 def change_bin_mass(bin_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index):
