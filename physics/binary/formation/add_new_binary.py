@@ -118,7 +118,7 @@ def add_to_binary_array2(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_a
             # for each member of the binary
             for i in range(0,2):
                 # pick the [0,N] or [1,N] index
-                thing1 = array_of_indices[i][j+bincount]
+                thing1 = array_of_indices[i][bincount]
                 bin_array[i,j] = bh_locations[thing1]
                 bin_array[i+2,j] = bh_masses[thing1]
                 bin_array[i+4,j] = bh_spins[thing1]
