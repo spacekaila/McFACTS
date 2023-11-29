@@ -114,7 +114,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     spin_torque_condition = float(input_variables['spin_torque_condition'])
     frac_Eddington_ratio = float(input_variables['frac_Eddington_ratio'])
     max_initial_eccentricity = float(input_variables['max_initial_eccentricity'])
-    timestep = int(input_variables['timestep'])
+    timestep = float(input_variables['timestep'])
     number_of_timesteps = int(input_variables['number_of_timesteps'])
     retro = int(input_variables['retro'])
     print("I put your variables where they belong")
