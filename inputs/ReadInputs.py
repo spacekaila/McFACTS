@@ -106,26 +106,26 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
 
     disk_model_name = input_variables['disk_model_name']
 
-    mass_smbh = input_variables['mass_smbh']
-    trap_radius = input_variables['trap_radius']
-    disk_outer_radius = input_variables['disk_outer_radius']
-    alpha = input_variables['alpha']
+    mass_smbh = float(input_variables['mass_smbh'])
+    trap_radius = float(input_variables['trap_radius'])
+    disk_outer_radius = float(input_variables['disk_outer_radius'])
+    alpha = float(input_variables['alpha'])
     n_bh = int(input_variables['n_bh'])
-    mode_mbh_init = input_variables['mode_mbh_init']
-    max_initial_bh_mass = input_variables['max_initial_bh_mass']
-    mbh_powerlaw_index = input_variables['mbh_powerlaw_index']
-    mu_spin_distribution = input_variables['mu_spin_distribution']
-    sigma_spin_distribution = input_variables['sigma_spin_distribution']
-    spin_torque_condition = input_variables['spin_torque_condition']
-    frac_Eddington_ratio = input_variables['frac_Eddington_ratio']
-    max_initial_eccentricity = input_variables['max_initial_eccentricity']
-    timestep = input_variables['timestep']
-    number_of_timesteps = input_variables['number_of_timesteps']
-    retro = input_variables['retro']
-    feedback = input_variables['feedback']
-    capture_time = input_variables['capture_time']
-    outer_capture_radius = input_variables['outer_capture_radius']
-    crit_ecc = input_variables['crit_ecc']
+    mode_mbh_init = float(input_variables['mode_mbh_init'])
+    max_initial_bh_mass = float(input_variables['max_initial_bh_mass'])
+    mbh_powerlaw_index = float(input_variables['mbh_powerlaw_index'])
+    mu_spin_distribution = float(input_variables['mu_spin_distribution'])
+    sigma_spin_distribution = float(input_variables['sigma_spin_distribution'])
+    spin_torque_condition = float(input_variables['spin_torque_condition'])
+    frac_Eddington_ratio = float(input_variables['frac_Eddington_ratio'])
+    max_initial_eccentricity = float(input_variables['max_initial_eccentricity'])
+    timestep = float(input_variables['timestep'])
+    number_of_timesteps = int(input_variables['number_of_timesteps'])
+    retro = int(input_variables['retro'])
+    feedback = int(input_variables['feedback'])
+    capture_time = float(input_variables['capture_time'])
+    outer_capture_radius = float(input_variables['outer_capture_radius'])
+    crit_ecc = float(input_variables['crit_ecc'])
     
     print("I put your variables where they belong")
 
