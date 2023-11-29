@@ -1,7 +1,30 @@
 import numpy as np
+import scipy
 
 
 def change_bin_mass(bin_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index):
+    """_summary_
+
+    Parameters
+    ----------
+    bin_array : _type_
+        _description_
+    frac_Eddington_ratio : _type_
+        _description_
+    mass_growth_Edd_rate : _type_
+        _description_
+    timestep : _type_
+        _description_
+    integer_nbinprop : _type_
+        _description_
+    bin_index : _type_
+        _description_
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     #Return new updated mass array due to accretion for prograde orbiting BH after timestep
     #Extract the binary locations and masses
     bindex = int(bin_index)

@@ -3,77 +3,116 @@ from numpy.random import default_rng
 
 rng=default_rng(1234)
 
+def add_to_binary_array2(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_angles, bh_gens, close_encounters, bindex, retro, verbose=False):
+    """This is where we add new binaries. We take the locations, masses, spins, spin angles and generations
+    from the relevant singletons, found in hillsphere.binary_check, and sort those parameters into bin_array. 
+    We then ADD additional parameters relevant only for binaries, including semi-major axis of the binary,
+    semi-major axis of the orbit of the center of mass of the binary around the SMBH, a flag to permit or 
+    suppress retrograde binaries, eventually eccentricity and inclination. There is also a verbose flag 
+    that is by default set to False, to suppress overly detailed output.
 
-def add_to_binary_array(bin_array, bh_locations, bh_masses, bh_spins, bh_spin_angles, bh_gens, close_encounters, bin_index, retro,verbose=False):
-    #Here we add a new binary to this array, take properties from existing individual arrays and create some new ones
-    #Column 1 is 1 binary, Column 2 is 2nd binary etc.
-    #Extract location,mass,spin,spin angle from arrays & add to this array (=8 params)
-    #Create new properties based on these
-    # a_bin = R2 - R1
-    # a_com = Semi-major axis between binary Center of Mass and SMBH.
-    # ecc = binary eccentricity (start with zero, but WANT TO DRAW FROM PRESCRIPTION & damp ecc over time/spin down)
-    #bin_ang_mom = Is the binary prograde (+1) or retrograde(-1). 
-    # retro = 0 in model_choice.txt turns all retrograde BBH at formation into prograde BBH.
-    #generation=Hierarchical history of these BHs 11=both 1st g 13=1st g+3rd g etc.
-    # 13 params total
-    #In Column 1 M1, M2, a1, a2, theta1, theta2, R1, R2, a_bin=(R2 - R1), a_com, t_gw, bin_ang_mom, gen
-   
-    #Start by extracting all relevant data first
+    Parameters
+    ----------
+    bin_array : [17, bindex] mixed array
+        binary black hole array, multi-dimensional;
+            [0,j]: float
+            location of object 1 at formation of binary (distance from SMBH in r_g)
+            [1,j]: float
+            location of object 2 at formation of binary (distance from SMBH in r_g)
+            [2,j]: float
+            mass of obj 1 at time t in units of solar masses
+            [3,j]: float
+            mass of obj 2 at time t in units of solar masses
+            [4,j]: float
+            dimensionless spin magnitude of obj 1 at time t
+            [5,j]: float
+            dimensionless spin magnitude of obj 2 at time t
+            [6,j]: float
+            spin angle of obj 1 wrt disk gas in radians at time t
+            [7,j]: float
+            spin angle of obj 2 wrt disk gas in radians at time t
+            [8,j]: float
+            binary semi-major axis in units of r_g of SMBH
+            [9,j]: float
+            binary center of mass location wrt SMBH in r_g
+            [10,j]: float
+            time to merger through GW alone (not set here)
+            [11,j]: int
+            merger flag = -2 if merging this timestep, else = 0 (not set here)
+            [12,j]: float
+            time of merger if binary has already merged (not set here)
+            [13,j]: ?
+            not set here
+            [14,j]: int
+            generation of obj 1 (1=natal black hole, no prior mergers)
+            [15,j]: int
+            generation of obj 2 (1=natal black hole, no prior mergers)
+            [16,j]: int
+            binary angular momentum switch +1/-1 for pro/retrograde
+    bh_locations : float array
+        locations of prograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
+    bh_masses : float array
+        mass of prograde singleton BH at start of timestep in units of solar masses
+    bh_spins : float array
+        dimensionless spin magnitude of prograde singleton BH at start of timestep
+    bh_spin_angles : float array
+       spin angle of prograde singleton BH wrt the gas disk angular momentum in radians??? at start of time step
+    bh_gens : int array
+        generation of prograde singleton BH (1=no previous merger history)
+    close_encounters : [2,N] int array
+        array of indices corresponding to locations in prograde_bh_locations, prograde_bh_masses,
+        prograde_bh_spins, prograde_bh_spin_angles, and prograde_bh_generations which corresponds
+        to binaries that form in this timestep. it has a length of the number of binaries to form (N)
+        and a width of 2.
+    bindex : int
+        counter for length of bin_array before adding new binaries
+    retro : int
+        switch to inhibit retrograde binaries.
+        retro = 0 turns all retrograde BBH at formation into prograde BBH. 
+        retro = 1 keeps retrograde BBH once they form. Eventually will turn this into
+        something physically motivated rather than a brute force switch.
+        default : 0
+    verbose : bool, optional
+        how much output do you want? set True for debugging, by default False
 
+    Returns
+    -------
+    bin_array : [17, bindex+N] float array
+        as for input, but updated (thus longer), to include newly formed binaries
+    """
+    # find number of new binaries based on indices from hillsphere.binary_check 
+    num_new_bins = np.shape(close_encounters)[1]
 
-
-    sorted_bh_locations = np.sort(bh_locations)
-    sorted_bh_locations_indices = np.argsort(bh_locations)
-    bh_masses_by_sorted_location = bh_masses[sorted_bh_locations_indices]
-    bh_spins_by_sorted_location = bh_spins[sorted_bh_locations_indices]
-    bh_spin_angles_by_sorted_location = bh_spin_angles[sorted_bh_locations_indices]
-    bh_gens_by_sorted_location = bh_gens[sorted_bh_locations_indices]
-    #bh_orb_ecc_by_sorted_location=bh_orbital_eccentricities[sorted_bh_locations_indices]
-
-    bindex = int(bin_index)
-    number_of_new_bins = (len(close_encounters)+1)/2
-    num_new_bins = int(number_of_new_bins)
-
-    print(" Adding to binary array ", bin_array.shape, bin_index,num_new_bins)
-
-    print(close_encounters)
-    if number_of_new_bins > 0:
-        print("no of new bins")
-        print(num_new_bins)
-        #print("indices")
-        #print(close_encounters)
-#        print(len(close_encounters))
+    # If there are new binaries, actually form them!
+    if num_new_bins > 0:
+        # send close encounter indices to new array
         array_of_indices = close_encounters
-        print("Close encounters ", len(close_encounters), array_of_indices)
-        #print(bindex)
+        print("Close encounters ", np.shape(close_encounters)[1], array_of_indices)
         bincount = 0
-        #for i in range(0,2):
-        #    int_binc = int(bincount)
+        # for all the new binaries that need to be created
         for j in range(bindex, bindex + num_new_bins):
-            print(" Binary ", j)
-            int_binc = int(bincount)
+            # for each member of the binary
             for i in range(0,2):
-                #new_indx = j
-                new_indx = array_of_indices[i+j+int_binc]
-                print(new_indx)
-                bin_array[i,j] = sorted_bh_locations[new_indx]
-                bin_array[i+2,j] = bh_masses_by_sorted_location[new_indx]
-                bin_array[i+4,j] = bh_spins_by_sorted_location[new_indx]
-                bin_array[i+6,j] = bh_spin_angles_by_sorted_location[new_indx]
-                #For new binary create initial binary semi-major axis
+                # pick the [0,N] or [1,N] index for member 1 and member 2 of binary
+                thing1 = array_of_indices[i][bincount]
+                bin_array[i,j] = bh_locations[thing1]
+                bin_array[i+2,j] = bh_masses[thing1]
+                bin_array[i+4,j] = bh_spins[thing1]
+                bin_array[i+6,j] = bh_spin_angles[thing1]
+                # For new binary create initial binary semi-major axis
                 temp_loc_1 = bin_array[0,j]
                 temp_loc_2 = bin_array[1,j]
                 temp_bin_separation = np.abs(temp_loc_1 - temp_loc_2)
                 bin_array[8,j] = temp_bin_separation
-                #Binary c.o.m.= location_1 + separation*M_2/(M_1+M_2)
+                # Binary c.o.m.= location_1 + separation*M_2/(M_1+M_2)
                 temp_mass_1 = bin_array[2,j]
                 temp_mass_2 = bin_array[3,j]
                 temp_bin_mass = temp_mass_1 + temp_mass_2
                 bin_array[9,j] = temp_loc_1 + (temp_bin_separation*temp_mass_2/temp_bin_mass)
-                #Set up binary generations
-                bin_array[i+14,j] = bh_gens_by_sorted_location[new_indx]
-                #Set up bin orb. ang. mom. (randomly +1 (pro) or -1(retrograde))
-                #random number
+                # Set up binary member generations
+                bin_array[i+14,j] = bh_gens[thing1]
+                # Set up bin orb. ang. mom. (randomly +1 (pro) or -1(retrograde))
+                # random number
                 random_uniform_number = rng.random()
                 bh_initial_orb_ang_mom = (2.0*np.around(random_uniform_number)) - 1.0
                 # If retro switch is zero, turn all retro BBH at formation into prograde.
