@@ -69,7 +69,7 @@ McFACTS has a couple of dependencies: `numpy`, `scipy`, `matplotlib`. Using the 
 <!-- (see [requirements.txt](requirements.txt) for the exact version requirements). -->
 
 ### Documentation
-All documentation related to McFACTS can be found in the code for now.
+Input and outputs are documented in `IOdocumentation.txt`. All other documentation related to McFACTS can be found in the code for now.
 <!-- [at this link](https://legwork.readthedocs.io/en/latest/) -->
 
 <!-- ### Other quick links

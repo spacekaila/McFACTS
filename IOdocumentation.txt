@@ -169,7 +169,7 @@ First row is # short parameter listing
     com : float
         distance of the center of mass of the binary from SMBH in units of r_g_SMBH at start of timestep ts
     t_gw : float
-        time to binary merger due to purely GW-driven evolution in units of seconds? at start of timestep ts (Peters formula, put it in here?)
+        time to binary merger due to purely GW-driven evolution in units of seconds at start of timestep ts (Peters formula, put it in here?)
     merger_flag : int
         flag to indicate this binary will merge in less than duration ts of timestep given the Baruteau time to merger is less than ts (-2 will merge, 0 will not merge)
     t_mgr : float
@@ -183,6 +183,6 @@ First row is # short parameter listing
     bin_ang_mom : int
         Orbital angular momentum of the binary direction; +1=prograde, -1=retrograde
         This is referring to the orbital angular momentum of the binary around its
-        own center of mass. Check this with Barry.
+        own center of mass.
         Note binaries that form with bin_ang_mom = -1 will be flipped to +1 if retro = 0
         switch is set in your input file.
