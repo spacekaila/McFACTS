@@ -35,7 +35,7 @@ from outputs import mergerfile
 verbose=False
 n_bins_max = 1000
 n_bins_max_out = 100
-number_of_iterations = 3
+number_of_iterations = 100
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom"
 merger_field_names=' '.join(mergerfile.names_rec)
@@ -60,8 +60,8 @@ os.chdir(runtime_directory)
 work_directory = pathlib.Path(opts.work_directory).resolve()
 try: # check if working directory for output exists
     os.stat(work_directory)
-except FileNotFoundError as e:
-    raise e
+except FileNotFoundError as err:
+    raise err
 print(f"Output will be saved to {work_directory}")
 
 # set the seed for random number generation and reproducibility if not user-defined
