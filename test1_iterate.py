@@ -60,8 +60,8 @@ os.chdir(runtime_directory)
 work_directory = pathlib.Path(opts.work_directory).resolve()
 try: # check if working directory for output exists
     os.stat(work_directory)
-except FileNotFoundError as err:
-    raise err
+except FileNotFoundError as error:
+    raise error
 print(f"Output will be saved to {work_directory}")
 
 # set the seed for random number generation and reproducibility if not user-defined
