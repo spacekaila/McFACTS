@@ -82,6 +82,7 @@ def main():
     merged_bh_array_pop = []
     
     for iteration in range(number_of_iterations):
+        # Set random number generator for this run with incremented seed
         rng = np.random.default_rng(opts.seed + iteration)
 
         # Make subdirectories for each iteration
@@ -100,13 +101,13 @@ def main():
 
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
-        bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(n_bh, disk_outer_radius)
-        bh_initial_masses = setupdiskblackholes.setup_disk_blackholes_masses(n_bh, mode_mbh_init, max_initial_bh_mass, mbh_powerlaw_index)
-        bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution)
-        bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
-        bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
+        bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(rng, n_bh, disk_outer_radius)
+        bh_initial_masses = setupdiskblackholes.setup_disk_blackholes_masses(rng, n_bh, mode_mbh_init, max_initial_bh_mass, mbh_powerlaw_index)
+        bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(rng, n_bh, mu_spin_distribution, sigma_spin_distribution)
+        bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(rng, n_bh, bh_initial_spins)
+        bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(rng, n_bh)
 
-        bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_thermal(n_bh)
+        bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_thermal(rng, n_bh)
         #print("orb ecc",bh_initial_orb_ecc)
         #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
 
@@ -330,7 +331,7 @@ def main():
                     # number of new binaries is length of 2nd dimension of close_encounters2
                     number_of_new_bins = np.shape(close_encounters2)[1]
                     # make new binaries
-                    binary_bh_array = add_new_binary.add_to_binary_array2(binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters2, bin_index, retro)
+                    binary_bh_array = add_new_binary.add_to_binary_array2(rng, binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters2, bin_index, retro)
                     bin_index = bin_index + number_of_new_bins
 
                     # delete corresponding entries for new binary members from singleton arrays
@@ -350,10 +351,10 @@ def main():
             # Assume 1st gen BH captured and orb ecc =0.0
             capture = time_passed % capture_time
             if capture == 0:
-                bh_capture_location = setupdiskblackholes.setup_disk_blackholes_location(1, outer_capture_radius)
-                bh_capture_mass = setupdiskblackholes.setup_disk_blackholes_masses(1, mode_mbh_init, max_initial_bh_mass, mbh_powerlaw_index)
-                bh_capture_spin = setupdiskblackholes.setup_disk_blackholes_spins(1, mu_spin_distribution, sigma_spin_distribution)
-                bh_capture_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(1, bh_capture_spin)
+                bh_capture_location = setupdiskblackholes.setup_disk_blackholes_location(rng, 1, outer_capture_radius)
+                bh_capture_mass = setupdiskblackholes.setup_disk_blackholes_masses(rng, 1, mode_mbh_init, max_initial_bh_mass, mbh_powerlaw_index)
+                bh_capture_spin = setupdiskblackholes.setup_disk_blackholes_spins(rng, 1, mu_spin_distribution, sigma_spin_distribution)
+                bh_capture_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(rng, 1, bh_capture_spin)
                 bh_capture_gen = 1
                 bh_capture_orb_ecc = 0.0
                 print("CAPTURED BH",bh_capture_location,bh_capture_mass,bh_capture_spin,bh_capture_spin_angle)
