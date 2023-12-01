@@ -1,3 +1,6 @@
+import os
+import pathlib
+
 from cgi import print_arguments
 import numpy as np
 import math
@@ -6,7 +9,6 @@ import itertools
 import scipy.interpolate
 
 import sys
-import os
 import argparse
 
 from inputs import ReadInputs
@@ -38,18 +40,31 @@ number_of_iterations = 3
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom"
 merger_field_names=' '.join(mergerfile.names_rec)
 
-
+# parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--use-ini",help="Filename of configuration file", default=None)
 parser.add_argument("--fname-output-mergers",default="output_mergers.dat",help="output merger file (if any)")
 parser.add_argument("--fname-snapshots-bh",default="output_bh_[single|binary]_$(index).dat",help="output of BH index file ")
 parser.add_argument("--no-snapshots", action='store_true')
 parser.add_argument("--verbose",action='store_true')
+parser.add_argument("-w", "--work-directory", default=pathlib.Path().parent.resolve(), help="Set the working directory for saving output. Default: current working directory", type=str)
 parser.add_argument("--seed", type=int, default=None, help="Set the random seed. Randomly sets one if not passed. Default: None")
 opts = parser.parse_args()
 verbose = opts.verbose
 
-# set the seed for random number generation and reproducibility
+# Get the parent path to this file and cd to that location for runtime
+runtime_directory = pathlib.Path(__file__).parent.resolve()
+os.chdir(runtime_directory)
+
+# Get the user-defined or default working directory / output location
+work_directory = pathlib.Path(opts.work_directory).resolve()
+try: # check if working directory for output exists
+    os.stat(work_directory)
+except FileNotFoundError as e:
+    raise e
+print(f"Output will be saved to {work_directory}")
+
+# set the seed for random number generation and reproducibility if not user-defined
 if opts.seed == None:
     opts.seed = np.random.randint(low=0, high=int(1e18))
     print(f'Random number generator seed set to: {opts.seed}')
@@ -62,7 +77,7 @@ def main():
     # Setting up automated input parameters
     # see IOdocumentation.txt for documentation of variable names/types/etc.
 
-    fname = 'inputs/model_choice.txt'
+    fname = "inputs/model_choice.txt"
     if opts.use_ini:
         fname = opts.use_ini
     mass_smbh, trap_radius, disk_outer_radius, alpha, n_bh, mode_mbh_init, max_initial_bh_mass, \
@@ -89,7 +104,7 @@ def main():
         # Fills run number with leading zeros to stay sequential
         iteration_zfilled_str = f"{iteration:>0{int(np.log10(number_of_iterations))+1}}"
         try: # Make subdir, exit if it exists to avoid clobbering.
-            os.makedirs(f"run{iteration_zfilled_str}", exist_ok=False)
+            os.makedirs(os.path.join(work_directory, f"run{iteration_zfilled_str}"), exist_ok=False)
         except FileExistsError:
             raise FileExistsError(f"Directory \'run{iteration_zfilled_str}\' exists. Exiting so I don't delete your data.")
 
@@ -183,15 +198,15 @@ def main():
         n_timestep_index = 0
         n_merger_limit = 1e4
         while time_passed < final_time:
-            # Record
+            # Record 
             if not(opts.no_snapshots):
                 n_bh_out_size = len(prograde_bh_locations)
 
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
                 # Single output:  does work
-                np.savetxt(f"run{iteration}/output_bh_single_{n_timestep_index}.dat", np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
+                np.savetxt(os.path.join(work_directory, f"run{iteration}/output_bh_single_{n_timestep_index}.dat"), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
                 # Binary output: does not work
-                np.savetxt(f"run{iteration}/output_bh_binary_{n_timestep_index}.dat", binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
+                np.savetxt(os.path.join(work_directory, f"run{iteration}/output_bh_binary_{n_timestep_index}.dat"), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
                 n_timestep_index +=1
 
             
@@ -385,8 +400,9 @@ def main():
         print("Mergers", merged_bh_array.shape)
         if True and number_of_mergers > 0: #verbose:
             print(merged_bh_array[:,:number_of_mergers].T)
-            
-        np.savetxt(f"run{iteration}/{opts.fname_output_mergers}", merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
+
+        iteration_save_name = f"run{iteration}/{opts.fname_output_mergers}"
+        np.savetxt(os.path.join(work_directory, iteration_save_name), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
         # Add mergers to population array including the iteration number
         iteration_row = np.repeat(iteration, number_of_mergers)
@@ -397,7 +413,8 @@ def main():
     merger_pop_field_names = "iter " + merger_field_names # Add "Iter" to field names
     population_header = f"Initial seed: {opts.seed}\n{merger_pop_field_names}" # Include initial seed
     basename, extension = os.path.splitext(opts.fname_output_mergers)
-    np.savetxt(f"{basename}_population{extension}", np.vstack(merged_bh_array_pop), header=population_header)
+    population_save_name = f"{basename}_population{extension}"
+    np.savetxt(os.path.join(work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
 
 
 if __name__ == "__main__":
