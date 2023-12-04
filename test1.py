@@ -59,8 +59,9 @@ def main():
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc\
-                     = ReadInputs.ReadInputs_ini(fname)
+                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc, \
+                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average\
+                        = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
     surf_dens_func_log = scipy.interpolate.UnivariateSpline(disk_model_radius_array, np.log(surface_density_array))
@@ -69,6 +70,9 @@ def main():
     aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(disk_model_radius_array, np.log(aspect_ratio_array))
     aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     
+    #Set up number of BH in disk
+    n_bh = setupdiskblackholes.setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average)
+
     # generate initial BH parameter arrays
     print("Generate initial BH parameter arrays")
     bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(n_bh, disk_outer_radius)
@@ -76,8 +80,9 @@ def main():
     bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution)
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
-
+    
     bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_thermal(n_bh)
+    bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(n_bh)
     #print("orb ecc",bh_initial_orb_ecc)
     #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
 
@@ -103,6 +108,9 @@ def main():
     # Orbital eccentricities
     prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
     print("Prograde orbital eccentricities")
+    #Orbital inclinations
+    prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
+    print("Prograde orbital inclinations")
 
     # Housekeeping: Fractional rate of mass growth per year at 
     # the Eddington rate(2.3e-8/yr)
@@ -271,6 +279,7 @@ def main():
                 prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,merged_spin_angle)
                 prograde_bh_generations = np.append(prograde_bh_generations,merged_bh_gen)
                 prograde_bh_orb_ecc = np.append(prograde_bh_orb_ecc,0.01)
+                prograde_bh_orb_incl = np.append(prograde_bh_orb_incl,0.0)
                 sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
                 if verbose:
                     print("New BH locations", sorted_prograde_bh_locations)
@@ -310,6 +319,7 @@ def main():
                 prograde_bh_spin_angles = np.delete(prograde_bh_spin_angles, close_encounters2)
                 prograde_bh_generations = np.delete(prograde_bh_generations, close_encounters2)
                 prograde_bh_orb_ecc = np.delete(prograde_bh_orb_ecc, close_encounters2)
+                prograde_bh_orb_incl = np.delete(prograde_bh_orb_incl, close_encounters2)
             
         #Empty close encounters
         empty = []
@@ -326,6 +336,7 @@ def main():
             bh_capture_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(1, bh_capture_spin)
             bh_capture_gen = 1
             bh_capture_orb_ecc = 0.0
+            bh_capture_orb_incl = 0.0
             print("CAPTURED BH",bh_capture_location,bh_capture_mass,bh_capture_spin,bh_capture_spin_angle)
             # Append captured BH to existing singleton arrays. Assume prograde and 1st gen BH.
             prograde_bh_locations = np.append(prograde_bh_locations,bh_capture_location) 
@@ -334,7 +345,7 @@ def main():
             prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,bh_capture_spin_angle) 
             prograde_bh_generations = np.append(prograde_bh_generations,bh_capture_gen)
             prograde_bh_orb_ecc = np.append(prograde_bh_orb_ecc,bh_capture_orb_ecc)
-
+            prograde_bh_orb_incl = np.append(prograde_bh_orb_incl,bh_capture_orb_incl)
         #Iterate the time step
         time_passed = time_passed + timestep
     #End Loop of Timesteps at Final Time, end all changes & print out results
@@ -347,6 +358,7 @@ def main():
     print("Number of binaries = ",bin_index)
     print("Total number of mergers = ",number_of_mergers)
     print("Mergers", merged_bh_array.shape)
+    print("Nbh_disk",n_bh)
     if True and number_of_mergers > 0: #verbose:
         print(merged_bh_array[:,:number_of_mergers].T)
         

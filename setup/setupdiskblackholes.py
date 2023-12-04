@@ -68,3 +68,43 @@ def setup_disk_blackholes_eccentricity_uniform(n_bh):
     random_uniform_number = np.random.random_sample((integer_nbh,))
     bh_initial_orb_ecc = random_uniform_number
     return bh_initial_orb_ecc
+
+def setup_disk_blackholes_inclination(n_bh):
+    # Return an array of BH orbital inclinations
+    # Return an initial distribution of inclination angles that are 0.0
+    #
+    # To do: initialize inclinations so random draw with i <h (so will need to input bh_locations and disk_aspect_ratio)
+    # and then damp inclination.
+    # To do: calculate v_kick for each merger and then the (i,e) orbital elements for the newly merged BH. 
+    # Then damp (i,e) as appropriate
+    integer_nbh = int(n_bh)
+    # For now, inclinations are zeros
+    bh_initial_orb_incl = np.zeros((integer_nbh,),dtype = float)
+    return bh_initial_orb_incl
+
+def setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average):
+    # Return the number of BH in the AGN disk as calculated from NSC inputs
+    # To do: Calculate when R_disk_outer is not equal to the r_nsc_crit
+    #Total average mass of BH in NSC
+    M_bh_nsc = M_nsc * nbh_nstar_ratio * mbh_mstar_ratio
+    #print("M_bh_nsc",M_bh_nsc)
+    #Total number of BH in NSC
+    N_bh_nsc = M_bh_nsc / mbh_mstar_ratio
+    #print("N_bh_nsc",N_bh_nsc)
+    #Relative volume of central pc^3 to size of NSC
+    relative_volumes_at1pc = (1.0/r_nsc_out)**(3.0)
+    #print(relative_volumes_at1pc)
+    #Total number of BH at R<1pc
+    N_bh_nsc_pc = N_bh_nsc * relative_volumes_at1pc * (1.0/r_nsc_out)**(-nsc_index_outer)
+    #print("Normalized N_bh at 1pc",N_bh_nsc_pc)
+    #Convert outer disk radius in r_g to units of pc. 1r_g =1AU (M_smbh/10^8Msun) and 1pc =2e5AU =2e5 r_g(M/10^8Msun)^-1
+    pc_dist = 2.e5*((mass_smbh/1.e8)**(-1.0))
+    #Total number of BH at R < disk_outer_radius
+    critical_disk_radius_pc = disk_outer_radius/pc_dist
+    relative_volumes_at_disk_outer_radius = (critical_disk_radius_pc/1.0)**(3.0)
+    Nbh_disk_volume = N_bh_nsc_pc * relative_volumes_at_disk_outer_radius * ((critical_disk_radius_pc)**(-nsc_index_outer))
+    # Total number of BH in disk
+    Nbh_disk_total = np.rint(Nbh_disk_volume * h_disk_average)
+    #print("Nbh_disk_total",Nbh_disk_total)  
+    return np.int(Nbh_disk_total)
+
