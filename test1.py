@@ -71,7 +71,7 @@ def main():
     aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     
     #Set up number of BH in disk
-    n_bh = setupdiskblackholes.setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average)
+    n_bh = setupdiskblackholes.setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner)
 
     # generate initial BH parameter arrays
     print("Generate initial BH parameter arrays")
@@ -359,6 +359,7 @@ def main():
     print("Total number of mergers = ",number_of_mergers)
     print("Mergers", merged_bh_array.shape)
     print("Nbh_disk",n_bh)
+    
     if True and number_of_mergers > 0: #verbose:
         print(merged_bh_array[:,:number_of_mergers].T)
         
