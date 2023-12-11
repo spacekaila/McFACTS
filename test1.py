@@ -81,7 +81,7 @@ def main():
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
     
-    bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_thermal(n_bh)
+    bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(n_bh)
     bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(n_bh)
     #print("orb ecc",bh_initial_orb_ecc)
     #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
@@ -105,9 +105,35 @@ def main():
     sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
     print("Sorted prograde BH locations:", len(sorted_prograde_bh_locations), len(prograde_bh_locations))
     print(sorted_prograde_bh_locations)
+    print(prograde_bh_locations)
+    #print("Aspect ratio",aspect_ratio_func(prograde_bh_locations))
+    #Use masses of prograde BH only
+    prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
+    print("Prograde BH initial masses", len(prograde_bh_masses))
+
+
     # Orbital eccentricities
     prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
-    print("Prograde orbital eccentricities")
+    print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
+    # Find which orbital eccentricities are <=h the disk aspect ratio and set up a mask
+    prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+    # Orb eccentricities <2h (simple exponential damping): mask entries > 2*aspect_ratio
+    prograde_bh_modest_ecc = np.ma.masked_where(prograde_bh_orb_ecc > 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+    #Orb eccentricities >2h (modified exponential damping): mask entries < 2*aspect_ratio
+    prograde_bh_large_ecc = np.ma.masked_where(prograde_bh_orb_ecc < 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+    # Apply ecc damping to this masked array (where true)
+    prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
+
+    #print('modest ecc ',prograde_bh_modest_ecc)
+    print('damped ecc',prograde_bh_orb_ecc_damp)    
+    #print("Crit ecc mask",prograde_bh_crit_ecc)
+    #crit_ecc_prograde_indices = np.ma.nonzero(prograde_bh_crit_ecc)
+    #print(crit_ecc_prograde_indices)
+    #print("Modest ecc mask",prograde_bh_modest_ecc)
+    #modest_ecc_prograde_indices = np.ma.nonzero(prograde_bh_modest_ecc)
+    #print(modest_ecc_prograde_indices)
+    #print("Damped modest ecc",prograde_bh_orb_ecc_modest_damp)
+    
     #Orbital inclinations
     prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
     print("Prograde orbital inclinations")
@@ -115,10 +141,7 @@ def main():
     # Housekeeping: Fractional rate of mass growth per year at 
     # the Eddington rate(2.3e-8/yr)
     mass_growth_Edd_rate = 2.3e-8
-    #Use masses of prograde BH only
-    prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
-    print("Prograde BH initial masses", len(prograde_bh_masses))
-
+    
     # Housekeeping: minimum spin angle resolution 
     # (ie less than this value gets fixed to zero) 
     # e.g 0.02 rad=1deg
@@ -171,6 +194,13 @@ def main():
             np.savetxt("output_bh_binary_{}.dat".format(n_timestep_index),binary_bh_array[:,:n_mergers_so_far+1].T,header=binary_field_names)
             n_timestep_index +=1
 
+        #Order of operations: 
+        # No migration until orbital eccentricity damped to e_crit (To do: actually should be h)
+        # 1. check orb. eccentricity to see if any prograde_bh_location BH have orb. ecc. <e_crit.
+        #    Create array prograde_bh_location_ecrit for those (mask prograde_bh_locations?)
+        #       If yes, migrate those BH.
+        #       All other BH, damp ecc and spin *down* BH (retrograde accretion), accrete mass.
+        # 2. Run close encounters only on those prograde_bh_location_ecrit members.
         
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
