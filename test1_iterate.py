@@ -204,9 +204,9 @@ def main():
 
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
                 # Single output:  does work
-                np.savetxt(os.path.join(work_directory, f"run{iteration}/output_bh_single_{n_timestep_index}.dat"), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
+                np.savetxt(os.path.join(work_directory, f"run{iteration_zfilled_str}/output_bh_single_{n_timestep_index}.dat"), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
                 # Binary output: does not work
-                np.savetxt(os.path.join(work_directory, f"run{iteration}/output_bh_binary_{n_timestep_index}.dat"), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
+                np.savetxt(os.path.join(work_directory, f"run{iteration_zfilled_str}/output_bh_binary_{n_timestep_index}.dat"), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
                 n_timestep_index +=1
 
             
@@ -401,7 +401,7 @@ def main():
         if True and number_of_mergers > 0: #verbose:
             print(merged_bh_array[:,:number_of_mergers].T)
 
-        iteration_save_name = f"run{iteration}/{opts.fname_output_mergers}"
+        iteration_save_name = f"run{iteration_zfilled_str}/{opts.fname_output_mergers}"
         np.savetxt(os.path.join(work_directory, iteration_save_name), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
         # Add mergers to population array including the iteration number
