@@ -125,15 +125,18 @@ def main():
     prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
 
     #print('modest ecc ',prograde_bh_modest_ecc)
-    print('damped ecc',prograde_bh_orb_ecc_damp)    
-    #print("Crit ecc mask",prograde_bh_crit_ecc)
-    #crit_ecc_prograde_indices = np.ma.nonzero(prograde_bh_crit_ecc)
-    #print(crit_ecc_prograde_indices)
-    #print("Modest ecc mask",prograde_bh_modest_ecc)
-    #modest_ecc_prograde_indices = np.ma.nonzero(prograde_bh_modest_ecc)
-    #print(modest_ecc_prograde_indices)
-    #print("Damped modest ecc",prograde_bh_orb_ecc_modest_damp)
+    #print('damped ecc',prograde_bh_orb_ecc_damp)    
     
+    # Migrate
+    # First if feedback present, find ratio of feedback heating torque to migration torque
+    if feedback > 0:
+            ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
+    else:
+            ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
+    # then migrate as usual
+    prograde_bh_locations_new = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
+        
+
     #Orbital inclinations
     prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
     print("Prograde orbital inclinations")
@@ -209,8 +212,9 @@ def main():
         else:
             ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
         # then migrate as usual
-        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius)
-        
+        #print("TEST locations",prograde_bh_locations)
+        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
+        #print("NEW locations",prograde_bh_locations)
         # Accrete
         prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
         # Spin up
@@ -331,11 +335,12 @@ def main():
         #If a close encounter within mutual Hill sphere add a new Binary
 
             # check which binaries should get made
-            close_encounters2 = hillsphere.binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh)
+            close_encounters2 = hillsphere.binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh, prograde_bh_orb_ecc, crit_ecc)
             print(close_encounters2)
             # print(close_encounters)
             if len(close_encounters2) > 0:
                 print("Make binary at time ", time_passed)
+                print,np.shape(close_encounters2)[1]
                 # number of new binaries is length of 2nd dimension of close_encounters2
                 number_of_new_bins = np.shape(close_encounters2)[1]
                 # make new binaries
