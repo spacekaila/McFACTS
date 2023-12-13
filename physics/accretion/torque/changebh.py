@@ -28,6 +28,9 @@ def change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_
     bh_new_spins : float array
         spin magnitudes of black holes after accreting at prescribed rate for one timestep
     """
+    #A retrograde BH a=-1 will spin down to a=0 when it accretes a factor sqrt(3/2)=1.22 in mass (Bardeen 1970).
+    # Since M_edd/t = 2.3 e-8 M0/yr or 2.3e-4M0/10kyr then M(t)=M0*exp((M_edd/t)*f_edd*time)
+    # so M(t)~1.2=M0*exp(0.2) so in 10^7yr, spin should go a=-1 to a=0. Or delta a ~ 10^-3 every 10^4yr.
 
     #def change_spin_magnitudes(bh_spins,prograde_orb_ang_mom_indices,frac_Eddington_ratio,spin_torque_condition,mass_growth_Edd_rate,timestep):
     #bh_new_spins=bh_spins
@@ -35,7 +38,9 @@ def change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_
     normalized_timestep = timestep/1.e4
     normalized_spin_torque_condition = spin_torque_condition/0.1
    
-    spin_iteration = (4.4e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
+    #I think this should be 1.e-3! See argument above.
+    spin_iteration = (1.e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
+    #spin_iteration = (4.4e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
 
     bh_new_spins = np.empty_like(prograde_bh_spins)
     #Singleton BH with orb ecc > e_crit will spin down b/c accrete retrograde
