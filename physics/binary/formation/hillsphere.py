@@ -343,22 +343,31 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh, prograde_
     # collect indices of possible real binaries (where separation is less than mutual Hill sphere)
     allowed_indx_form_criteria = np.where(allowed_min_form_criteria < 0)
     print(allowed_indx_form_criteria)
+    allowed_idx_crit = allowed_indx_form_criteria[0]
+    print(allowed_idx_crit)
 
     if np.size(allowed_indx_form_criteria) >0: 
-        for i in range(len(allowed_indx_form_criteria)):
-            item1 = sorted_allowed_bh_loc[allowed_indx_form_criteria[i]]
-            item2 = sorted_allowed_bh_loc[allowed_indx_form_criteria[i]+1]         
-            print(item1,item2)
-            item1_idx = np.where(prograde_bh_locations == item1)
-            item2_idx = np.where(prograde_bh_locations == item2)
-            print(item1_idx,item2_idx)
-            idx1 = item1_idx[0]
+        #If multiple negative results in criteria
+        item1 = np.empty(len(allowed_idx_crit))
+        item2 = np.empty(len(allowed_idx_crit))
+        item1_idx = np.empty(len(allowed_idx_crit))
+        item2_idx = np.empty(len(allowed_idx_crit))
+        idx1 = np.empty(len(allowed_idx_crit))
+        idx2 = np.empty(len(allowed_idx_crit))
+        for i in range(len(allowed_idx_crit)):
+            item1[i] = sorted_allowed_bh_loc[allowed_idx_crit[i]]
+            item2[i] = sorted_allowed_bh_loc[allowed_idx_crit[i]+1]         
+            print(item1[0],item2[0])
+            item1_idx = np.where(prograde_bh_locations == item1[i])
+            item2_idx = np.where(prograde_bh_locations == item2[i])
+            print(item1_idx[0],item2_idx[0])
+            idx1 = item1_idx[0] 
             idx2 = item2_idx[0]
             print(idx1,idx2)
-        
-        for j in range(len(idx1)):
-            print(idx1[j],idx2[j]) 
-            print(prograde_bh_locations[idx1[j]],prograde_bh_locations[idx2[j]],prograde_bh_orb_ecc[idx1[j]],prograde_bh_orb_ecc[idx2[j]])
+
+        #for j in range(len(idx1)):
+            #print(idx1[j],idx2[j]) 
+            #print(prograde_bh_locations[idx1[j]],prograde_bh_locations[idx2[j]],prograde_bh_orb_ecc[idx1[j]],prograde_bh_orb_ecc[idx2[j]])
     
     # Now deal with sequences: compute separation/R_Hill for all
     allowed_sequences_to_test = (allowed_separations[allowed_indx_form_criteria])/(R_Hill_allowed_bin_test[allowed_indx_form_criteria])
