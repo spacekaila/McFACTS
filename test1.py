@@ -75,8 +75,9 @@ def main():
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc\
-                     = ReadInputs.ReadInputs_ini(fname)
+                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc, \
+                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average\
+                        = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
     surf_dens_func_log = scipy.interpolate.UnivariateSpline(disk_model_radius_array, np.log(surface_density_array))
@@ -85,6 +86,9 @@ def main():
     aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(disk_model_radius_array, np.log(aspect_ratio_array))
     aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     
+    #Set up number of BH in disk
+    n_bh = setupdiskblackholes.setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner)
+
     # generate initial BH parameter arrays
     print("Generate initial BH parameter arrays")
     bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(n_bh, disk_outer_radius)
@@ -92,8 +96,9 @@ def main():
     bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution)
     bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins)
     bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh)
-
-    bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_thermal(n_bh)
+    
+    bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(n_bh)
+    bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(n_bh)
     #print("orb ecc",bh_initial_orb_ecc)
     #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
 
@@ -116,17 +121,46 @@ def main():
     sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
     print("Sorted prograde BH locations:", len(sorted_prograde_bh_locations), len(prograde_bh_locations))
     print(sorted_prograde_bh_locations)
-    # Orbital eccentricities
-    prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
-    print("Prograde orbital eccentricities")
-
-    # Housekeeping: Fractional rate of mass growth per year at 
-    # the Eddington rate(2.3e-8/yr)
-    mass_growth_Edd_rate = 2.3e-8
+    print(prograde_bh_locations)
+    #print("Aspect ratio",aspect_ratio_func(prograde_bh_locations))
     #Use masses of prograde BH only
     prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
     print("Prograde BH initial masses", len(prograde_bh_masses))
 
+
+    # Orbital eccentricities
+    prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
+    print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
+    # Find which orbital eccentricities are <=h the disk aspect ratio and set up a mask
+    prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+    # Orb eccentricities <2h (simple exponential damping): mask entries > 2*aspect_ratio
+    prograde_bh_modest_ecc = np.ma.masked_where(prograde_bh_orb_ecc > 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+    #Orb eccentricities >2h (modified exponential damping): mask entries < 2*aspect_ratio
+    prograde_bh_large_ecc = np.ma.masked_where(prograde_bh_orb_ecc < 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+    # Apply ecc damping to this masked array (where true)
+    prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
+
+    #print('modest ecc ',prograde_bh_modest_ecc)
+    #print('damped ecc',prograde_bh_orb_ecc_damp)    
+    
+    # Migrate
+    # First if feedback present, find ratio of feedback heating torque to migration torque
+    if feedback > 0:
+            ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
+    else:
+            ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
+    # then migrate as usual
+    prograde_bh_locations_new = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
+        
+
+    #Orbital inclinations
+    prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
+    print("Prograde orbital inclinations")
+
+    # Housekeeping: Fractional rate of mass growth per year at 
+    # the Eddington rate(2.3e-8/yr)
+    mass_growth_Edd_rate = 2.3e-8
+    
     # Housekeeping: minimum spin angle resolution 
     # (ie less than this value gets fixed to zero) 
     # e.g 0.02 rad=1deg
@@ -179,6 +213,13 @@ def main():
             np.savetxt(os.path.join(work_directory, "output_bh_binary_{}.dat".format(n_timestep_index)), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
             n_timestep_index +=1
 
+        #Order of operations: 
+        # No migration until orbital eccentricity damped to e_crit (To do: actually should be h)
+        # 1. check orb. eccentricity to see if any prograde_bh_location BH have orb. ecc. <e_crit.
+        #    Create array prograde_bh_location_ecrit for those (mask prograde_bh_locations?)
+        #       If yes, migrate those BH.
+        #       All other BH, damp ecc and spin *down* BH (retrograde accretion), accrete mass.
+        # 2. Run close encounters only on those prograde_bh_location_ecrit members.
         
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
@@ -187,14 +228,15 @@ def main():
         else:
             ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
         # then migrate as usual
-        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius)
-        
+        #print("TEST locations",prograde_bh_locations)
+        prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
+        #print("NEW locations",prograde_bh_locations)
         # Accrete
         prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
         # Spin up
-        prograde_bh_spins = changebh.change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_condition, timestep)
+        prograde_bh_spins = changebh.change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_condition, timestep, prograde_bh_orb_ecc, crit_ecc)
         # Torque spin angle
-        prograde_bh_spin_angles = changebh.change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep)
+        prograde_bh_spin_angles = changebh.change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep, prograde_bh_orb_ecc, crit_ecc)
 
         # Damp BH orbital eccentricity
         prograde_bh_orb_ecc = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
@@ -287,6 +329,7 @@ def main():
                 prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,merged_spin_angle)
                 prograde_bh_generations = np.append(prograde_bh_generations,merged_bh_gen)
                 prograde_bh_orb_ecc = np.append(prograde_bh_orb_ecc,0.01)
+                prograde_bh_orb_incl = np.append(prograde_bh_orb_incl,0.0)
                 sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
                 if verbose:
                     print("New BH locations", sorted_prograde_bh_locations)
@@ -308,11 +351,12 @@ def main():
         #If a close encounter within mutual Hill sphere add a new Binary
 
             # check which binaries should get made
-            close_encounters2 = hillsphere.binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh)
+            close_encounters2 = hillsphere.binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh, prograde_bh_orb_ecc, crit_ecc)
             print(close_encounters2)
             # print(close_encounters)
             if len(close_encounters2) > 0:
                 print("Make binary at time ", time_passed)
+                print,np.shape(close_encounters2)[1]
                 # number of new binaries is length of 2nd dimension of close_encounters2
                 number_of_new_bins = np.shape(close_encounters2)[1]
                 # make new binaries
@@ -326,6 +370,7 @@ def main():
                 prograde_bh_spin_angles = np.delete(prograde_bh_spin_angles, close_encounters2)
                 prograde_bh_generations = np.delete(prograde_bh_generations, close_encounters2)
                 prograde_bh_orb_ecc = np.delete(prograde_bh_orb_ecc, close_encounters2)
+                prograde_bh_orb_incl = np.delete(prograde_bh_orb_incl, close_encounters2)
             
         #Empty close encounters
         empty = []
@@ -342,6 +387,7 @@ def main():
             bh_capture_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(1, bh_capture_spin)
             bh_capture_gen = 1
             bh_capture_orb_ecc = 0.0
+            bh_capture_orb_incl = 0.0
             print("CAPTURED BH",bh_capture_location,bh_capture_mass,bh_capture_spin,bh_capture_spin_angle)
             # Append captured BH to existing singleton arrays. Assume prograde and 1st gen BH.
             prograde_bh_locations = np.append(prograde_bh_locations,bh_capture_location) 
@@ -350,7 +396,7 @@ def main():
             prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,bh_capture_spin_angle) 
             prograde_bh_generations = np.append(prograde_bh_generations,bh_capture_gen)
             prograde_bh_orb_ecc = np.append(prograde_bh_orb_ecc,bh_capture_orb_ecc)
-
+            prograde_bh_orb_incl = np.append(prograde_bh_orb_incl,bh_capture_orb_incl)
         #Iterate the time step
         time_passed = time_passed + timestep
     #End Loop of Timesteps at Final Time, end all changes & print out results
@@ -363,6 +409,8 @@ def main():
     print("Number of binaries = ",bin_index)
     print("Total number of mergers = ",number_of_mergers)
     print("Mergers", merged_bh_array.shape)
+    print("Nbh_disk",n_bh)
+    
     if True and number_of_mergers > 0: #verbose:
         print(merged_bh_array[:,:number_of_mergers].T)
         

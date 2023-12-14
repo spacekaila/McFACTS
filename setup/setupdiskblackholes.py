@@ -67,3 +67,58 @@ def setup_disk_blackholes_eccentricity_uniform(rng, n_bh):
     random_uniform_number = rng.random((integer_nbh,))
     bh_initial_orb_ecc = random_uniform_number
     return bh_initial_orb_ecc
+
+def setup_disk_blackholes_inclination(n_bh):
+    # Return an array of BH orbital inclinations
+    # Return an initial distribution of inclination angles that are 0.0
+    #
+    # To do: initialize inclinations so random draw with i <h (so will need to input bh_locations and disk_aspect_ratio)
+    # and then damp inclination.
+    # To do: calculate v_kick for each merger and then the (i,e) orbital elements for the newly merged BH. 
+    # Then damp (i,e) as appropriate
+    integer_nbh = int(n_bh)
+    # For now, inclinations are zeros
+    bh_initial_orb_incl = np.zeros((integer_nbh,),dtype = float)
+    return bh_initial_orb_incl
+
+def setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner):
+    # Return the integer number of BH in the AGN disk as calculated from NSC inputs assuming isotropic distribution of NSC orbits
+    # To do: Calculate when R_disk_outer is not equal to the r_nsc_crit
+    # To do: Calculate when disky NSC population of BH in plane/out of plane.
+    # Housekeeping:
+    # Convert outer disk radius in r_g to units of pc. 1r_g =1AU (M_smbh/10^8Msun) and 1pc =2e5AU =2e5 r_g(M/10^8Msun)^-1
+    pc_dist = 2.e5*((mass_smbh/1.e8)**(-1.0))
+    critical_disk_radius_pc = disk_outer_radius/pc_dist
+    #Total average mass of BH in NSC
+    M_bh_nsc = M_nsc * nbh_nstar_ratio * mbh_mstar_ratio
+    #print("M_bh_nsc",M_bh_nsc)
+    #Total number of BH in NSC
+    N_bh_nsc = M_bh_nsc / mbh_mstar_ratio
+    #print("N_bh_nsc",N_bh_nsc)
+    #Relative volumes:
+    #   of central 1 pc^3 to size of NSC
+    relative_volumes_at1pc = (1.0/r_nsc_out)**(3.0)
+    #   of r_nsc_crit^3 to size of NSC
+    relative_volumes_at_r_nsc_crit = (r_nsc_crit/r_nsc_out)**(3.0)
+    #print(relative_volumes_at1pc)
+    #Total number of BH 
+    #   at R<1pc (should be about 10^4 for Milky Way parameters; 3x10^7Msun, 5pc, r^-5/2 in outskirts)
+    N_bh_nsc_pc = N_bh_nsc * relative_volumes_at1pc * (1.0/r_nsc_out)**(-nsc_index_outer)
+    #   at r_nsc_crit
+    N_bh_nsc_crit = N_bh_nsc * relative_volumes_at_r_nsc_crit * (r_nsc_crit/r_nsc_out)**(-nsc_index_outer)
+    #print("Normalized N_bh at 1pc",N_bh_nsc_pc)
+    
+    #Calculate Total number of BH in volume R < disk_outer_radius, assuming disk_outer_radius<=1pc.
+    
+    if critical_disk_radius_pc >= r_nsc_crit:
+        relative_volumes_at_disk_outer_radius = (critical_disk_radius_pc/1.0)**(3.0)
+        Nbh_disk_volume = N_bh_nsc_pc * relative_volumes_at_disk_outer_radius * ((critical_disk_radius_pc/1.0)**(-nsc_index_outer))          
+    else:
+        relative_volumes_at_disk_outer_radius = (critical_disk_radius_pc/r_nsc_crit)**(3.0)
+        Nbh_disk_volume = N_bh_nsc_crit * relative_volumes_at_disk_outer_radius * ((critical_disk_radius_pc/r_nsc_crit)**(-nsc_index_inner))
+     
+    # Total number of BH in disk
+    Nbh_disk_total = np.rint(Nbh_disk_volume * h_disk_average)
+    #print("Nbh_disk_total",Nbh_disk_total)  
+    return np.int(Nbh_disk_total)
+
