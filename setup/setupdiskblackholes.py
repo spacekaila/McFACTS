@@ -68,7 +68,7 @@ def setup_disk_blackholes_eccentricity_uniform(rng, n_bh):
     bh_initial_orb_ecc = random_uniform_number
     return bh_initial_orb_ecc
 
-def setup_disk_blackholes_inclination(n_bh):
+def setup_disk_blackholes_inclination(rng, n_bh):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0
     #
