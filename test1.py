@@ -18,7 +18,7 @@ from physics.migration.type1 import type1
 from physics.accretion.eddington import changebhmass
 from physics.accretion.torque import changebh
 from physics.feedback.hankla21 import feedback_hankla21
-#from physics.dynamics import wang22
+from physics.dynamics import dynamics
 from physics.eccentricity import orbital_ecc
 from physics.binary.formation import hillsphere
 from physics.binary.formation import add_new_binary
@@ -31,11 +31,10 @@ from physics.binary.merge import tgw
 #from tests import tests
 from outputs import mergerfile
 
-
 verbose=False
 n_bins_max = 1000
 n_bins_max_out = 100
-number_of_iterations = 10
+number_of_iterations = 30
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom"
 merger_field_names=' '.join(mergerfile.names_rec)
@@ -85,7 +84,7 @@ def main():
              spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
                      disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc, \
-                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average\
+                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average, dynamic_enc, de\
                         = ReadInputs.ReadInputs_ini(fname)
 
     # create surface density & aspect ratio functions from input arrays
@@ -170,7 +169,10 @@ def main():
         prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
 
         #print('modest ecc ',prograde_bh_modest_ecc)
-        #print('damped ecc',prograde_bh_orb_ecc_damp)    
+        #print('damped ecc',prograde_bh_orb_ecc_damp) 
+         
+        # Test dynamics
+        #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc, de)
     
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
@@ -271,7 +273,15 @@ def main():
 
             # Damp BH orbital eccentricity
             prograde_bh_orb_ecc = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
-        
+            # Perturb eccentricity via dynamical encounters
+            if dynamic_enc > 0:
+                prograde_bh_locn_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc, de)
+    
+            prograde_bh_locations = prograde_bh_locn_orb_ecc[0]
+            prograde_bh_orb_ecc = prograde_bh_locn_orb_ecc[1]
+            #print("Time passed", time_passed)
+            prograde_bh_locations = prograde_bh_locations[0]
+            prograde_bh_orb_ecc = prograde_bh_orb_ecc[0]
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 # If there are binaries, evolve them
@@ -410,6 +420,7 @@ def main():
             #After this time period, was there a disk capture via orbital grind-down?
             # To do: What eccentricity do we want the captured BH to have? Right now ecc=0.0? Should it be ecc<h at a?             
             # Assume 1st gen BH captured and orb ecc =0.0
+            # To do: Bias disk capture to more massive BH!
             capture = time_passed % capture_time
             if capture == 0:
                 bh_capture_location = setupdiskblackholes.setup_disk_blackholes_location(rng, 1, outer_capture_radius)

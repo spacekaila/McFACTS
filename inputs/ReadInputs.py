@@ -95,7 +95,11 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     nsc_index_outer : float
         Index of radial density profile of NSC outside r_nsc_crit (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
     h_disk_average : float
-        Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)        
+        Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
+    dynamic_enc : int
+        Switch (1) turns dynamical encounters between embedded BH on.
+    de : float
+        Average energy change per strong interaction. de can be 20% in cluster interactions. May be 10% on average (with gas)                
     """
 
     config = ConfigParser.ConfigParser()
@@ -149,7 +153,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     nsc_index_inner = float(input_variables['nsc_index_inner'])
     nsc_index_outer = float(input_variables['nsc_index_outer'])
     h_disk_average = float(input_variables['h_disk_average'])
-
+    dynamic_enc = int(input_variables['dynamic_enc'])
+    de = float(input_variables['de'])
     print("I put your variables where they belong")
 
     # open the disk model surface density file and read it in
@@ -231,7 +236,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
             spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
                 timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc, \
-                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average\
+                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average, dynamic_enc, de\
 
 
 
