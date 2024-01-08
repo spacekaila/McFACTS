@@ -35,6 +35,7 @@ verbose=False
 #Maximum number of binaries allowed in a run
 n_bins_max = 1000
 n_bins_max_out = 100
+#This is where the number of iterations you want to run is actually set!!
 number_of_iterations = 1
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl"
@@ -378,7 +379,7 @@ def main():
                     if verbose:
                         print("New BH locations", sorted_prograde_bh_locations)
                     #print("Merger Flag!")
-                    print(number_of_mergers)
+                    #print(number_of_mergers)
                     #print("Time ", time_passed)
                     if verbose:
                         print(merger_array)
@@ -450,8 +451,8 @@ def main():
             #Iterate the time step
             time_passed = time_passed + timestep
             #Print time passed every 10 timesteps for now
-            time_iteration_tracker = 10*timestep
-            if time_passed % time_iteration_tracker:
+            time_iteration_tracker = 10.0*timestep
+            if time_passed % time_iteration_tracker == 0:
                 print("Time passed=",time_passed)
 
         #End Loop of Timesteps at Final Time, end all changes & print out results

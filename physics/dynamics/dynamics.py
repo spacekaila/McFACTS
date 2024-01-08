@@ -5,7 +5,7 @@ import scipy
 def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, crit_ecc, de):
     """"Return array of modified singleton BH orbital eccentricities perturbed by encounters within f*R_Hill, where f is some fraction/multiple of Hill sphere radius R_H
     
-    Assume encounters with BH with e<e_crit are the only important ones for now. 
+    Assume encounters between damped BH (e<e_crit) and undamped BH (e>e_crit) are the only important ones for now. 
     Since the e<e_crit population is the most likely BBH merger source.
     
     First, find those orbiters with e<e_crit and their
