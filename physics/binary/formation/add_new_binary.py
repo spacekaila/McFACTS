@@ -38,14 +38,16 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
             merger flag = -2 if merging this timestep, else = 0 (not set here)
             [12,j]: float
             time of merger if binary has already merged (not set here)
-            [13,j]: ?
-            not set here
+            [13,j]: float
+            binary eccentricity around binary center of mass
             [14,j]: int
             generation of obj 1 (1=natal black hole, no prior mergers)
             [15,j]: int
             generation of obj 2 (1=natal black hole, no prior mergers)
             [16,j]: int
             binary angular momentum switch +1/-1 for pro/retrograde
+            [17,j]: float
+            binary orbital inclination
     bh_locations : float array
         locations of prograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
     bh_masses : float array
@@ -78,20 +80,29 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
         as for input, but updated (thus longer), to include newly formed binaries
     """
     # find number of new binaries based on indices from hillsphere.binary_check 
-    num_new_bins = np.shape(close_encounters)[1]
+    num_new_bins = np.shape(close_encounters)[1]  
 
     # If there are new binaries, actually form them!
     if num_new_bins > 0:
         # send close encounter indices to new array
         array_of_indices = close_encounters
-        print("Close encounters ", np.shape(close_encounters)[1], array_of_indices)
+        #print("Close encounters ", np.shape(close_encounters)[1], array_of_indices)
         bincount = 0
         # for all the new binaries that need to be created
         for j in range(bindex, bindex + num_new_bins):
+            #print("num new bins", num_new_bins)
             # for each member of the binary
             for i in range(0,2):
-                # pick the [0,N] or [1,N] index for member 1 and member 2 of binary
-                thing1 = array_of_indices[i][bincount]
+                # pick the [N,0] or [N,1] index for member 1 and member 2 of binary N
+                #if num_new_bins > 1:
+                #print("array of indices comps",array_of_indices[0],array_of_indices[1])
+                if num_new_bins == 1:
+                    thing1 = array_of_indices[i]
+                else:
+                    #print("More than 1 BIN",array_of_indices[0][0],array_of_indices[1][0])
+                    thing1 = array_of_indices[i][bincount]
+                
+                #print("thing1",thing1)
                 bin_array[i,j] = bh_locations[thing1]
                 bin_array[i+2,j] = bh_masses[thing1]
                 bin_array[i+4,j] = bh_spins[thing1]
@@ -106,6 +117,8 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
                 temp_mass_2 = bin_array[3,j]
                 temp_bin_mass = temp_mass_1 + temp_mass_2
                 bin_array[9,j] = temp_loc_1 + (temp_bin_separation*temp_mass_2/temp_bin_mass)
+                #Set up binary eccentricity around its own center of mass. Draw uniform value btwn [0,1]
+                bin_array[13,j] = np.random.uniform()
                 # Set up binary member generations
                 bin_array[i+14,j] = bh_gens[thing1]
                 # Set up bin orb. ang. mom. (randomly +1 (pro) or -1(retrograde))
@@ -116,9 +129,13 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
                 if retro == 0:
                     bh_initial_orb_ang_mom = np.fabs(bh_initial_orb_ang_mom)
                 bin_array[16,j] = bh_initial_orb_ang_mom
-                print("Random uniform number =", random_uniform_number )
-                print("New orb ang mom =", bh_initial_orb_ang_mom)
+                #print("Random uniform number =", random_uniform_number )
+                #print("New orb ang mom =", bh_initial_orb_ang_mom)
+                #Set up binary inclination. Will want this to be pi radians if retrograde.
+                bin_array[17,j] = 0
+                #print("bin element",bin_array[:,j])
             bincount = bincount + 1
+            #print("new binary",bin_array[:,j])
         if verbose:
             print("New Binary")
             print(bin_array)

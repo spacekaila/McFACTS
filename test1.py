@@ -32,11 +32,12 @@ from physics.binary.merge import tgw
 from outputs import mergerfile
 
 verbose=False
+#Maximum number of binaries allowed in a run
 n_bins_max = 1000
 n_bins_max_out = 100
-number_of_iterations = 30
+number_of_iterations = 1
 
-binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom"
+binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl"
 merger_field_names=' '.join(mergerfile.names_rec)
 
 # parse command line arguments
@@ -160,13 +161,13 @@ def main():
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
         print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
         # Find which orbital eccentricities are <=h the disk aspect ratio and set up a mask
-        prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+        #prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
         # Orb eccentricities <2h (simple exponential damping): mask entries > 2*aspect_ratio
-        prograde_bh_modest_ecc = np.ma.masked_where(prograde_bh_orb_ecc > 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+        #prograde_bh_modest_ecc = np.ma.masked_where(prograde_bh_orb_ecc > 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
         #Orb eccentricities >2h (modified exponential damping): mask entries < 2*aspect_ratio
-        prograde_bh_large_ecc = np.ma.masked_where(prograde_bh_orb_ecc < 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+        #prograde_bh_large_ecc = np.ma.masked_where(prograde_bh_orb_ecc < 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
         # Apply ecc damping to this masked array (where true)
-        prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
+        #prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
 
         #print('modest ecc ',prograde_bh_modest_ecc)
         #print('damped ecc',prograde_bh_orb_ecc_damp) 
@@ -176,12 +177,12 @@ def main():
     
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
-        if feedback > 0:
-                ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
-        else:
-                ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
+        #if feedback > 0:
+        #        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
+        #else:
+        #        ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
         # then migrate as usual
-        prograde_bh_locations_new = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
+        #prograde_bh_locations_new = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
         
 
         #Orbital inclinations
@@ -202,7 +203,7 @@ def main():
         prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
 
         # Housekeeping:
-        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom)o
+        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl)o
         number_of_bin_properties = len(binary_field_names.split())+1
         integer_nbinprop = int(number_of_bin_properties)
         bin_index = 0
@@ -276,19 +277,19 @@ def main():
             # Perturb eccentricity via dynamical encounters
             if dynamic_enc > 0:
                 prograde_bh_locn_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc, de)
-    
-            prograde_bh_locations = prograde_bh_locn_orb_ecc[0]
-            prograde_bh_orb_ecc = prograde_bh_locn_orb_ecc[1]
-            #print("Time passed", time_passed)
-            prograde_bh_locations = prograde_bh_locations[0]
-            prograde_bh_orb_ecc = prograde_bh_orb_ecc[0]
+                prograde_bh_locations = prograde_bh_locn_orb_ecc[0]
+                prograde_bh_orb_ecc = prograde_bh_locn_orb_ecc[1]
+                prograde_bh_locations = prograde_bh_locations[0]
+                prograde_bh_orb_ecc = prograde_bh_orb_ecc[0]
+            
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 # If there are binaries, evolve them
-                # Harden binaries
+                # Harden binaries via gas
+                #Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                 binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
-                print("Harden binary")
-                print("Time passed = ", time_passed)
+                #print("Harden binary")
+                #print("Time passed = ", time_passed)
                 # Accrete gas onto binary components
                 binary_bh_array = evolve.change_bin_mass(binary_bh_array, frac_Eddington_ratio, mass_growth_Edd_rate, timestep, integer_nbinprop, bin_index)
                 # Spin up binary components
@@ -309,7 +310,8 @@ def main():
             
                 #Check and see if merger flagged during hardening (row 11, if negative)
                 merger_flags = binary_bh_array[11,:]
-                any_merger = np.count_nonzero(merger_flags) 
+                any_merger = np.count_nonzero(merger_flags)
+                 
                 if verbose:
                     print(merger_flags)
                 merger_indices = np.where(merger_flags < 0.0)
@@ -319,37 +321,38 @@ def main():
                     print(merger_indices)
                 #print(binary_bh_array[:,merger_indices])
                 if any_merger > 0:
-                    print("Merger!")
+                    for i in range(any_merger):
+                    #print("Merger!")
                     # send properties of merging objects to static variable names
-                    mass_1 = binary_bh_array[2,merger_indices]
-                    mass_2 = binary_bh_array[3,merger_indices]
-                    spin_1 = binary_bh_array[4,merger_indices]
-                    spin_2 = binary_bh_array[5,merger_indices]
-                    angle_1 = binary_bh_array[6,merger_indices]
-                    angle_2 = binary_bh_array[7,merger_indices]
-                    bin_ang_mom = binary_bh_array[16,merger_indices]
+                        #mass_1[i] = binary_bh_array[2,merger_indices[i]]
+                        #mass_2[i] = binary_bh_array[3,merger_indices[i]]
+                        #spin_1[i] = binary_bh_array[4,merger_indices[i]]
+                        #spin_2[i] = binary_bh_array[5,merger_indices[i]]
+                        #angle_1[i] = binary_bh_array[6,merger_indices[i]]
+                        #angle_2[i] = binary_bh_array[7,merger_indices[i]]
+                        #bin_ang_mom[i] = binary_bh_array[16,merger_indices]
 
                     # calculate merger properties
-                    merged_mass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
-                    merged_spin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
-                    merged_chi_eff = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle_2, bin_ang_mom)
-                    merged_bh_array = mergerfile.merged_bh(merged_bh_array,binary_bh_array, merger_indices,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,number_of_mergers)
+                        merged_mass = tichy08.merged_mass(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]])
+                        merged_spin = tichy08.merged_spin(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
+                        merged_chi_eff = chieff.chi_effective(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
+                        merged_bh_array[:,n_mergers_so_far + i] = mergerfile.merged_bh(merged_bh_array,binary_bh_array,merger_indices,i,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,n_mergers_so_far)
                     # do another thing
                     merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
                     #Reset merger marker to zero
                     #n_mergers_so_far=int(number_of_mergers)
                     #Remove merged binary from binary array. Delete column where merger_indices is the label.
-                    print("!Merger properties!",binary_bh_array[:,merger_indices],merger_array[:,merger_indices],merged_bh_array)
+                    #print("!Merger properties!",binary_bh_array[:,merger_indices],merger_array[:,merger_indices],merged_bh_array)
                     binary_bh_array=np.delete(binary_bh_array,merger_indices,1)
                 
                     #Reduce number of binaries by number of mergers
                     bin_index = bin_index - len(merger_indices)
-                    print("bin index",bin_index)
+                    #print("bin index",bin_index)
                     #Find relevant properties of merged BH to add to single BH arrays
                     num_mergers_this_timestep = len(merger_indices)
                 
-                    print("num mergers this timestep",num_mergers_this_timestep)
-                    print("n_mergers_so_far",n_mergers_so_far)    
+                    #print("num mergers this timestep",num_mergers_this_timestep)
+                    #print("n_mergers_so_far",n_mergers_so_far)    
                     for i in range (0, num_mergers_this_timestep):
                         merged_bh_com = merged_bh_array[0,n_mergers_so_far + i]
                         merged_mass = merged_bh_array[1,n_mergers_so_far + i]
@@ -357,7 +360,7 @@ def main():
                         merged_spin_angle = merged_bh_array[4,n_mergers_so_far + i]
                     #New bh generation is max of generations involved in merger plus 1
                         merged_bh_gen = np.maximum(merged_bh_array[11,n_mergers_so_far + i],merged_bh_array[12,n_mergers_so_far + i]) + 1.0 
-                    print("Merger at=",merged_bh_com,merged_mass,merged_spin,merged_spin_angle,merged_bh_gen)
+                    #print("Merger at=",merged_bh_com,merged_mass,merged_spin,merged_spin_angle,merged_bh_gen)
                     # Add to number of mergers
                     n_mergers_so_far += len(merger_indices)
                     number_of_mergers += len(merger_indices)
@@ -374,44 +377,49 @@ def main():
                     sorted_prograde_bh_locations=np.sort(prograde_bh_locations)
                     if verbose:
                         print("New BH locations", sorted_prograde_bh_locations)
-                    print("Merger Flag!")
+                    #print("Merger Flag!")
                     print(number_of_mergers)
-                    print("Time ", time_passed)
+                    #print("Time ", time_passed)
                     if verbose:
                         print(merger_array)
                 else:                
                     # No merger
                     # do nothing! hardening should happen FIRST (and now it does!)
-                    if bin_index>0: # verbose:
-                        print(" BH binaries ", bin_index,  binary_bh_array[:,:int(bin_index)].shape)
-                        print(binary_bh_array[:,:int(bin_index)].T)  # this makes printing work as expected
-            else:
-            
+                    if verbose:
+                        if bin_index>0: # verbose:
+                            #print(" BH binaries ", bin_index,  binary_bh_array[:,:int(bin_index)].shape)
+                            print(binary_bh_array[:,:int(bin_index)].T)  # this makes printing work as expected
+            else:            
+                if verbose:
+                    print("No binaries formed yet")
                 # No Binaries present in bin_array. Nothing to do.
 
             #If a close encounter within mutual Hill sphere add a new Binary
 
-                # check which binaries should get made
-                close_encounters2 = hillsphere.binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh, prograde_bh_orb_ecc, crit_ecc)
-                print(close_encounters2)
-                # print(close_encounters)
-                if len(close_encounters2) > 0:
-                    print("Make binary at time ", time_passed)
-                    print,np.shape(close_encounters2)[1]
-                    # number of new binaries is length of 2nd dimension of close_encounters2
-                    number_of_new_bins = np.shape(close_encounters2)[1]
-                    # make new binaries
-                    binary_bh_array = add_new_binary.add_to_binary_array2(rng, binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters2, bin_index, retro)
-                    bin_index = bin_index + number_of_new_bins
-
-                    # delete corresponding entries for new binary members from singleton arrays
-                    prograde_bh_locations = np.delete(prograde_bh_locations, close_encounters2)
-                    prograde_bh_masses = np.delete(prograde_bh_masses, close_encounters2)
-                    prograde_bh_spins = np.delete(prograde_bh_spins, close_encounters2)
-                    prograde_bh_spin_angles = np.delete(prograde_bh_spin_angles, close_encounters2)
-                    prograde_bh_generations = np.delete(prograde_bh_generations, close_encounters2)
-                    prograde_bh_orb_ecc = np.delete(prograde_bh_orb_ecc, close_encounters2)
-                    prograde_bh_orb_incl = np.delete(prograde_bh_orb_incl, close_encounters2)
+            # check which binaries should get made
+            close_encounters2 = hillsphere.binary_check2(prograde_bh_locations, prograde_bh_masses, mass_smbh, prograde_bh_orb_ecc, crit_ecc)
+            #print("Output of close encounters", close_encounters2)
+            # print(close_encounters)
+            if np.size(close_encounters2) > 0:
+                #print("Make binary at time ", time_passed)
+                #print("shape1",np.shape(close_encounters2)[1])
+                #print("shape0",np.shape(close_encounters2)[0])
+                # number of new binaries is length of 2nd dimension of close_encounters2
+                #number_of_new_bins = np.shape(close_encounters2)[1]
+                number_of_new_bins = np.shape(close_encounters2)[1]
+                #print("number of new bins", number_of_new_bins)
+                # make new binaries
+                binary_bh_array = add_new_binary.add_to_binary_array2(rng, binary_bh_array, prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_generations, close_encounters2, bin_index, retro)
+                bin_index = bin_index + number_of_new_bins
+                #print("Binary array",binary_bh_array[:,0])
+                # delete corresponding entries for new binary members from singleton arrays
+                prograde_bh_locations = np.delete(prograde_bh_locations, close_encounters2)
+                prograde_bh_masses = np.delete(prograde_bh_masses, close_encounters2)
+                prograde_bh_spins = np.delete(prograde_bh_spins, close_encounters2)
+                prograde_bh_spin_angles = np.delete(prograde_bh_spin_angles, close_encounters2)
+                prograde_bh_generations = np.delete(prograde_bh_generations, close_encounters2)
+                prograde_bh_orb_ecc = np.delete(prograde_bh_orb_ecc, close_encounters2)
+                prograde_bh_orb_incl = np.delete(prograde_bh_orb_incl, close_encounters2)
             
             #Empty close encounters
             empty = []
@@ -430,7 +438,7 @@ def main():
                 bh_capture_gen = 1
                 bh_capture_orb_ecc = 0.0
                 bh_capture_orb_incl = 0.0
-                print("CAPTURED BH",bh_capture_location,bh_capture_mass,bh_capture_spin,bh_capture_spin_angle)
+                #print("CAPTURED BH",bh_capture_location,bh_capture_mass,bh_capture_spin,bh_capture_spin_angle)
                 # Append captured BH to existing singleton arrays. Assume prograde and 1st gen BH.
                 prograde_bh_locations = np.append(prograde_bh_locations,bh_capture_location) 
                 prograde_bh_masses = np.append(prograde_bh_masses,bh_capture_mass)
@@ -441,6 +449,11 @@ def main():
                 prograde_bh_orb_incl = np.append(prograde_bh_orb_incl,bh_capture_orb_incl)
             #Iterate the time step
             time_passed = time_passed + timestep
+            #Print time passed every 10 timesteps for now
+            time_iteration_tracker = 10*timestep
+            if time_passed % time_iteration_tracker:
+                print("Time passed=",time_passed)
+
         #End Loop of Timesteps at Final Time, end all changes & print out results
     
         print("End Loop!")

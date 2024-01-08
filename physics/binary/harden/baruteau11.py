@@ -17,7 +17,9 @@ def bin_harden_baruteau(bin_array, integer_nbinprop, mass_smbh, timestep, norm_t
     # number_of_bin_properties = index i (row) of bin_array[i,j]
     # bin_index = index j (column) of bin_array[i,j]. 
 
+    
     bindex = int(bin_index)
+    
     # Run over active binaries (j is jth binary; i is the ith property of the jth binary, e.g. mass1,mass 2 etc)
     # Find number of binary orbits around its center of mass. 
     # For every 10^3 orbits, halve the binary separation.

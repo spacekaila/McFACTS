@@ -425,3 +425,141 @@ def binary_check(prograde_bh_locations, prograde_bh_masses, mass_smbh, prograde_
         final_binary_indices=np.empty_like(allowed_sequences_to_test)
     #return all_binary_indices
     return final_binary_indices
+
+def binary_check2(prograde_bh_locations, prograde_bh_masses, mass_smbh, prograde_bh_orb_ecc, e_crit):
+    """Determines which prograde BH will form binaries in this timestep. Takes as inputs
+    the singleton BH locations,masses & orbital eccentricities, and takes the candidate binary population from 
+    BH with orbital eccentricities damped to <e_crit.
+    Among this damped population, checks if their separations are less than
+    the mutual Hill sphere of any 2 adjacent BH. If this is the case, determine the
+    smallest separation pairs (in units of their mutual Hill sphere) to form a set of
+    actual binaries (this module does handle cases where 3 or more bodies *might* form
+    some set of binaries which would be mutually exclusive; however it does not handle
+    or even flag the implied triple system dynamics). Returns a 2xN array of the relevant
+    binary indices, for further handling to form actual binaries & assign additional
+    parameters (e.g. angular momentum of the binary).
+
+    Parameters
+    ----------
+    prograde_bh_locations : float array
+        locations of prograde singleton BH at start of timestep in units of 
+        gravitational radii (r_g=GM_SMBH/c^2)
+    prograde_bh_masses : float array
+        initial masses of bh in prograde orbits around SMBH in units of solar masses
+    mass_smbh : float
+        mass of supermassive black hole in units of solar masses
+    prograde_bh_orb_ecc : float array
+        Orbital ecc of singleton BH after damping during timestep
+    e_crit : float
+        Critical eccentricity allowing bin formation and migration    
+    Returns
+    -------
+    all_binary_indices : [2,N] int array
+        array of indices corresponding to locations in prograde_bh_locations, prograde_bh_masses,
+        prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc and prograde_bh_generations which corresponds
+        to binaries that form in this timestep. it has a length of the number of binaries to form (N)
+        and a width of 2.
+    """
+
+    #First check for BH with sufficiently damped orbital eccentricity (e<=e_crit (usually 0.01)). 
+    #This population is the sub-set of prograde BH from which we CAN form binaries.
+    
+    #Singleton BH with orb ecc < e_crit (candidates for binary formation)
+    prograde_bh_can_form_bins = np.ma.masked_where(prograde_bh_orb_ecc >e_crit, prograde_bh_orb_ecc)    
+    indices_bh_can_form_bins = np.ma.nonzero(prograde_bh_can_form_bins)
+    # Indices of those candidates for binary formation
+    allowed_to_form_bins = np.array(indices_bh_can_form_bins[0])
+    #Sort the location of the candidates
+    sorted_bh_locations = np.sort(prograde_bh_locations[allowed_to_form_bins])
+    #Sort the indices of all singleton BH (the superset)
+    sorted_bh_location_indices_superset = np.argsort(prograde_bh_locations)
+    #Set the condition for membership in candidate array to be searched/tested
+    condition = np.isin(sorted_bh_location_indices_superset, allowed_to_form_bins)
+    #Here is the subset of indices that can be tested for binarity
+    subset = np.extract(condition,sorted_bh_location_indices_superset)
+    
+    # Find the distances between [r1,r2,r3,r4,..] as [r2-r1,r3-r2,r4-r3,..]=[delta1,delta2,delta3..]
+    # Note length of separations is 1 less than prograde_bh_locations
+    
+    #This is the set of separations between the sorted candidate BH
+    separations = np.diff(sorted_bh_locations)
+ 
+    # Now compute mutual hill spheres of all possible candidate binaries if can test    
+    if len(separations) > 0:
+        R_Hill_possible_binaries = (sorted_bh_locations[:-1] + separations/2.0) * \
+            pow(((prograde_bh_masses[subset[:-1]] + \
+                  prograde_bh_masses[subset[1:]]) / \
+                    (mass_smbh * 3.0)), (1.0/3.0))
+        # compare separations to mutual Hill spheres - negative values mean possible binary formation
+        minimum_formation_criteria = separations - R_Hill_possible_binaries
+        #print("sep -R_hill", minimum_formation_criteria)
+        # collect indices of possible real binaries (where separation is less than mutual Hill sphere)
+        index_formation_criteria = np.where(minimum_formation_criteria < 0)
+        
+        #Here's the index of the array of candidates
+        test_idx = index_formation_criteria[0]
+        #print("test_idx", test_idx)
+        
+        #If we actually have any candidates this time step
+        if np.size(test_idx) >0:
+            #print("subset(test_idx)",subset[test_idx][0],subset[test_idx+1][0])
+            #Start with real index (from full singleton array) of 1st candidate binary component (implicit + 1 partner since separations are ordered )
+            bin_indices = np.array([subset[test_idx[0]],subset[test_idx[0]+1]])
+            #If only 1 binary this timestep, return this binary!
+            all_binary_indices = np.array([subset[test_idx],subset[test_idx+1]])
+            
+            for i in range(len(test_idx)):
+                #If more than 1 binary
+                if i >0:
+                    # append nth binary indices formed this timestep
+                    bin_indices = np.append(bin_indices,[subset[test_idx[i]],subset[test_idx[i]+1]])
+                    #print("2XBin", bin_indices)
+                    
+                    #Check to see if repeat binaries among the set of binaries formed (e.g. (1,2)(2,3) )
+                    #If repeats, only form a binary from the pair with smallest fractional Hill sphere separation
+
+                    # Compute separation/R_Hill for all
+                    sequences_to_test = (separations[test_idx])/(R_Hill_possible_binaries[test_idx])
+                    #print(sequences_to_test)
+                    # sort sep/R_Hill for all 'binaries' that need checking & store indices
+                    sorted_sequences = np.sort(sequences_to_test)
+                    #print(sorted_sequences)
+                    #Sort the indices for the test
+                    sorted_sequences_indices = np.argsort(sequences_to_test)
+                    #print(sorted_sequences_indices)
+
+                    # Assume the smallest sep/R_Hill should form a binary, so
+                    if len(sorted_sequences) > 0:
+                        #Index of smallest sorted fractional Hill radius binary so far
+                        checked_binary_index = np.array([test_idx[sorted_sequences_indices[0]]])
+                    else:
+                        checked_binary_index = []    
+                    #print(checked_binary_index)
+                    for j in range(len(sorted_sequences)): 
+                        # if we haven't already counted it
+                        if (test_idx[sorted_sequences_indices[j]] not in checked_binary_index):
+                            # and it isn't the implicit partner of something we've already counted
+                            if (test_idx[sorted_sequences_indices[j]] not in checked_binary_index+1):
+                                # and the implicit partner of this thing isn't already counted
+                                if (test_idx[sorted_sequences_indices[j]]+1 not in checked_binary_index):
+                                    # and the implicit partner of this thing isn't already an implicit partner we've counted
+                                    if (test_idx[sorted_sequences_indices[j]]+1 not in checked_binary_index+1):
+                                        # then you can count it as a real binary
+                                        checked_binary_index = np.append(checked_binary_index, test_idx[sorted_sequences_indices[j]])
+                                        #print("checked_binary_index",checked_binary_index)
+                    all_binary_indices = np.array([subset[checked_binary_index],subset[checked_binary_index+1]])
+
+            
+            
+
+        else:
+            #No binaries from candidates this time step
+            all_binary_indices = []
+        
+    else:
+        #No candidate for binarity testing yet
+        all_binary_indices = []
+    
+    return all_binary_indices
+        
+    
