@@ -39,9 +39,42 @@ star cluster variables second, and assorted other choices (time resolution etc.)
             see Bellovary et al. 2016 for locations of sirko_goodman or thompson_etal
                 migration trap 
             default: 700.0
-    n_bh : int
-        Number of black holes embedded in AGN disk at t=0 (start of simulation)
-        default : 60
+    disk_outer_radius : float
+        Cut-off disk model at this radius (measured in units of R_g=GM_SMBH/c^2)
+            default: 50000.0 
+    alpha : float
+        Disk viscosity parameter
+            default: 0.01
+
+    r_nsc_out : float
+        Outer radius of Nuclear Star Cluster in units of pc. (Typically 1-10pc in scale from observations)
+            default: 5.0
+    M_nsc : float
+        Mass of Nuclear Star Cluster  in units of M_sun
+        (typically between 10^6 - 10^8Msun from observations. 3x10^7Msun in Milky Way)
+            default: 3.e7        
+    r_nsc_crit : float
+        Critical radius of Nuclear Star Cluster in units of pc, where radial number density changes (becomes more Bahcall-Wolf like). 
+        This is ~0.25pc for Milky Way (Generozov+18).
+            default: 0.25
+    nbh_nstar_ratio : float
+        Ratio of typical number of BH to number of stars in Nuclear Star Cluster. Range is [3e-4,1.e-2] in Generozov+18.
+            default: 1.e-3
+    mbh_mstar_ratio : float 
+        Ratio of typical BH mass to mass of star in Nuclear Star Cluster. Generozov+18 use 10.
+            default: 10.0
+    nsc_index_inner : float
+        Index of radial density profile of Nuclear Star Cluster at r<r_nsc_crit. Implicit assumed negative.
+        E.g. Bahcall-Wolf is n \propto r^-7/4 (& in Generozov+18). So e.g. 1.75 is the index here not -1.75.
+            default: 1.75
+    nsc_index_outer: float
+        Index fo radial density profile of Nuclear Star Cluster at r>r_nsc_crit. Implicit assumed negative.
+        E.g. Generozov+18 have n \propto r^-2.5, Peebles has r^-2.25. So e.g. 2.5 is the index here not -2.5
+            default: 2.5
+    h_disk_average : float
+        Average height of disk out to r_disk_outer. Approx. 3% for Sirko & Goodman.
+            default: 0.03
+
     mode_mbh_init : float
         Initial mass function of BH is assumed to be a Pareto function
         Mode of initial BH mass distribution in solar masses (peak of Pareto fn)
@@ -85,6 +118,11 @@ star cluster variables second, and assorted other choices (time resolution etc.)
         lifetime = timestep * number_of_timesteps
         choosing default settings gives 1Myr lifetime
         default : 100
+
+    n_iterations : float
+        Number of iterations of code. 
+        Choosing default settings gives 1 run. Quick test for n_iterations = 30.
+        default : 1            
     retro : int
         Switch to inhibit retrograde binaries. This allows the user to test the (q,X_eff) 
         anti-correlation, which requires suppressing retrograde binary_bh_array
@@ -92,6 +130,20 @@ star cluster variables second, and assorted other choices (time resolution etc.)
         retro = 1 keeps retrograde BBH once they form. Eventually will turn this into
         something physically motivated rather than a brute force switch.
         default : 0
+    feedback : int
+        Switch to incorporate a feedback model from accreting embedded BH. Changes migration rates.
+        feedback = 1 makes all BH subject to gas torque modification due to feedback 
+        feedback = 0 means no BH gas torque modifications (Type I migration only).
+        Feedback model right now is Hanka et al. 2022
+        default : 1
+    orb_ecc_damping : int
+        Switch to incorporate orbital eccentricity damping.
+        orb_ecc_damping = 1 gives all BH an initial orb eccentricity 
+        which must be damped to <crit_ecc before it can form a binary. Means there's usually a delay before binaries form.
+        orb_ecc_damping = 0 gives all BH the value of crit_ecc (usually 0.01) for initial orb eccentricity. Means 
+        binaries can form straight away (they're all assumed circularized)
+        default : 1
+
 
 Output file : output_mergers.dat
 14 column file listing all mergers from a single run of test1.py

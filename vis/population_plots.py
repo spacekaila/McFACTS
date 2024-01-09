@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.style.use('seaborn-v0_8-poster')
+#plt.style.use('seaborn-v0_8-poster')
 
 # need section for loading data
-fname = 'm8_100_iters/output_mergers_population.dat'
+fname = '../output_mergers_population.dat'
 mergers = np.loadtxt(fname, skiprows=2)
 column_names = "iter CM M chi_eff a_tot spin_angle m1 m2 a1 a2 theta1 theta2 gen1 gen2 t_merge"
 

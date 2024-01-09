@@ -282,12 +282,12 @@ def com_migration(bin_array, disk_surf_model, disk_aspect_ratio_model, timestep,
                 fractional_migration_timestep = timestep/dt_mig
                 #Migration distance is location of bin com * fractional_migration_timestep
                 migration_distance = temp_bin_com*fractional_migration_timestep
-                new_bin_com = temp_bin_com-migration_distance
+                new_bin_com = temp_bin_com - migration_distance
                 new_bh_loc1 = new_bin_com -(temp_bin_sep*temp_bh_mass_2/bin_mass)
                 new_bh_loc2 = new_bh_loc1 + temp_bin_sep
                 #Write new values of R1,R2,com to bin_array
-                bin_array[0,j] = new_bh_loc1
-                bin_array[1,j] = new_bh_loc2
+                #bin_array[0,j] = new_bh_loc1
+                #bin_array[1,j] = new_bh_loc2
                 bin_array[9,j] = new_bin_com
 
     return bin_array
@@ -421,6 +421,14 @@ def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model
     # new locations are original ones - distance traveled
     #bh_new_locations = bin_com - migration_distance
     # send locations back to bin_array and DONE!
+   
+    #Distance travelled per binary is old location of com minus new location of com. Is +ive(-ive) if migrating in(out)
+    dist_travelled = bin_array[9,:] - bh_new_locations
+    #print("dist travelled", np.where(dist_travelled !=0))
+    # Update the binary center of mass in bin_array
     bin_array[9,:] = bh_new_locations
-
+    #Update location of BH 1 and BH 2
+    #bin_array[0,:] = bin_array[0,:] - dist_travelled
+    #bin_array[1,:] = bin_array[1,:] - dist_travelled
+    #print("Loc 1",bin_array[0,:]," loc 2", bin_array[1,:])
     return bin_array

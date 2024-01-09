@@ -31,8 +31,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     trap_radius : float
         Radius of migration trap in gravitational radii (r_g = G*mass_smbh/c^2)
         Should be set to zero if disk model has no trap
-    n_bh : int
-        Number of stellar mass black holes embedded in disk 
+    n_iterations : int
+        Number of iterations of code run (e.g. 1 for testing, 30 for a quick run)
     mode_mbh_init : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--mode of initial mass dist (M_sun)
@@ -79,7 +79,9 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     retro : int
         Switch (0) turns retrograde BBH into prograde BBH at formation to test (q,X_eff) relation 
     feedback : int
-        Switch (0) turns feedback from embedded BH on.
+        Switch (1) turns feedback from embedded BH on.
+    orb_ecc_damping : int
+        Switch (1) turns orb. ecc damping on. If switch = 0, assumes all bh are circularized (at e=e_crit)
     r_nsc_out : float
         Radius of NSC (units of pc)
     M_nsc : float
@@ -95,7 +97,11 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     nsc_index_outer : float
         Index of radial density profile of NSC outside r_nsc_crit (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
     h_disk_average : float
-        Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)        
+        Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
+    dynamic_enc : int
+        Switch (1) turns dynamical encounters between embedded BH on.
+    de : float
+        Average energy change per strong interaction. de can be 20% in cluster interactions. May be 10% on average (with gas)                
     """
 
     config = ConfigParser.ConfigParser()
@@ -125,7 +131,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     trap_radius = float(input_variables['trap_radius'])
     disk_outer_radius = float(input_variables['disk_outer_radius'])
     alpha = float(input_variables['alpha'])
-    n_bh = int(input_variables['n_bh'])
+    n_iterations = int(input_variables['n_iterations'])
     mode_mbh_init = float(input_variables['mode_mbh_init'])
     max_initial_bh_mass = float(input_variables['max_initial_bh_mass'])
     mbh_powerlaw_index = float(input_variables['mbh_powerlaw_index'])
@@ -149,7 +155,9 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     nsc_index_inner = float(input_variables['nsc_index_inner'])
     nsc_index_outer = float(input_variables['nsc_index_outer'])
     h_disk_average = float(input_variables['h_disk_average'])
-
+    dynamic_enc = int(input_variables['dynamic_enc'])
+    de = float(input_variables['de'])
+    orb_ecc_damping = int(input_variables['orb_ecc_damping'])
     print("I put your variables where they belong")
 
     # open the disk model surface density file and read it in
@@ -226,12 +234,12 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
 
     print("Sending variables back")
 
-    return mass_smbh, trap_radius, disk_outer_radius, alpha, n_bh, mode_mbh_init, max_initial_bh_mass, \
+    return mass_smbh, trap_radius, disk_outer_radius, alpha, n_iterations, mode_mbh_init, max_initial_bh_mass, \
         mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
-            spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
+            spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, orb_ecc_damping, \
                 timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
                     disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc, \
-                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average\
+                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average, dynamic_enc, de\
 
 
 
