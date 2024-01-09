@@ -81,6 +81,19 @@ def setup_disk_blackholes_inclination(rng, n_bh):
     bh_initial_orb_incl = np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_incl
 
+def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
+    # Return an array of BH orbital inclinations
+    # Return an initial distribution of inclination angles that are 0.0
+    #
+    # To do: initialize inclinations so random draw with i <h (so will need to input bh_locations and disk_aspect_ratio)
+    # and then damp inclination.
+    # To do: calculate v_kick for each merger and then the (i,e) orbital elements for the newly merged BH. 
+    # Then damp (i,e) as appropriate
+    integer_nbh = int(n_bh)
+    # For now, inclinations are zeros
+    bh_initial_orb_ecc = crit_ecc*np.ones((integer_nbh,),dtype = float)
+    return bh_initial_orb_ecc
+
 def setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner):
     # Return the integer number of BH in the AGN disk as calculated from NSC inputs assuming isotropic distribution of NSC orbits
     # To do: Calculate when R_disk_outer is not equal to the r_nsc_crit

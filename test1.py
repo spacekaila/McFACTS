@@ -35,8 +35,6 @@ verbose=False
 #Maximum number of binaries allowed in a run
 n_bins_max = 1000
 n_bins_max_out = 100
-#This is where the number of iterations you want to run is actually set!!
-number_of_iterations = 1
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl"
 merger_field_names=' '.join(mergerfile.names_rec)
@@ -81,9 +79,9 @@ def main():
     fname = "inputs/model_choice.txt"
     if opts.use_ini:
         fname = opts.use_ini
-    mass_smbh, trap_radius, disk_outer_radius, alpha, n_bh, mode_mbh_init, max_initial_bh_mass, \
+    mass_smbh, trap_radius, disk_outer_radius, alpha, n_iterations, mode_mbh_init, max_initial_bh_mass, \
          mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
-             spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, \
+             spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, orb_ecc_damping, \
                  timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
                      disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc, \
                         r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average, dynamic_enc, de\
@@ -98,13 +96,13 @@ def main():
     
     merged_bh_array_pop = []
     
-    for iteration in range(number_of_iterations):
+    for iteration in range(n_iterations):
         # Set random number generator for this run with incremented seed
         rng = np.random.default_rng(opts.seed + iteration)
 
         # Make subdirectories for each iteration
         # Fills run number with leading zeros to stay sequential
-        iteration_zfilled_str = f"{iteration:>0{int(np.log10(number_of_iterations))+1}}"
+        iteration_zfilled_str = f"{iteration:>0{int(np.log10(n_iterations))+1}}"
         try: # Make subdir, exit if it exists to avoid clobbering.
             os.makedirs(os.path.join(work_directory, f"run{iteration_zfilled_str}"), exist_ok=False)
         except FileExistsError:
@@ -126,8 +124,11 @@ def main():
         bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(rng, n_bh, mu_spin_distribution, sigma_spin_distribution)
         bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(rng, n_bh, bh_initial_spins)
         bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(rng, n_bh)
-    
-        bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng, n_bh)
+        if orb_ecc_damping == 1:
+            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng, n_bh)
+        else:
+            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,crit_ecc)
+
         bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng, n_bh)
         #print("orb ecc",bh_initial_orb_ecc)
         #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
