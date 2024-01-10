@@ -180,7 +180,7 @@ def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, 
                 for j in range (0,len(ecc_prograde_population_locations)):
                     if circ_prograde_population_locations[i] < ecc_orb_max[j] and circ_prograde_population_locations[i] > ecc_orb_min[j]:
                         #print("Possible Interaction!")
-                        print(prograde_bh_locations[j],prograde_bh_orb_ecc[j],ecc_orb_min[j],circ_prograde_population_locations[i],ecc_orb_max[j])
+                        #print(prograde_bh_locations[j],prograde_bh_orb_ecc[j],ecc_orb_min[j],circ_prograde_population_locations[i],ecc_orb_max[j])
                         #prob_encounter/orbit =hill sphere size/circumference of circ orbit =2RH/2pi a_circ1
                         # r_h = a_circ1(temp_bin_mass/3mass_smbh)^1/3 so prob_enc/orb = mass_ratio^1/3/pi
                         temp_bin_mass = circ_prograde_population_masses[i] + ecc_prograde_population_masses[j]
