@@ -63,7 +63,7 @@ timestep = 1.e4
 number_of_timesteps = 100
 
 # number of iterations of code (1 for testing. 30 for a quick run.)
-n_iterations = 1
+n_iterations = 30
 #
 # Other physics choices: 
 #
@@ -83,6 +83,6 @@ outer_capture_radius = 2.e3
 #Critical eccentricity (limiting eccentricity, below which assumed circular orbit)
 crit_ecc = 0.01
 #Dynamics on/off switch. Dynamics = 0(1) means dynamical encounters are off (on)
-dynamic_enc = 0
+dynamic_enc = 1
 # Delta Energy per Strong interaction (can be up to 20%,0.2)
 de = 0.1

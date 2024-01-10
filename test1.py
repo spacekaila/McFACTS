@@ -97,6 +97,7 @@ def main():
     merged_bh_array_pop = []
     
     for iteration in range(n_iterations):
+        print("Iteration", iteration)
         # Set random number generator for this run with incremented seed
         rng = np.random.default_rng(opts.seed + iteration)
 
