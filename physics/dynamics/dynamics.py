@@ -372,8 +372,9 @@ def circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, 
     if number_of_binaries > 0:
             for i in range(0, number_of_binaries-1):    
                 for j in range (0,len(ecc_prograde_population_locations)):
-                    #If binary com orbit lies inside eccentric orbit [min,max] radius 
-                    if bin_coms[i] < ecc_orb_max[j] and bin_coms[i] > ecc_orb_min[j]:
+                    #If binary com orbit lies inside eccentric orbit [min,max] radius
+                    # i.e. does R_m3_minimum lie inside R_bin_maximum and does R_m3_max lie outside R_bin_minimum 
+                    if (1.0-bin_orbital_eccentricities[i])*bin_coms[i] < ecc_orb_max[j] and (1.0+bin_orbital_eccentricities[i])*bin_coms[i] > ecc_orb_min[j]:
                         # Make a temporary Hill sphere treating binary + ecc interloper as a 'binary'
                         # r_h = a_circ1(temp_bin_mass/3mass_smbh)^1/3 so prob_enc/orb = mass_ratio^1/3/pi
                         temp_bin_mass = bin_masses[i] + ecc_prograde_population_masses[j]
@@ -385,11 +386,9 @@ def circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, 
                             prob_enc_per_timestep = 1
                         random_uniform_number = np.random.uniform(0,1)
                         if random_uniform_number < prob_enc_per_timestep:
-                            #print('Encounter!!',random_uniform_number,prob_enc_per_timestep, i, j)
-                            #print(circ_prograde_population, prograde_bh_orb_ecc[j], circ_prograde_population_locations)
-                            #print(circ_prograde_population_indices,i,circ_prograde_population_indices[0])
+                            #Perturb *this* binary depending on how hard it already is.
                             # Want indx_array to be index of binary
-                            indx_array = circ_prograde_population_indices[0]
+                            #indx_array = circ_prograde_population_indices[0]
                             #print(prograde_bh_orb_ecc[indx_array[i]])
                             num_encounters = num_encounters + 1
                             # if close encounter, pump ecc of circ orbiter to e=0.1 from near circular, and incr a_circ1 by 10%
