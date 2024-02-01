@@ -227,6 +227,7 @@ def circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, 
                 bin_array[8,;] = bin_separation =[a_bin1,a_bin2,...]
                 bin_array[2,:]+bin_array[3,:] = mass of binaries
                 bin_array[13,:] = ecc of binary around com
+                bin_array[18,:] = orb. ecc of binary com around SMBH
                 Keplerian orbital velocity of the bin c.o.m. around SMBH: v_bin,i= sqrt(GM_SMBH/R_bin,i_com)= c/sqrt(R_bin,i_com)
             2.  Calculate the binary orbital time and N_orbits/timestep
                 For example, since
@@ -325,6 +326,7 @@ def circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, 
     bin_masses = np.zeros(number_of_binaries)
     bin_separations = np.zeros(number_of_binaries)
     bin_eccentricities = np.zeros(number_of_binaries)
+    bin_orbital_eccentricities = np.zeros(number_of_binaries)
     bin_velocities = np.zeros(number_of_binaries)
     bin_orbital_times = np.zeros(number_of_binaries)
     bin_orbits_per_timestep = np.zeros(number_of_binaries)
@@ -334,7 +336,10 @@ def circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, 
         bin_coms[j] = bin_array[9,j]
         bin_masses[j] = bin_array[2,j] + bin_array[3,j]
         bin_separations[j] = bin_array[8,j]
+        # Eccentricity of binary around its own center of mass
         bin_eccentricities[j] = bin_array[13,j]
+        # Orbital Eccentricity of binary c.o.m. around SMBH
+        bin_orbital_eccentricities[i] = bin_array[18,j] 
         # Keplerian binary velocity of c.o.m. around SMBH
         bin_velocities[j] = scipy.constants.c/np.sqrt(bin_coms[j])
         # binary orbital time around SMBH in yrs (3.15yrs at 1000r_g)
