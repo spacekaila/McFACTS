@@ -36,7 +36,7 @@ verbose=False
 n_bins_max = 1000
 n_bins_max_out = 100
 
-binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl"
+binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc"
 merger_field_names=' '.join(mergerfile.names_rec)
 
 # parse command line arguments
@@ -178,6 +178,8 @@ def main():
         # Test dynamics
         #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc, de)
     
+        
+
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
         #if feedback > 0:
@@ -206,7 +208,7 @@ def main():
         prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
 
         # Housekeeping:
-        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl)o
+        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc)
         number_of_bin_properties = len(binary_field_names.split())+1
         integer_nbinprop = int(number_of_bin_properties)
         bin_index = 0
@@ -314,7 +316,10 @@ def main():
                 #Check and see if merger flagged during hardening (row 11, if negative)
                 merger_flags = binary_bh_array[11,:]
                 any_merger = np.count_nonzero(merger_flags)
-                 
+
+                #Test dynamics of encounters between binaries and eccentric singleton orbiters
+                #dynamics_binary_array = dynamics.circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, crit_ecc, de,norm_tgw,bin_array,bindex,integer_nbinprop)         
+                
                 if verbose:
                     print(merger_flags)
                 merger_indices = np.where(merger_flags < 0.0)
