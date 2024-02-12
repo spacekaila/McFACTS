@@ -418,33 +418,36 @@ def circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, 
                             #               drop orb_ecc by factor (1-de)    
                             # FOR NOW: if already pumped in eccentricity, no longer circular, so lower likelihood of close interactions.
                             #  TO DO: Multiple possible interactions post scattering could rapidly drive hardening or softening.
-                            if bin_orbital_eccentricities[i] <= crit_ecc:
+                            
+                            #Line below is key. Right now it say only dynamically perturb bin if its circularized. If not circularized, leave alone.
+                            #If comment out this line then all binaries are perturbed.
+                            #if bin_orbital_eccentricities[i] <= crit_ecc:
                                 # Find relative velocity of interloper
-                                rel_vel = bin_velocities[i] - ecc_velocities[j]
+                            rel_vel = bin_velocities[i] - ecc_velocities[j]
                                 # K.E. of interloper
-                                ke_interloper = ecc_prograde_population_masses[j]*solar_mass*(rel_vel**2.0)
-                                hard = bin_binding_energy[i] - ke_interloper                                
-                                if hard < 0:
-                                    # Binary is hard w.r.t interloper
-                                    # Change binary parameters; decr separation, incr ecc around com and orb_ecc 
-                                    print("Hardening bin dr,dr(1-de),e_b,e_d(1+de),e_orb_bin,e_orb_bin(1+de)", bin_separations[i],bin_separations[i]*(1-de),bin_eccentricities[i],bin_eccentricities[i]*(1+de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
-                                    bin_separations[i] = bin_separations[i]*(1-de)
-                                    bin_eccentricities[i] = bin_eccentricities[i]*(1+de)
-                                    bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
-                                    #Change interloper parameters; increase a_ecc, increase e_ecc
-                                    ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1+de)
-                                    ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1+de)
+                            ke_interloper = ecc_prograde_population_masses[j]*solar_mass*(rel_vel**2.0)
+                            hard = bin_binding_energy[i] - ke_interloper                                
+                            if hard < 0:
+                                # Binary is hard w.r.t interloper
+                                # Change binary parameters; decr separation, incr ecc around com and orb_ecc 
+                                print("Hardening bin dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", bin_separations[i],bin_separations[i]*(1-de),bin_eccentricities[i],bin_eccentricities[i]*(1+de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
+                                bin_separations[i] = bin_separations[i]*(1-de)
+                                bin_eccentricities[i] = bin_eccentricities[i]*(1+de)
+                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
+                                #Change interloper parameters; increase a_ecc, increase e_ecc
+                                ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1+de)
+                                ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1+de)
 
-                                if hard > 0:
-                                    #Binary is soft w.r.t. interloper
-                                    # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
-                                    print("Softening bin dr,dr(1-de),e_b,e_d(1+de),e_orb_bin,e_orb_bin(1+de)", bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
-                                    bin_separations[i] = bin_separations[i]*(1+de)
-                                    bin_eccentricities[i] = bin_eccentricities[i]*(1-de)
-                                    bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
-                                    #Change interloper parameters; decrease a_ecc, decrease e_ecc
-                                    ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1-de)
-                                    ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1-de)
+                            if hard > 0:
+                                #Binary is soft w.r.t. interloper
+                                # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
+                                print("Softening bin dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
+                                bin_separations[i] = bin_separations[i]*(1+de)
+                                bin_eccentricities[i] = bin_eccentricities[i]*(1-de)
+                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
+                                #Change interloper parameters; decrease a_ecc, decrease e_ecc
+                                ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1-de)
+                                ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1-de)
 
 
                                 
