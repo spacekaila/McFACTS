@@ -292,6 +292,8 @@ def main():
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 # If there are binaries, evolve them
+                #Damp binary orbital eccentricity
+                binary_bh_array = orbital_ecc.orbital_bin_ecc_damping(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, crit_ecc)
                 # Harden/soften binaries via dynamical encounters
                 binary_bh_array = dynamics.circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, prograde_bh_orb_ecc , timestep, crit_ecc, de, binary_bh_array, bin_index) 
                 # Harden binaries via gas
