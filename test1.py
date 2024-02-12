@@ -174,7 +174,7 @@ def main():
 
         #print('modest ecc ',prograde_bh_modest_ecc)
         #print('damped ecc',prograde_bh_orb_ecc_damp) 
-         
+        
         # Test dynamics
         #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc, de)
     
@@ -292,6 +292,8 @@ def main():
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 # If there are binaries, evolve them
+                # Harden/soften binaries via dynamical encounters
+                binary_bh_array = dynamics.circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, prograde_bh_orb_ecc , timestep, crit_ecc, de, binary_bh_array, bin_index) 
                 # Harden binaries via gas
                 #Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                 binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
@@ -313,7 +315,7 @@ def main():
                     ratio_heat_mig_torques_bin_com = np.ones(len(binary_bh_array[9,:]))   
 
                 # Migrate binaries center of mass
-                binary_bh_array = evolve.bin_migration(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep,ratio_heat_mig_torques_bin_com,trap_radius)
+                binary_bh_array = evolve.bin_migration(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques_bin_com, trap_radius, crit_ecc)
             
                 #Check and see if merger flagged during hardening (row 11, if negative)
                 merger_flags = binary_bh_array[11,:]
