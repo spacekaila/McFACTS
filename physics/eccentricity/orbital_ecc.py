@@ -195,12 +195,12 @@ def orbital_bin_ecc_damping(mass_smbh, bin_array, disk_surf_model, disk_aspect_r
         if bin_orb_ecc[i] > crit_ecc and bin_orb_ecc[i] <2.0*disk_aspect_ratio[i]:
             modest_timescale_ratio = timestep/t_damp[i]
             new_bin_orb_ecc[i] = bin_orb_ecc[i]*np.exp(-modest_timescale_ratio)
-            print("NEW modest bin orb ecc old, new ",bin_orb_ecc[i], new_bin_orb_ecc[i])
+            #print("NEW modest bin orb ecc old, new ",bin_orb_ecc[i], new_bin_orb_ecc[i])
         #If bin orb ecc > 2*h then damp large orb eccentricity    
         if bin_orb_ecc[i] > crit_ecc and bin_orb_ecc[i]> 2.0*disk_aspect_ratio[i]:            
             large_timescale_ratio = timestep/t_ecc[i]
             new_bin_orb_ecc[i] = bin_orb_ecc[i]*np.exp(-large_timescale_ratio)
-            print("NEW large bin orb ecc old,new", bin_orb_ecc[i],new_bin_orb_ecc[i])
+            #print("NEW large bin orb ecc old,new", bin_orb_ecc[i],new_bin_orb_ecc[i])
 
     #Write new values of bin orbital eccentricity to bin_array
     for j in range(num_of_bins):

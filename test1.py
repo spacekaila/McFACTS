@@ -295,7 +295,10 @@ def main():
                 #Damp binary orbital eccentricity
                 binary_bh_array = orbital_ecc.orbital_bin_ecc_damping(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, crit_ecc)
                 # Harden/soften binaries via dynamical encounters
-                binary_bh_array = dynamics.circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, prograde_bh_orb_ecc , timestep, crit_ecc, de, binary_bh_array, bin_index) 
+                #Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
+                binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, prograde_bh_orb_ecc , timestep, crit_ecc, de, binary_bh_array, bin_index) 
+                #Soften/ ionize binaries due to encounters with eccentric singletons
+                binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, prograde_bh_orb_ecc , timestep, crit_ecc, de, binary_bh_array, bin_index) 
                 # Harden binaries via gas
                 #Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                 binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
