@@ -79,5 +79,6 @@ def merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom):
     spin1_factor = (0.632+inv_mass_ratio)**(2.0)
     spin2_factor = (0.632+mass_ratio)**2.0
     merged_spin = 0.686*((5.04*nu)-(4.16*nusq))+(0.4*((spin_1/spin1_factor)+(spin_2/spin2_factor)))
+    #print("MERGER props",primary,secondary,spin_1,spin_2,bin_ang_mom, merged_spin)
     return merged_spin
 

@@ -118,6 +118,7 @@ def main():
         #Set up number of BH in disk
         n_bh = setupdiskblackholes.setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner)
 
+        #n_bh = 800
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
         bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(rng, n_bh, disk_outer_radius)
@@ -158,7 +159,7 @@ def main():
         #Use masses of prograde BH only
         prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
         print("Prograde BH initial masses", len(prograde_bh_masses))
-
+        print("Prograde BH initital spins",bh_initial_spins[prograde_orb_ang_mom_indices])
 
         # Orbital eccentricities
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
@@ -269,13 +270,16 @@ def main():
             else:
                 ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
             # then migrate as usual
-            #print("TEST locations",prograde_bh_locations)
+            #print("TIME=", time_passed, prograde_bh_locations)
             prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
             #print("NEW locations",prograde_bh_locations)
             # Accrete
             prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
             # Spin up
             prograde_bh_spins = changebh.change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_condition, timestep, prograde_bh_orb_ecc, crit_ecc)
+            #if time_passed < 1.e5:
+            #    print("SPINS",prograde_bh_spins)
+            
             # Torque spin angle
             prograde_bh_spin_angles = changebh.change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep, prograde_bh_orb_ecc, crit_ecc)
 
@@ -339,7 +343,7 @@ def main():
                 #print(binary_bh_array[:,merger_indices])
                 if any_merger > 0:
                     for i in range(any_merger):
-                    #print("Merger!")
+                        #print("Merger!")
                     # send properties of merging objects to static variable names
                         #mass_1[i] = binary_bh_array[2,merger_indices[i]]
                         #mass_2[i] = binary_bh_array[3,merger_indices[i]]
@@ -354,6 +358,7 @@ def main():
                         merged_spin = tichy08.merged_spin(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
                         merged_chi_eff = chieff.chi_effective(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
                         merged_bh_array[:,n_mergers_so_far + i] = mergerfile.merged_bh(merged_bh_array,binary_bh_array,merger_indices,i,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,n_mergers_so_far)
+                        #print("Merger properties", merged_mass, merged_spin, merged_chi_eff)
                     # do another thing
                     merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
                     #Reset merger marker to zero
