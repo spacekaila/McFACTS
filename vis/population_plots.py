@@ -37,14 +37,18 @@ plt.close()
 trap_radius = 700
 plt.figure()
 plt.title('Migration Trap influence')
+for i in range(len(mergers[:,1])):
+    if mergers[i,1] < 10.0:
+        mergers[i,1] = 10.0
+
 plt.scatter(mergers[:,1], mergers[:,2], color='teal')
 plt.axvline(trap_radius, color='grey', linewidth=20, zorder=0, alpha=0.6, label=f'Radius = {trap_radius} '+r'$R_g$')
-plt.text(670, 102, 'Migration Trap', rotation='vertical', size=18, fontweight='bold')
+plt.text(650, 602, 'Migration Trap', rotation='vertical', size=18, fontweight='bold')
 plt.ylabel(r'Mass ($M_\odot$)')
 plt.xlabel(r'Radius ($R_g$)')
 plt.xscale('log')
 plt.legend(frameon=False)
-plt.ylim(16,140)
+plt.ylim(10,1000)
 
 ax = plt.gca()
 ax.set_axisbelow(True)
