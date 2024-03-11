@@ -36,7 +36,7 @@ verbose=False
 n_bins_max = 1000
 n_bins_max_out = 100
 
-binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl"
+binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc"
 merger_field_names=' '.join(mergerfile.names_rec)
 
 # parse command line arguments
@@ -118,6 +118,7 @@ def main():
         #Set up number of BH in disk
         n_bh = setupdiskblackholes.setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner)
 
+        #n_bh = 800
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
         bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(rng, n_bh, disk_outer_radius)
@@ -158,7 +159,7 @@ def main():
         #Use masses of prograde BH only
         prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
         print("Prograde BH initial masses", len(prograde_bh_masses))
-
+        print("Prograde BH initital spins",bh_initial_spins[prograde_orb_ang_mom_indices])
 
         # Orbital eccentricities
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
@@ -174,10 +175,12 @@ def main():
 
         #print('modest ecc ',prograde_bh_modest_ecc)
         #print('damped ecc',prograde_bh_orb_ecc_damp) 
-         
+        
         # Test dynamics
         #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc, de)
     
+        
+
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
         #if feedback > 0:
@@ -206,7 +209,7 @@ def main():
         prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
 
         # Housekeeping:
-        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl)o
+        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc)
         number_of_bin_properties = len(binary_field_names.split())+1
         integer_nbinprop = int(number_of_bin_properties)
         bin_index = 0
@@ -267,13 +270,16 @@ def main():
             else:
                 ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
             # then migrate as usual
-            #print("TEST locations",prograde_bh_locations)
+            #print("TIME=", time_passed, prograde_bh_locations)
             prograde_bh_locations = type1.type1_migration(mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
             #print("NEW locations",prograde_bh_locations)
             # Accrete
             prograde_bh_masses = changebhmass.change_mass(prograde_bh_masses, frac_Eddington_ratio, mass_growth_Edd_rate, timestep)
             # Spin up
             prograde_bh_spins = changebh.change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_condition, timestep, prograde_bh_orb_ecc, crit_ecc)
+            #if time_passed < 1.e5:
+            #    print("SPINS",prograde_bh_spins)
+            
             # Torque spin angle
             prograde_bh_spin_angles = changebh.change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torque_condition, spin_minimum_resolution, timestep, prograde_bh_orb_ecc, crit_ecc)
 
@@ -290,6 +296,13 @@ def main():
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 # If there are binaries, evolve them
+                #Damp binary orbital eccentricity
+                binary_bh_array = orbital_ecc.orbital_bin_ecc_damping(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, crit_ecc)
+                # Harden/soften binaries via dynamical encounters
+                #Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
+                binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, prograde_bh_orb_ecc , timestep, crit_ecc, de, binary_bh_array, bin_index) 
+                #Soften/ ionize binaries due to encounters with eccentric singletons
+                binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, prograde_bh_orb_ecc , timestep, crit_ecc, de, binary_bh_array, bin_index) 
                 # Harden binaries via gas
                 #Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                 binary_bh_array = baruteau11.bin_harden_baruteau(binary_bh_array,integer_nbinprop,mass_smbh,timestep,norm_t_gw,bin_index,time_passed)
@@ -311,12 +324,15 @@ def main():
                     ratio_heat_mig_torques_bin_com = np.ones(len(binary_bh_array[9,:]))   
 
                 # Migrate binaries center of mass
-                binary_bh_array = evolve.bin_migration(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep,ratio_heat_mig_torques_bin_com,trap_radius)
+                binary_bh_array = evolve.bin_migration(mass_smbh, binary_bh_array, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques_bin_com, trap_radius, crit_ecc)
             
                 #Check and see if merger flagged during hardening (row 11, if negative)
                 merger_flags = binary_bh_array[11,:]
                 any_merger = np.count_nonzero(merger_flags)
-                 
+
+                #Test dynamics of encounters between binaries and eccentric singleton orbiters
+                #dynamics_binary_array = dynamics.circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, crit_ecc, de,norm_tgw,bin_array,bindex,integer_nbinprop)         
+                
                 if verbose:
                     print(merger_flags)
                 merger_indices = np.where(merger_flags < 0.0)
@@ -327,7 +343,7 @@ def main():
                 #print(binary_bh_array[:,merger_indices])
                 if any_merger > 0:
                     for i in range(any_merger):
-                    #print("Merger!")
+                        #print("Merger!")
                     # send properties of merging objects to static variable names
                         #mass_1[i] = binary_bh_array[2,merger_indices[i]]
                         #mass_2[i] = binary_bh_array[3,merger_indices[i]]
@@ -342,6 +358,7 @@ def main():
                         merged_spin = tichy08.merged_spin(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
                         merged_chi_eff = chieff.chi_effective(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
                         merged_bh_array[:,n_mergers_so_far + i] = mergerfile.merged_bh(merged_bh_array,binary_bh_array,merger_indices,i,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,n_mergers_so_far)
+                        #print("Merger properties", merged_mass, merged_spin, merged_chi_eff)
                     # do another thing
                     merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
                     #Reset merger marker to zero

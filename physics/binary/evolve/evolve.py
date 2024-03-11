@@ -80,7 +80,7 @@ def change_bin_spin_magnitudes(bin_array, frac_Eddington_ratio, spin_torque_cond
                 #Update new bh masses in bin_array
                 bin_array[4,j] = new_bh_spin_1
                 bin_array[5,j] = new_bh_spin_2
-
+                #print("EVOLVE SPINS",temp_bh_spin_1,temp_bh_spin_2,new_bh_spin_1,new_bh_spin_2)
     return bin_array
 
 
@@ -292,7 +292,7 @@ def com_migration(bin_array, disk_surf_model, disk_aspect_ratio_model, timestep,
 
     return bin_array
 
-def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model, timestep, feedback_ratio, trap_radius):
+def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model, timestep, feedback_ratio, trap_radius, crit_ecc):
     """This function calculates how far the center of mass of a binary migrates in an AGN gas disk in a time
     of length timestep, assuming a gas disk surface density and aspect ratio profile, for
     objects of specified masses and starting locations, and returns their new locations
@@ -314,7 +314,10 @@ def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model
         can accept a simple float (constant), but this is deprecated
     timestep : float
         size of timestep in years
-
+    feedback_ratio : float
+        effect of feedback on Type I migration torque if feedback switch on
+    trap_radius : float
+        location of migration trap in units of r_g    
 
     Returns
     -------
@@ -326,6 +329,8 @@ def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model
     bin_com = bin_array[9,:]
     # get masses of each binary by adding their component masses
     bin_mass = bin_array[2,:] + bin_array[3,:]
+    # get orbital eccentricity of binary center of mass around SMBH
+    bin_orb_ecc = bin_array[18,:]
     # get surface density function, or deal with it if only a float
     if isinstance(disk_surf_model, float):
         disk_surface_density = disk_surf_model
@@ -344,7 +349,7 @@ def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model
     #   and Omega is the Keplerian orbital frequency around the SMBH
     # here mass_smbh/prograde_bh_masses are both in M_sun, so units cancel
     # c, G and disk_surface_density in SI units
-    tau_mig = ((disk_aspect_ratio**2)* scipy.constants.c/(2.0*scipy.constants.G) * (mass_smbh/bin_mass) / disk_surface_density) / np.sqrt(bin_com)
+    tau_mig = ((disk_aspect_ratio**2)* scipy.constants.c/(3.0*scipy.constants.G) * (mass_smbh/bin_mass) / disk_surface_density) / np.sqrt(bin_com)
     # ratio of timestep to tau_mig (timestep in years so convert)
     dt = timestep * scipy.constants.year / tau_mig
     # migration distance is original locations times fraction of tau_mig elapsed
@@ -400,18 +405,20 @@ def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model
     index_unchanged = np.where(feedback_ratio == 1)[0]
     if index_unchanged.size > 0:
     # If BH location > trap radius, migrate inwards
-        if bin_com[index_unchanged] > trap_radius:    
-            bh_new_locations[index_unchanged] = bin_com[index_unchanged] - migration_distance[index_unchanged]
+        for i in range(0,index_unchanged.size):
+            locn_index = index_unchanged[i]
+            if bin_com[locn_index] > trap_radius:    
+                bh_new_locations[locn_index] = bin_com[locn_index] - migration_distance[locn_index]
             # if new location is <= trap radius, set location to trap radius
-            if bh_new_locations[index_unchanged] <= trap_radius:
-                bh_new_locations[index_unchanged] = trap_radius
+                if bh_new_locations[locn_index] <= trap_radius:
+                    bh_new_locations[locn_index] = trap_radius
 
-    # If BH location < trap radius, migrate outwards
-        if bin_com[index_unchanged] < trap_radius:
-            bh_new_locations[index_unchanged] = bin_com[index_unchanged] + migration_distance[index_unchanged]
-            #if new location is >= trap radius, set location to trap radius
-            if bh_new_locations[index_unchanged] >= trap_radius:
-                bh_new_locations[index_unchanged] = trap_radius
+        # If BH location < trap radius, migrate outwards
+            if bin_com[locn_index] < trap_radius:
+                bh_new_locations[locn_index] = bin_com[locn_index] + migration_distance[locn_index]
+                #if new location is >= trap radius, set location to trap radius
+                if bh_new_locations[locn_index] >= trap_radius:
+                    bh_new_locations[locn_index] = trap_radius
     #print("bh new locations",np.sort(bh_new_locations))
 
     # new locations are original ones - distance traveled
@@ -424,9 +431,22 @@ def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model
    
     #Distance travelled per binary is old location of com minus new location of com. Is +ive(-ive) if migrating in(out)
     dist_travelled = bin_array[9,:] - bh_new_locations
-    #print("dist travelled", np.where(dist_travelled !=0))
-    # Update the binary center of mass in bin_array
-    bin_array[9,:] = bh_new_locations
+    idx_nonzero_travel = np.where(dist_travelled !=0)
+    num_of_bins = np.count_nonzero(bin_array[2,:])
+    #for i in range(num_of_bins):
+    #    print("dist travelled", bin_array[9,i], bh_new_locations[i], dist_travelled[i],bin_mass[i])
+    
+    # Update the binary center of mass in bin_array only if bin ecc is <= e_crit
+    #First find num of bins by counting non zero M_1s.
+    
+    for i in range(num_of_bins):
+        # If bin orb ecc < crit_ecc (circularized) then migrate
+        if bin_array[18,i] <= crit_ecc:
+            bin_array[9,i] = bh_new_locations[i]
+        #If bin orb ecc not circularized, no migration    
+        if bin_array[18,i] > crit_ecc:
+            print()
+
     #Update location of BH 1 and BH 2
     #bin_array[0,:] = bin_array[0,:] - dist_travelled
     #bin_array[1,:] = bin_array[1,:] - dist_travelled
