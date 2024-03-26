@@ -112,7 +112,7 @@ def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_conditio
                     new_bh_spin_angle_2 = 0.0
                 bin_array[6,j] = new_bh_spin_angle_1
                 bin_array[7,j] = new_bh_spin_angle_2
-
+                print("SPIN ANGLE EVOLVES, old1,old2, new1,new2",temp_bh_spin_angle_1,temp_bh_spin_angle_2,new_bh_spin_angle_1,new_bh_spin_angle_2)
     return bin_array
 
 def com_feedback_hankla(bin_array, disk_surf_model, frac_Eddington_ratio, alpha):

@@ -717,3 +717,32 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
     #TO DO: Also return array of modified circularized orbiters.
 
     return bin_array
+
+def bin_spheroid_encounter(mass_smbh, timestep, bin_array, time_passed):
+    """ Use Leigh+18 to figure out the rate at which spheroid encounters happen to binaries embedded in the disk
+    Binaries at small disk radii encounter spheroid objects at high rate, particularly early on in the disk lifetime
+    However, orbits at those small radii get captured quickly by the disk.
+     
+    From Fig.1 in Leigh+18, Rate of sph. encounter = 20/Myr at t=0, normalized to a_bin=1AU, R_disk=10^3r_g or 0.2/10kyr timestep 
+    Within 1Myr, for a dense model disk (e.g. Sirko & Goodman), most of those inner stellar orbits have been captured by the disk.
+    So rate of sph. encounter =0/Myr at t=1Myr since those orbits are gone (R<10^3r_g; assuming approx circular orbits!) for SG disk model
+    For TQM disk model, rate of encounter slightly lower but non-zero.
+     
+    Assume: Rate of encounter = 0.2 (timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
+    Generate random number from uniform [0,1] distribution and if <0.2 (normalized to above condition) then encounter
+    
+    Encounter rt starts at = 0.2 (timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 at t=0
+    decreases to          = 0(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 (time_passed/1Myr)
+
+    Try 
+    Encounter rt = 0.2*(1-(1Myr/time_passed))(timestep/10kyr)^{-1}(R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
+    Return corrected binary with spin angles projected onto new L_bin.
+    
+    Assume typical interaction mass and inclination angle. 
+    L3=m3v3 X R3, where m3,v3,R3 are the mass, velocity and semi-major axis of tertiary encounter. 
+    Draw m3 from IMF random distrib. Draw R3 from uniform distribution[100,2000]r_g say. v_3= c/sqrt(R_3)
+    Ratio of L3/Lbin =(m3/M_bin)*sqrt(R3/R_com)
+    
+    """
+
+    return bin_array
