@@ -23,7 +23,13 @@ def merged_mass(mass_1,mass_2,spin_1,spin_2):
     primary = np.max(np.c_[mass_1, mass_2])
     secondary = np.min(np.c_[mass_1, mass_2])
 
-    mass_ratio = secondary/primary
+    #If issue with primary mass, print!
+    if primary < 1.0:
+        print("primary,secondary=", primary, secondary)
+        mass_ratio = 1.0
+    if primary > 1.0:    
+        mass_ratio = secondary/primary
+    
     total_mass = primary + secondary
     total_spin = spin_1 + spin_2
     inv_mass_ratio = (1.0/mass_ratio)

@@ -424,7 +424,7 @@ def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locatio
                             if hard > 0:
                                 # Binary is hard w.r.t interloper
                                 # Change binary parameters; decr separation, incr ecc around com and orb_ecc 
-                                print("Hardening Ke3,BEb, bin dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de),bin_eccentricities[i],bin_eccentricities[i]*(1+de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
+                                #print("Hardening Ke3,BEb, bin dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de),bin_eccentricities[i],bin_eccentricities[i]*(1+de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
                                 bin_separations[i] = bin_separations[i]*(1-de)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de)
                                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
@@ -435,11 +435,11 @@ def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locatio
                             if hard < 0:
                                 #Binary is soft w.r.t. interloper
                                 #Check to see if binary is ionized
-                                if rel_vel_kms > v_crit_kms:
-                                    print("Ionize bin, rel_vel, v_crit", rel_vel_kms, v_crit_kms)
+                                #if rel_vel_kms > v_crit_kms:
+                                #    print("Ionize bin, rel_vel, v_crit", rel_vel_kms, v_crit_kms)
                                     
                                 # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
-                                print("Softening bin Ke3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
+                                #print("Softening bin Ke3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
                                 bin_separations[i] = bin_separations[i]*(1+de)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1-de)
                                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
@@ -675,7 +675,7 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
                             if hard > 0:
                                 # Binary is hard w.r.t interloper
                                 # Change binary parameters; decr separation, incr ecc around com and orb_ecc 
-                                print("HARDEN bin KE3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de_strong),bin_eccentricities[i],bin_eccentricities[i]*(1+de_strong),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
+                                # print("HARDEN bin KE3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de_strong),bin_eccentricities[i],bin_eccentricities[i]*(1+de_strong),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
                                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
                                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
@@ -686,11 +686,11 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
                             if hard < 0:
                                 #Binary is soft w.r.t. interloper
                                 #Check to see if binary is ionized
-                                if rel_vel_kms > v_crit_kms:
-                                    print("IONIZE bin, rel_vel, v_crit", rel_vel_kms, v_crit_kms)
+                                #if rel_vel_kms > v_crit_kms:
+                                #    print("IONIZE bin, rel_vel, v_crit", rel_vel_kms, v_crit_kms)
                                     
                                 # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
-                                print("SOFTEN KE3,BEb, bin dr,dr(1+de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
+                                #print("SOFTEN KE3,BEb, bin dr,dr(1+de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
                                 bin_separations[i] = bin_separations[i]*(1+de)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1-de)
                                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
@@ -718,31 +718,97 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
 
     return bin_array
 
-def bin_spheroid_encounter(mass_smbh, timestep, bin_array, time_passed):
+def bin_spheroid_encounter(mass_smbh, timestep, bin_array, time_passed, bindex, mbh_powerlaw_index, mode_mbh_init):
     """ Use Leigh+18 to figure out the rate at which spheroid encounters happen to binaries embedded in the disk
     Binaries at small disk radii encounter spheroid objects at high rate, particularly early on in the disk lifetime
     However, orbits at those small radii get captured quickly by the disk.
      
     From Fig.1 in Leigh+18, Rate of sph. encounter = 20/Myr at t=0, normalized to a_bin=1AU, R_disk=10^3r_g or 0.2/10kyr timestep 
     Within 1Myr, for a dense model disk (e.g. Sirko & Goodman), most of those inner stellar orbits have been captured by the disk.
-    So rate of sph. encounter =0/Myr at t=1Myr since those orbits are gone (R<10^3r_g; assuming approx circular orbits!) for SG disk model
+    So rate of sph. encounter ->0/Myr at t=1Myr since those orbits are gone (R<10^3r_g; assuming approx circular orbits!) for SG disk model
     For TQM disk model, rate of encounter slightly lower but non-zero.
-     
+
+    So, inside R_com<10^3r_g: 
     Assume: Rate of encounter = 0.2 (timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
     Generate random number from uniform [0,1] distribution and if <0.2 (normalized to above condition) then encounter
     
     Encounter rt starts at = 0.2 (timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 at t=0
     decreases to          = 0(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 (time_passed/1Myr)
+    at R<10^3r_g.
+    Outside: R_com>10^3r_g
+    Normalize to rate at (R_com/10^4r_g) so that rate is non-zero at R_com=[1e3,1e4]r_g after 1Myr.
+    Decrease rate with time, but ensure it goes to zero at R_com<1.e3r_g.
 
-    Try 
-    Encounter rt = 0.2*(1-(1Myr/time_passed))(timestep/10kyr)^{-1}(R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
+    So, rate of sph. encounter = 2/Myr at t=0, normalized to a_bin=1AU, R_disk=10^4r_g which is equivalently
+    Encounter rate = 0.02 (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2
+    Drop this by an order of magnitude over 1Myr.
+    Encounter rate = 0.02 (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2 (time_passed/10kyr)^-1/2   
+    so ->0.002 after a Myr
+    For R_com < 10^3r_g:
+        if time_passed <=1Myr
+            Encounter rt = 0.2*(1-(1Myr/time_passed))(timestep/10kyr)^{-1}(R_com/10^3r_g)^-1 (a_bin/1r_gM8)^2
+        if time_passed >1Myr
+            Encounter rt = 0
+    For R_com > 10^3r_g: 
+        Encounter rt = 0.02 * (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2 (time_passed/10kyr)^-1/2 
+    
     Return corrected binary with spin angles projected onto new L_bin.
     
     Assume typical interaction mass and inclination angle. 
-    L3=m3v3 X R3, where m3,v3,R3 are the mass, velocity and semi-major axis of tertiary encounter. 
-    Draw m3 from IMF random distrib. Draw R3 from uniform distribution[100,2000]r_g say. v_3= c/sqrt(R_3)
+    Binary orbital angular momentum is
+        L_bin =M_bin*v_orb_bin X R_com
+    Spheroid orbital angular momentum is
+        L3=m3*v3 X R3 
+    where m3,v3,R3 are the mass, velocity and semi-major axis of tertiary encounter. 
+    Draw m3 from IMF random distrib. 
+    Draw R3 from uniform distribution[100,2000]r_g say. v_3= c/sqrt(R_3)
     Ratio of L3/Lbin =(m3/M_bin)*sqrt(R3/R_com)
-    
+
     """
+    number_of_binaries = bindex
+    # set up 1-d arrays for bin com, masses, separations
+    bin_coms = np.zeros(number_of_binaries)
+    bin_masses = np.zeros(number_of_binaries)
+    bin_separations = np.zeros(number_of_binaries)   
+    bin_velocities = np.zeros(number_of_binaries)
+
+    #Units of r_g normalized to 1AU around a 10^8Msun SMBH
+    dist_in_rg_m8 = 1.0*(1.0e8/mass_smbh)
+
+    #Read in values of binaries at start of timestep
+    for j in range(0, number_of_binaries-1):
+        bin_coms[j] = bin_array[9,j]
+        bin_masses[j] = bin_array[2,j] + bin_array[3,j]
+        bin_separations[j] = bin_array[8,j]
+        # Keplerian binary velocity of c.o.m. around SMBH
+        bin_velocities[j] = scipy.constants.c/np.sqrt(bin_coms[j])
+
+    for i in range(0,number_of_binaries-1):
+        #Calculate encounter rate for each binary based on com location, binary size and time passed
+        if bin_coms[i] < 1.e3:
+            if time_passed <= 1.e6:
+                enc_rate = 0.2*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e3))
+            if time_passed >1.e6:
+                enc_rate = 0.0
+        if bin_coms[i] > 1.e3:
+                enc_rate = 0.02*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
+
+        #Based on est encounter rate, calculate if binary actually has a spheroid encounter
+        random_uniform_number = np.random.uniform(0,1)
+        if random_uniform_number < enc_rate:
+            #print("SPHEROID INTERACTION!")
+            #print("Enc rt., Rnd #, bin_com,time_passed:",enc_rate, random_uniform_number, bin_coms[i]/1.e4, bin_separations[i], dist_in_rg_m8, time_passed)  
+
+            #Generate random interloper with semi-major axis btwn [100,2000]r_g
+            interloper_outer_radius = 2000.0
+            random_uniform_number2 = np.random.uniform(0,1)
+            spheroid_bh_radius = interloper_outer_radius*random_uniform_number2
+            #Generate random interloper mass from IMF
+            spheroid_bh_mass = (np.random.pareto(mbh_powerlaw_index,1)+1)*mode_mbh_init
+            #print("R3,m3",spheroid_bh_radius,spheroid_bh_mass)
+            #Compare orbital angular momentum for Interloper and Binary
+            #Ratio of L3/Lbin =(m3/M_bin)*sqrt(R3/R_com)
+            L_ratio = (spheroid_bh_mass/bin_masses[i])*np.sqrt(spheroid_bh_radius/bin_coms[i])
+            #print("L ratio",L_ratio)
 
     return bin_array
