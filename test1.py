@@ -345,9 +345,44 @@ def main():
             
                     #Evolve GW frequency and strain
                     binary_bh_array = evolve.evolve_gw(binary_bh_array, bin_index, mass_smbh)
-                    for k in range(0,bin_index):
-                        print("Time passed, BBH GW: sep., freq, strain", time_passed, binary_bh_array[8,k], binary_bh_array[19,k],binary_bh_array[20,k])
-                        #gw_data[n_its,]=
+                    
+                    #Commented out for now
+                    #for k in range(0, bin_index):
+                    #    print("Time passed, BBH GW: sep., freq, strain", time_passed, binary_bh_array[8,k], binary_bh_array[19,k],binary_bh_array[20,k])
+                    
+                    # 1st entry each row of gw_data_array is time passed. time_passed=(i,0) 
+                    # Then update (nu,h) for each binary 
+                    # Say n_its = 0 and we have 2 binaries so bin_index =2 and n_ever_made =2 
+                    # This is always true on the first timestep where bin_index == n_ever_made and no losses (ionizations/mergers) yet
+                    # Every timestep thereafter, once there's been any loss, (merger or ionization)
+                    # n_ever_made > bin_index                   
+                    # So output should look like
+                    # (n_its,0)=time_passed
+                    # (n_its,1) =nu_1 (n_its,2) = h_1
+                    # (n_its,3) =nu_2 (n_its,4) = h_2   
+                    #  or : 0 nu_1 h_1 nu_2 h_2 0 0 0 0...                    
+                    #  So if bin_index == n_ever_made then loop over j=(0,bin_index-1) since no losses yet
+                    # Then: bin_index =2 so j goes from 0 to 1. So:
+                    # (n_its,2j+1) = nu_j (n_its,2j+2) = h_j gives:
+                    # (n_its,1) = nu_0, (n_its,2) = h_0, (n_its,3)=nu_1, (n_its,4) = h_1
+                    # Once losses: n_ever_made > bin_index  
+                    # On time step, n_its =i say binary 1 is ionized
+                    # Need to keep track of index of ionized binary
+                    # So bin_index is now 1 and n_ever_made =2 
+                    # Want output to be:
+                    # 1 0 0 nu_2 h_2 0 0 ....                    
+                    # (n_its,0) = time_passed
+                    # (n_its,1) = 0 (n_its,2) = 0
+                    # (n_its,3) = nu_2 (n_its,4) = h_2 
+                    #(nu_i,h_i) go to (0,2i), (0,2i+1) for i in range(1,bindex+1)
+                    
+                    #Commented out testing of gw-outputs for now
+                    #gw_data_array[n_its,0] = time_passed
+                    #for j in range(0, nbin_ever_made_index):
+                    #    for k in range(0, bin_index):
+                            # 
+                    #        gw_data_array[n_its,2*k] = binary_bh_array[19,k]
+                    #        gw_data_array[n_its,(2*k + 1)] = binary_bh_array[20,k] 
                     #Check and see if merger flagged during hardening (row 11, if negative)
                     merger_flags = binary_bh_array[11,:]
                     any_merger = np.count_nonzero(merger_flags)
@@ -357,10 +392,11 @@ def main():
                     # Default is ionization flag = -1
                     # If ionization flag >=0 then ionize bin_array[ionization_flag,;]
                     if ionization_flag >= 0:
-                        print("Ionize binary here!")
-                        print("Number of binaries before ionizing",bin_index)
-                        print("Index of binary to be ionized=",ionization_flag )
-                        print("Bin sep.,Bin a_com",binary_bh_array[8,ionization_flag],binary_bh_array[9,ionization_flag])
+                        #Comment out for now
+                        #print("Ionize binary here!")
+                        #print("Number of binaries before ionizing",bin_index)
+                        #print("Index of binary to be ionized=",ionization_flag )
+                        #print("Bin sep.,Bin a_com",binary_bh_array[8,ionization_flag],binary_bh_array[9,ionization_flag])
 
                         # Append 2 new BH to arrays of single BH locations, masses, spins, spin angles & gens
                         # For now add 2 new orb ecc term of 0.01. TO DO: calculate v_kick and resulting perturbation to orb ecc.
@@ -401,7 +437,8 @@ def main():
                         binary_bh_array = np.delete(binary_bh_array,ionization_flag,1)
                         #Reduce number of binaries
                         bin_index = bin_index - 1
-                        print("Number of binaries remaining", bin_index)
+                        #Comment out for now
+                        #print("Number of binaries remaining", bin_index)
 
                     #Test dynamics of encounters between binaries and eccentric singleton orbiters
                     #dynamics_binary_array = dynamics.circular_binaries_encounters_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, crit_ecc, de,norm_tgw,bin_array,bindex,integer_nbinprop)         
@@ -432,7 +469,7 @@ def main():
                             merged_chi_eff = chieff.chi_effective(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
                             merged_chi_p = chieff.chi_p(binary_bh_array[2,merger_indices[i]], binary_bh_array[3,merger_indices[i]], binary_bh_array[4,merger_indices[i]], binary_bh_array[5,merger_indices[i]], binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]], binary_bh_array[16,merger_indices[i]])
                             merged_bh_array[:,n_mergers_so_far + i] = mergerfile.merged_bh(merged_bh_array,binary_bh_array,merger_indices,i,merged_chi_eff,merged_mass,merged_spin,nprop_mergers,n_mergers_so_far,merged_chi_p)
-                            print("Merger properties (M_f,a_f,Chi_eff,Chi_p,theta1,theta2", merged_mass, merged_spin, merged_chi_eff, merged_chi_p,binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]],)
+                        #    print("Merger properties (M_f,a_f,Chi_eff,Chi_p,theta1,theta2", merged_mass, merged_spin, merged_chi_eff, merged_chi_p,binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]],)
                         # do another thing
                         merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
                         #Reset merger marker to zero

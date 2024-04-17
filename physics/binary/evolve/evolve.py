@@ -493,7 +493,18 @@ def evolve_gw(bin_array,bin_index,mass_smbh):
         # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
         d_obs = 421*Mpc
         strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw*rg_chirp/scipy.constants.c)**(2/3)
-        bin_array[20,j] = strain
+        # But power builds up in band over multiple cycles! 
+        # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
+        strain_factor = 1
+        if nu_gw < 10**(-6):
+            strain_factor = np.sqrt(nu_gw*np.pi*(10**7)/8)
+
+        if nu_gw > 10**(-6):
+            strain_factor = 4.e3    
+        # char amplitude = sqrt(N/8)h_0 and N=freq*1yr for approx const. freq. sources over ~~yr.
+        # So in LISA band
+        #For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt)
+        bin_array[20,j] = strain_factor*strain
         #print("mbin(kg),sep(m),m_chirp(kg),rg_chirp,d_obs,nu,strain",temp_bin_mass_kg,temp_bin_separation_meters,m_chirp,rg_chirp,d_obs,nu_gw,strain)
     return bin_array
 
@@ -542,9 +553,10 @@ def ionization_check(bin_array, bin_index, mass_smbh):
         temp_hill_sphere = temp_bin_com_radius*((temp_mass_ratio/3)**(1/3))
 
         if temp_bin_separation > frac_rhill*temp_hill_sphere:
-            print("Ionize binary!", temp_bin_separation, frac_rhill*temp_hill_sphere)
+            #Commented out for now
+            # print("Ionize binary!", temp_bin_separation, frac_rhill*temp_hill_sphere)
             #Ionize binary!!!
-            print("Bin_array index",j)
+            # print("Bin_array index",j)
             ionization_flag = j
             
     return ionization_flag
@@ -622,9 +634,10 @@ def ionization_check(bin_array, bin_index, mass_smbh):
         temp_hill_sphere = temp_bin_com_radius*((temp_mass_ratio/3)**(1/3))
 
         if temp_bin_separation > frac_rhill*temp_hill_sphere:
-            print("Ionize binary!", temp_bin_separation, frac_rhill*temp_hill_sphere)
+            #Comment out for now
+            # print("Ionize binary!", temp_bin_separation, frac_rhill*temp_hill_sphere)
             #Ionize binary!!!
-            print("Bin_array index",j)
+            # print("Bin_array index",j)
             ionization_flag = j
             
     return ionization_flag
