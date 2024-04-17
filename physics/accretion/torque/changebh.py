@@ -107,7 +107,7 @@ def change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torqu
 
     spin_torque_iteration = (6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
     
-    print("Initital spin angles",prograde_bh_spin_angles)
+    #print("Initital spin angles",prograde_bh_spin_angles)
     #Assume same angles as before to start
     bh_new_spin_angles = prograde_bh_spin_angles
     #Singleton BH with orb ecc > e_crit will spin down b/c accrete retrograde
@@ -133,7 +133,7 @@ def change_spin_angles(prograde_bh_spin_angles, frac_Eddington_ratio, spin_torqu
     bh_max_spin_angle = 3.10
     bh_new_spin_angles[bh_new_spin_angles<spin_minimum_resolution] = 0.0
     bh_new_spin_angles[bh_new_spin_angles > bh_max_spin_angle] = bh_max_spin_angle
-    print("Final spin angles",bh_new_spin_angles)
+    #print("Final spin angles",bh_new_spin_angles)
     return bh_new_spin_angles
 
 

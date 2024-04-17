@@ -35,11 +35,17 @@ def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle1, spin_angle2, bin_ang_mom)
     # chi_p = max[spin_1_perp, (q(4q+3)/(4+3q))* spin_2_perp]
     # where spin_1_perp = spin1*sin(spin_angle1) and q=mass_2/mass_1 where mass_2< mass_1
     #chi_eff=;chi=(m1*a1*cos(theta_1) + m2*a2*cos(theta_2))/(mbin)
-    total_mass  =mass_1 + mass_2
+    total_mass  = mass_1 + mass_2
     #Convert spin angle from radians to degrees. Nope! Don't need to, numpy.cos(angle), angle in rads.
     #spin_angle1_deg = spin_angle1*(180.0/np.pi)
     #spin_angle2_deg = spin_angle2*(180.0/np.pi)
     # If mass1 is the dominant binary partner
+    #Define default mass ratio of 1, otherwise choose based on masses
+    q = 1.0
+    #Define default spins
+    spin_1_perp = spin_1*np.sin(spin_angle1)
+    spin_2_perp = spin_2*np.sin(spin_angle2)
+    
     if mass_1 > mass_2:
          q=mass_2/mass_1
          spin_1_perp = spin_1*np.sin(spin_angle1)
