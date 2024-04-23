@@ -32,14 +32,11 @@ install: clean version
 
 #### Test one thing at a time ####
 
-mcfacts_sim: clear
+mcfacts_sim: clean
 	python3 ${MCFACTS_SIM_EXE}
 
 #### CLEAN ####
-#clean:
-#	rm -rf src/*.egg*
-
-clear:
+clean:
 	rm -rf run*
 	rm -rf output_mergers_population.dat
 
