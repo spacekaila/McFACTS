@@ -169,7 +169,7 @@ def main():
             n_bh,
             opts.mu_spin_distribution,
             opts.sigma_spin_distribution
-           )
+        )
         bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(
             rng,
             n_bh,
@@ -225,24 +225,24 @@ def main():
         #Orb eccentricities >2h (modified exponential damping): mask entries < 2*aspect_ratio
         #prograde_bh_large_ecc = np.ma.masked_where(prograde_bh_orb_ecc < 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
         # Apply ecc damping to this masked array (where true)
-        #prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc)
+        #prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc)
 
         #print('modest ecc ',prograde_bh_modest_ecc)
         #print('damped ecc',prograde_bh_orb_ecc_damp) 
         
         # Test dynamics
-        #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, timestep, crit_ecc, de)
+        #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc, de)
     
         
 
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
         #if feedback > 0:
-        #        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, frac_Eddington_ratio, alpha)
+        #        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
         #else:
         #        ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
         # then migrate as usual
-        #prograde_bh_locations_new = type1.type1_migration(opts.mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, timestep, ratio_heat_mig_torques, trap_radius, prograde_bh_orb_ecc,crit_ecc)
+        #prograde_bh_locations_new = type1.type1_migration(opts.mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, opts.timestep, ratio_heat_mig_torques, opts.trap_radius, prograde_bh_orb_ecc,opts.crit_ecc)
         
 
         #Orbital inclinations
@@ -334,7 +334,7 @@ def main():
             # First if feedback present, find ratio of feedback heating torque to migration torque
             if opts.feedback > 0:
                 ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(
-                    prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, alpha)
+                    prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
             else:
                 ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
             # then migrate as usual
@@ -350,7 +350,7 @@ def main():
                 opts.trap_radius,
                 prograde_bh_orb_ecc,
                 opts.crit_ecc
-                )
+            )
             #print("NEW locations",prograde_bh_locations)
             # Accrete
             prograde_bh_masses = changebhmass.change_mass(
@@ -358,7 +358,7 @@ def main():
                 opts.frac_Eddington_ratio,
                 mass_growth_Edd_rate,
                 opts.timestep
-                )
+            )
             # Spin up
             prograde_bh_spins = changebh.change_spin_magnitudes(
                 prograde_bh_spins,
@@ -380,7 +380,7 @@ def main():
                 opts.timestep,
                 prograde_bh_orb_ecc,
                 opts.crit_ecc
-                )
+            )
 
             # Damp BH orbital eccentricity
             prograde_bh_orb_ecc = orbital_ecc.orbital_ecc_damping(
@@ -392,7 +392,7 @@ def main():
                 prograde_bh_orb_ecc,
                 opts.timestep,
                 opts.crit_ecc,
-                )
+            )
             # Perturb eccentricity via dynamical encounters
             if opts.dynamic_enc > 0:
                 prograde_bh_locn_orb_ecc = dynamics.circular_singles_encounters_prograde(
@@ -406,7 +406,7 @@ def main():
                     opts.timestep,
                     opts.crit_ecc,
                     opts.de,
-                    )
+                )
                 prograde_bh_locations = prograde_bh_locn_orb_ecc[0]
                 prograde_bh_orb_ecc = prograde_bh_locn_orb_ecc[1]
                 prograde_bh_locations = prograde_bh_locations[0]
@@ -431,7 +431,7 @@ def main():
                         disk_aspect_ratio,
                         opts.timestep,
                         opts.crit_ecc
-                        )
+                    )
                     # Harden/soften binaries via dynamical encounters
                     #Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
                     binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
@@ -445,7 +445,7 @@ def main():
                         opts.de,
                         binary_bh_array,
                         bin_index
-                        )
+                    )
 
                     #Soften/ ionize binaries due to encounters with eccentric singletons
                     binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
@@ -459,7 +459,7 @@ def main():
                         opts.de,
                         binary_bh_array,
                         bin_index
-                       ) 
+                    ) 
                     # Harden binaries via gas
                     #Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                     binary_bh_array = baruteau11.bin_harden_baruteau(
@@ -470,7 +470,7 @@ def main():
                         norm_t_gw,
                         bin_index,
                         time_passed,
-                       )
+                    )
                     #print("Harden binary")
                     #Check closeness of binary. Are black holes at merger condition separation
                     binary_bh_array = evolve.contact_check(binary_bh_array, bin_index, opts.mass_smbh)
@@ -483,7 +483,7 @@ def main():
                         opts.timestep,
                         integer_nbinprop,
                         bin_index
-                        )
+                    )
                     # Spin up binary components
                     binary_bh_array = evolve.change_bin_spin_magnitudes(
                         binary_bh_array,
@@ -492,7 +492,7 @@ def main():
                         opts.timestep,
                         integer_nbinprop,
                         bin_index
-                        )
+                    )
                     # Torque angle of binary spin components
                     binary_bh_array = evolve.change_bin_spin_angles(
                         binary_bh_array,
@@ -502,7 +502,7 @@ def main():
                         opts.timestep,
                         integer_nbinprop,
                         bin_index
-                        )
+                    )
 
                     #Spheroid encounters
                     binary_bh_array = dynamics.bin_spheroid_encounter(
@@ -513,7 +513,7 @@ def main():
                         bin_index,
                         opts.mbh_powerlaw_index,
                         opts.mode_mbh_init
-                        )
+                    )
                     #Migrate binaries
                     # First if feedback present, find ratio of feedback heating torque to migration torque
                     #print("feedback",feedback)
@@ -522,8 +522,8 @@ def main():
                             binary_bh_array,
                             surf_dens_func,
                             opts.frac_Eddington_ratio,
-                            alpha
-                           )
+                            opts.alpha
+                        )
                     else:
                         ratio_heat_mig_torques_bin_com = np.ones(len(binary_bh_array[9,:]))   
 
@@ -537,14 +537,14 @@ def main():
                         ratio_heat_mig_torques_bin_com,
                         opts.trap_radius,
                         opts.crit_ecc
-                        )
+                    )
             
                     #Evolve GW frequency and strain
                     binary_bh_array = evolve.evolve_gw(
                         binary_bh_array,
                         bin_index,
                         opts.mass_smbh
-                        )
+                    )
                     
                     #Commented out for now
                     #for k in range(0, bin_index):
@@ -641,7 +641,7 @@ def main():
                         #print("Number of binaries remaining", bin_index)
 
                     #Test dynamics of encounters between binaries and eccentric singleton orbiters
-                    #dynamics_binary_array = dynamics.circular_binaries_encounters_prograde(rng,opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, crit_ecc, opts.de,norm_tgw,bin_array,bindex,integer_nbinprop)         
+                    #dynamics_binary_array = dynamics.circular_binaries_encounters_prograde(rng,opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, opts.crit_ecc, opts.de,norm_tgw,bin_array,bindex,integer_nbinprop)         
                 
                     if opts.verbose:
                         print(merger_flags)
@@ -669,14 +669,14 @@ def main():
                                 binary_bh_array[3,merger_indices[i]],
                                 binary_bh_array[4,merger_indices[i]],
                                 binary_bh_array[5,merger_indices[i]]
-                                )
+                            )
                             merged_spin = tichy08.merged_spin(
                                 binary_bh_array[2,merger_indices[i]],
                                 binary_bh_array[3,merger_indices[i]],
                                 binary_bh_array[4,merger_indices[i]],
                                 binary_bh_array[5,merger_indices[i]],
                                 binary_bh_array[16,merger_indices[i]]
-                                )
+                            )
                             merged_chi_eff = chieff.chi_effective(
                                 binary_bh_array[2,merger_indices[i]],
                                 binary_bh_array[3,merger_indices[i]],
@@ -685,7 +685,7 @@ def main():
                                 binary_bh_array[6,merger_indices[i]],
                                 binary_bh_array[7,merger_indices[i]],
                                 binary_bh_array[16,merger_indices[i]]
-                                )
+                            )
                             merged_chi_p = chieff.chi_p(
                                 binary_bh_array[2,merger_indices[i]],
                                 binary_bh_array[3,merger_indices[i]],
@@ -694,7 +694,7 @@ def main():
                                 binary_bh_array[6,merger_indices[i]],
                                 binary_bh_array[7,merger_indices[i]],
                                 binary_bh_array[16,merger_indices[i]]
-                                )
+                            )
                             merged_bh_array[:,n_mergers_so_far + i] = mergerfile.merged_bh(
                                 merged_bh_array,
                                 binary_bh_array,
@@ -706,7 +706,7 @@ def main():
                                 nprop_mergers,
                                 n_mergers_so_far,
                                 merged_chi_p
-                                )
+                            )
                         #    print("Merger properties (M_f,a_f,Chi_eff,Chi_p,theta1,theta2", merged_mass, merged_spin, merged_chi_eff, merged_chi_p,binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]],)
                         # do another thing
                         merger_array[:,merger_indices] = binary_bh_array[:,merger_indices]
