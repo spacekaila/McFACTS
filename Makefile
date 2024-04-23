@@ -2,7 +2,7 @@
 .PHONY: all clean
 
 all: clean tests
-tests: test2
+tests: mcfacts_sim
 
 ######## Definitions ########
 #### Package ####
@@ -18,7 +18,7 @@ VERSION=0.0.0
 HERE=$(shell pwd)
 
 #### Scripts ####
-TEST2_EXE = ${HERE}/test2.py
+MCFACTS_SIM_EXE = ${HERE}/mcfacts_sim.py
 
 ######## Instructions ########
 #### Install ####
@@ -32,8 +32,8 @@ install: clean version
 
 #### Test one thing at a time ####
 
-test2: clear
-	python3 ${TEST2_EXE}
+mcfacts_sim: clear
+	python3 ${MCFACTS_SIM_EXE}
 
 #### CLEAN ####
 #clean:
