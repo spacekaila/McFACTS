@@ -40,5 +40,6 @@ test2: clear
 
 clear:
 	rm -rf run*
+	rm -rf output_mergers_population.dat
 
 
