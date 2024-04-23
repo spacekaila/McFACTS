@@ -12,29 +12,29 @@ import scipy.interpolate
 import sys
 import argparse
 
-from inputs import ReadInputs
+from mcfacts.inputs import ReadInputs
 
-from setup import setupdiskblackholes
-from physics.migration.type1 import type1
-from physics.accretion.eddington import changebhmass
-from physics.accretion.torque import changebh
-from physics.feedback.hankla21 import feedback_hankla21
-from physics.dynamics import dynamics
-from physics.eccentricity import orbital_ecc
-from physics.binary.formation import hillsphere
-from physics.binary.formation import add_new_binary
-#from physics.binary.formation import secunda20
-from physics.binary.evolve import evolve
-from physics.binary.harden import baruteau11
-from physics.binary.merge import tichy08
-from physics.binary.merge import chieff
-from physics.binary.merge import tgw
-#from tests import tests
-from outputs import mergerfile
+from mcfacts.setup import setupdiskblackholes
+from mcfacts.physics.migration.type1 import type1
+from mcfacts.physics.accretion.eddington import changebhmass
+from mcfacts.physics.accretion.torque import changebh
+from mcfacts.physics.feedback.hankla21 import feedback_hankla21
+from mcfacts.physics.dynamics import dynamics
+from mcfacts.physics.eccentricity import orbital_ecc
+from mcfacts.physics.binary.formation import hillsphere
+from mcfacts.physics.binary.formation import add_new_binary
+#from mcfacts.physics.binary.formation import secunda20
+from mcfacts.physics.binary.evolve import evolve
+from mcfacts.physics.binary.harden import baruteau11
+from mcfacts.physics.binary.merge import tichy08
+from mcfacts.physics.binary.merge import chieff
+from mcfacts.physics.binary.merge import tgw
+#from mcfacts.tests import tests
+from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
-DEFAULT_INI = Path(__file__).parent.resolve() / "inputs/model_choice.txt"
+DEFAULT_INI = Path(__file__).parent.resolve() / "src" / "mcfacts" / "inputs" / "model_choice.ini"
 assert DEFAULT_INI.is_file()
 
 def arg():
@@ -45,7 +45,7 @@ def arg():
     parser.add_argument("--n_bins_max", default=1000, type=int)
     parser.add_argument("--n_bins_max_out", default=100, type=int)
     parser.add_argument("--fname-ini",help="Filename of configuration file",
-        default="inputs/model_choice.txt",type=str)
+        default=DEFAULT_INI,type=str)
     parser.add_argument("--fname-output-mergers",default="output_mergers.dat",
         help="output merger file (if any)",type=str)
     parser.add_argument("--fname-snapshots-bh",

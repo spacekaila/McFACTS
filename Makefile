@@ -23,11 +23,12 @@ TEST2_EXE = ${HERE}/test2.py
 ######## Instructions ########
 #### Install ####
 
-#version: clean
-#	echo "__version__ = ${VERSION}" > __version__.py
+version: clean
+	echo "__version__ = ${VERSION}" > __version__.py
+	echo "__version__ = ${VERSION}" > src/mcfacts/__version__.py
 
-#install: clean version
-#	pip3 install -e .
+install: clean version
+	pip3 install -e .
 
 #### Test one thing at a time ####
 

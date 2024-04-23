@@ -3,6 +3,10 @@ import numpy as np
 import configparser as ConfigParser
 from io import StringIO
 
+# Grab those txt files
+from importlib import resources as impresources
+from mcfacts.inputs import data
+
 
 def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     """This function reads your input choices from a file user specifies or
@@ -184,8 +188,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
     infile_suffix = '_surface_density.txt'
-    infile_path = 'inputs/'
-    infile = infile_path+input_variables['disk_model_name']+infile_suffix
+    infile = input_variables['disk_model_name']+infile_suffix
+    infile = impresources.files(data) / infile
     surface_density_file = open(infile, 'r')
     density_list = []
     radius_list = []
@@ -221,7 +225,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     #       (radius is actually ignored in this file!)
     #   filename = model_aspect_ratio.txt, where model is user choice
     infile_suffix = '_aspect_ratio.txt'
-    infile = infile_path+input_variables['disk_model_name']+infile_suffix
+    infile = input_variables['disk_model_name']+infile_suffix
+    infile = impresources.files(data) / infile
     aspect_ratio_file = open(infile, 'r')
     aspect_ratio_list = []
     for line in aspect_ratio_file:
