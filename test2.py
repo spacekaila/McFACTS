@@ -34,6 +34,8 @@ from outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
+DEFAULT_INI = Path(__file__).parent.resolve() / "inputs/model_choice.txt"
+assert DEFAULT_INI.is_file()
 
 def arg():
     import argparse
@@ -59,6 +61,23 @@ def arg():
     parser.add_argument("--seed", type=int, default=None,
         help="Set the random seed. Randomly sets one if not passed. Default: None")
     
+    ## Add inifile arguments
+    # Read default inifile
+    _variable_inputs, _disk_model_radius_array, _surface_density_array, _aspect_ratio_array \
+        = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
+    # Loop the arguments
+    for name in _variable_inputs:
+        _metavar    = name
+        _opt        = "--%s"%(name)
+        _default    = _variable_inputs[name]
+        _dtype      = type(_variable_inputs[name])
+        parser.add_argument(
+            _opt,
+            default=_default,
+            type=_dtype,
+            metavar=_metavar,
+           )
+
     ## Parse arguments
     opts = parser.parse_args()
     # Check that the inifile exists
@@ -68,16 +87,36 @@ def arg():
     assert opts.fname_ini.is_file()
     opts.fname_snapshots_bh = Path(opts.fname_snapshots_bh)
     opts.fname_output_mergers = Path(opts.fname_output_mergers)
+
+    ## Parse inifile
     # Read inifile
     variable_inputs, disk_model_radius_array, surface_density_array, aspect_ratio_array \
-        = ReadInputs.ReadInputs_ini(opts.fname_ini)
+        = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
+    # Okay, this is important. The priority of input arguments is:
+    # command line > specified inifile > default inifile
+    for name in variable_inputs:
+        print(name, hasattr(opts, name), getattr(opts, name), _variable_inputs[name], variable_inputs[name])
+        if getattr(opts, name) != _variable_inputs[name]:
+            print(name)
+            # This is the case where the user has set the value of an argument
+            # from the command line. We don't want to argue with the user.
+            pass
+        else:
+            # This is the case where the user has not set the value of an
+            # argument from the command line.
+            # We can overwrite the default value with the inifile value
+            setattr(opts, name, variable_inputs[name])
+    # Case 3: if an attribute is in the default infile,
+    #   and not the specified inifile,
+    #   it remains unaltered.
+
     # Update opts with variable inputs
-    opts.__dict__.update(variable_inputs)
     opts.disk_model_radius_array = disk_model_radius_array
     opts.surface_density_array = surface_density_array
     opts.aspect_ratio_array = aspect_ratio_array
-    for item in dir(opts):
-        print(item, getattr(opts, item))
+    if opts.verbose:
+        for item in opts.__dict__:
+            print(item, getattr(opts, item))
 
     # Get the parent path to this file and cd to that location for runtime
     opts.runtime_directory = Path(__file__).parent.resolve()

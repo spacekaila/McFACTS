@@ -4,7 +4,7 @@ import configparser as ConfigParser
 from io import StringIO
 
 
-def ReadInputs_ini(fname='inputs/model_choice.txt'):
+def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     """This function reads your input choices from a file user specifies or
     default (inputs/model_choice.txt), and returns the chosen variables for 
     manipulation by main.    
@@ -172,10 +172,11 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
         assert name in input_variables
         assert type(input_variables[name]) == input_types[name]
 
-    print("input_variables:")
-    for key in input_variables:
-        print(key, input_variables[key], type(input_variables[key]))
-    print("I put your variables where they belong")
+    if verbose:
+        print("input_variables:")
+        for key in input_variables:
+            print(key, input_variables[key], type(input_variables[key]))
+        print("I put your variables where they belong")
 
     # open the disk model surface density file and read it in
     # Note format is assumed to be comments with #
@@ -249,7 +250,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     input_variables['disk_inner_radius'] = disk_model_radius_array[0]
 
     #Truncate disk models at outer disk radius
-    print("I read and digested your disk model")
-    print("Sending variables back")
+    if verbose:
+        print("I read and digested your disk model")
+        print("Sending variables back")
 
     return input_variables, disk_model_radius_array, surface_density_array, aspect_ratio_array
