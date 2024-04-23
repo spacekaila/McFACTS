@@ -108,10 +108,10 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     config.optionxform=str # force preserve case! Important for --choose-data-LI-seglen
 
     # Default format has no section headings ...
-    #config.read(opts.use_ini)
-    with open(fname) as stream:
-        stream = StringIO("[top]\n" + stream.read())
-        config.readfp(stream)
+    config.read(fname)
+    #with open(fname) as stream:
+    #    stream = StringIO("[top]\n" + stream.read())
+    #    config.read_file(stream)
 
     # convert to dict
     input_variables = dict(config.items('top'))
