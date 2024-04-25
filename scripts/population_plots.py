@@ -10,6 +10,10 @@ import mcfacts.vis.LISA as li
 import mcfacts.vis.PhenomA as pa
 import pandas as pd
 import os
+# Grab those txt files
+from importlib import resources as impresources
+from mcfacts.vis import data
+
 
 ######## Arg ########
 def arg():
@@ -159,8 +163,10 @@ def main():
     #Also make sure LIGO sensitivity curves are in /vis directory
 
     # READ LIGO O3 Sensitivity data (from https://git.ligo.org/sensitivity-curves/o3-sensitivity-curves)
-    H1 = 'O3-H1-C01_CLEAN_SUB60HZ-1262197260.0_sensitivity_strain_asd.txt'  
-    L1 = 'O3-L1-C01_CLEAN_SUB60HZ-1262141640.0_sensitivity_strain_asd.txt'
+    H1 = impresources.files(data) / \
+        'O3-H1-C01_CLEAN_SUB60HZ-1262197260.0_sensitivity_strain_asd.txt'  
+    L1 = impresources.files(data) / \
+        'O3-L1-C01_CLEAN_SUB60HZ-1262141640.0_sensitivity_strain_asd.txt'
     # Adjust sep according to your delimiter (e.g., '\t' for tab-delimited files)
     dfh1 = pd.read_csv(H1, sep='\t', header=None)  # Use header=None if the file doesn't contain header row
     dfl1 = pd.read_csv(L1, sep='\t', header=None)

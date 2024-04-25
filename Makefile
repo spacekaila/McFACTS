@@ -48,5 +48,4 @@ clean:
 	rm -rf q_chi_eff.png
 	rm -rf time_of_merger.png
 	rm -rf merger_remnant_mass.png
-
-
+	rm -rf gw_strain.png
