@@ -1,7 +1,7 @@
 # Declarations
 .PHONY: all clean
 
-all: clean tests
+all: clean tests plots
 tests: mcfacts_sim
 
 ######## Definitions ########
@@ -18,7 +18,8 @@ VERSION=0.0.0
 HERE=$(shell pwd)
 
 #### Scripts ####
-MCFACTS_SIM_EXE = ${HERE}/mcfacts_sim.py
+MCFACTS_SIM_EXE = ${HERE}/scripts/mcfacts_sim.py
+POPULATION_PLOTS_EXE = ${HERE}/scripts/population_plots.py
 
 ######## Instructions ########
 #### Install ####
@@ -35,9 +36,17 @@ install: clean version
 mcfacts_sim: clean
 	python3 ${MCFACTS_SIM_EXE}
 
+plots:  mcfacts_sim
+	python3 ${POPULATION_PLOTS_EXE}
+
 #### CLEAN ####
 clean:
 	rm -rf run*
 	rm -rf output_mergers_population.dat
+	rm -rf m1m2.png
+	rm -rf merger_mass_v_radius.png
+	rm -rf q_chi_eff.png
+	rm -rf time_of_merger.png
+	rm -rf merger_remnant_mass.png
 
 

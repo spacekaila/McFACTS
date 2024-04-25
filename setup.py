@@ -106,6 +106,7 @@ REQUIREMENTS = {
         "numpy>=1.23.1",
         "matplotlib>=3.5.2",
         "scipy>=1.11.2",
+        "pandas",
     ],
     "setup" : [
         "pytest-runner",
