@@ -12,7 +12,8 @@ import os
 VERSIONFILE="__version__.py"
 with open(VERSIONFILE, 'r') as F:
     _line = F.read()
-__version__  = _line.split("=")[-1].lstrip(" ").rstrip(" ")
+__version__  = _line.split("=")[-1].lstrip(" '").rstrip(" '\n")
+print(__version__)
 
 #-------------------------------------------------------------------------------
 #   GENERAL

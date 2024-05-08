@@ -25,8 +25,8 @@ POPULATION_PLOTS_EXE = ${HERE}/scripts/population_plots.py
 #### Install ####
 
 version: clean
-	echo "__version__ = ${VERSION}" > __version__.py
-	echo "__version__ = ${VERSION}" > src/mcfacts/__version__.py
+	echo "__version__ = '${VERSION}'" > __version__.py
+	echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 
 install: clean version
 	pip3 install -e .
