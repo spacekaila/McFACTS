@@ -61,6 +61,8 @@ def arg():
     )
     parser.add_argument("--seed", type=int, default=None,
         help="Set the random seed. Randomly sets one if not passed. Default: None")
+    parser.add_argument("--fname-log", default=None, type=str,
+        help="Specify a file to save the arguments for mcfacts")
     
     ## Add inifile arguments
     # Read default inifile
@@ -137,6 +139,11 @@ def arg():
     if opts.seed == None:
         opts.seed = np.random.randint(low=0, high=int(1e18))
         print(f'Random number generator seed set to: {opts.seed}')
+    if not opts.fname_log is None:
+        with open(opts.fname_log, 'w') as F:
+            for item in opts.__dict__:
+                line = "%s = %s\n"%(item, str(opts.__dict__[item]))
+                F.write(line)
     return opts
 
 def main():

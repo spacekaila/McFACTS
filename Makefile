@@ -34,7 +34,7 @@ install: clean version
 #### Test one thing at a time ####
 
 mcfacts_sim: clean
-	python3 ${MCFACTS_SIM_EXE}
+	python3 ${MCFACTS_SIM_EXE} --fname-log out.log
 
 plots:  mcfacts_sim
 	python3 ${POPULATION_PLOTS_EXE}

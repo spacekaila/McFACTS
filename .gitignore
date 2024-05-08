@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 .vscode/
 *.dat
+*.log
 *.swp
 *.eggs
 *.egg-info
