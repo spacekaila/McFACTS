@@ -49,3 +49,4 @@ clean:
 	rm -rf time_of_merger.png
 	rm -rf merger_remnant_mass.png
 	rm -rf gw_strain.png
+	rm -rf out.log
