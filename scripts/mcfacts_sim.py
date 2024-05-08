@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-from os.path import isfile
+from os.path import isfile, isdir
 from pathlib import Path
 
 from cgi import print_arguments
@@ -121,19 +121,21 @@ def arg():
         for item in opts.__dict__:
             print(item, getattr(opts, item))
 
-    # Get the parent path to this file and cd to that location for runtime
-    opts.runtime_directory = Path(__file__).parent.resolve()
-    assert opts.runtime_directory.is_dir()
-    os.chdir(opts.runtime_directory)
-
     # Get the user-defined or default working directory / output location
     opts.work_directory = Path(opts.work_directory).resolve()
+    if not isdir(opts.work_directory):
+        os.mkdir(opts.work_directory)
     assert opts.work_directory.is_dir()
     try: # check if working directory for output exists
         os.stat(opts.work_directory)
     except FileNotFoundError as e:
         raise e
     print(f"Output will be saved to {opts.work_directory}")
+
+    # Get the parent path to this file and cd to that location for runtime
+    opts.runtime_directory = Path(__file__).parent.resolve()
+    assert opts.runtime_directory.is_dir()
+    os.chdir(opts.runtime_directory)
 
     # set the seed for random number generation and reproducibility if not user-defined
     if opts.seed == None:
