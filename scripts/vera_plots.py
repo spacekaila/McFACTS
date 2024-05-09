@@ -29,6 +29,8 @@ def arg():
     parser.add_argument("--cdf",
         nargs="+",default=[],help="Fields for cdf plots")
     parser.add_argument("--verbose", action='store_true')
+    parser.add_argument("--fname-nal", default=None,
+        help="Load Vera's Gaussians")
     opts = parser.parse_args()
     assert isfile(opts.fname_mergers)
     opts.wkdir = split(abspath(opts.fname_mergers))[0]
@@ -78,6 +80,34 @@ def simple_cdf(x):
     cdf = cdf / np.max(cdf)
     return _x, cdf
 
+def nal_cdf(fname_nal,n=1000):
+    from gwalk import MultivariateNormal
+    from xdata import Database
+    assert isfile(fname_nal)
+    db = Database(fname_nal)
+    events = db.list_items()
+    _group = "aligned3d:PublicationSamples:select"
+    mc = []
+    eta = []
+    chi_eff = []
+    eta_cdf = None,
+    for item in events:
+        group = join(item,_group)
+        p_astro = db.attr_value(item, "p_astro")
+        if p_astro > 0.5:
+            assert db.exists(group)
+            _MV = MultivariateNormal.load(fname_nal, group)
+            out = _MV.sample_normal(n)
+            _mc, _eta, _chi_eff = out[:,0], out[:,1], out[:,2]
+            mc = np.append(mc, _mc).flatten()
+            eta = np.append(eta, _eta).flatten()
+            chi_eff = np.append(chi_eff, _chi_eff).flatten()
+    mc, mc_cdf = simple_cdf(mc)
+    eta, eta_cdf = simple_cdf(eta)
+    chi_eff, chi_eff_cdf = simple_cdf(chi_eff)
+    return mc, mc_cdf, eta, eta_cdf, chi_eff, chi_eff_cdf
+    
+
 ######## Plots ########
 def plot_cdf(merger_dict, label, fname):
     x, y = simple_cdf(merger_dict[label])
@@ -99,6 +129,10 @@ def main():
         assert _item in merger_dict
         fname_item = join(opts.wkdir, "mergers_cdf_%s.png"%(_item))
         plot_cdf(merger_dict, _item, fname_item)
+
+    #### NAL plots ####
+    if not opts.fname_nal is None:
+        nal_cdf(opts.fname_nal)
     return
 ######## Execution ########
 if __name__ == "__main__":

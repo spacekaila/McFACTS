@@ -1,7 +1,7 @@
 # Declarations
 .PHONY: all clean
 
-all: clean tests plots
+all: clean tests plots vera_plots
 tests: mcfacts_sim
 
 ######## Definitions ########
@@ -35,10 +35,12 @@ install: clean version
 #### Test one thing at a time ####
 
 mcfacts_sim: clean
-	python3 ${MCFACTS_SIM_EXE} --fname-log out.log
+	python3 ${MCFACTS_SIM_EXE} \
+        --n_iterations 100 \
+        --fname-log out.log
 
 plots:  mcfacts_sim
-	python3 ${POPULATION_PLOTS_EXE}
+	#python3 ${POPULATION_PLOTS_EXE}
 
 vera_plots: mcfacts_sim
 	python3 ${VERA_PLOTS_EXE} \

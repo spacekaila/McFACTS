@@ -464,11 +464,12 @@ def main():
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 #First check that binaries are real. Discard any columns where the location or the mass is 0.
-                #reality_flag = evolve.reality_check(binary_bh_array, bin_index,integer_nbinprop)
-                #if reality_flag >= 0:
+                reality_flag = evolve.reality_check(binary_bh_array, bin_index,integer_nbinprop)
+                if reality_flag >= 0:
                    #One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
-                    #binary_bh_array = np.delete(binary_bh_array,reality_flag,1) 
-                    #bin_index = bin_index - 1
+                    binary_bh_array = np.delete(binary_bh_array,reality_flag,1) 
+                    bin_index = bin_index - 1
+                else:
                 #If there are still binaries after this, evolve them.
                 #if bin_index > 0:
                     # If there are binaries, evolve them
