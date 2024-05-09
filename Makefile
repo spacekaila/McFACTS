@@ -20,6 +20,7 @@ HERE=$(shell pwd)
 #### Scripts ####
 MCFACTS_SIM_EXE = ${HERE}/scripts/mcfacts_sim.py
 POPULATION_PLOTS_EXE = ${HERE}/scripts/population_plots.py
+VERA_PLOTS_EXE = ${HERE}/scripts/vera_plots.py
 
 ######## Instructions ########
 #### Install ####
@@ -39,6 +40,11 @@ mcfacts_sim: clean
 plots:  mcfacts_sim
 	python3 ${POPULATION_PLOTS_EXE}
 
+vera_plots: mcfacts_sim
+	python3 ${VERA_PLOTS_EXE} \
+		--cdf chi_eff chi_p M gen1 gen2 t_merge \
+		--verbose
+
 #### CLEAN ####
 clean:
 	rm -rf run*
@@ -50,3 +56,4 @@ clean:
 	rm -rf merger_remnant_mass.png
 	rm -rf gw_strain.png
 	rm -rf out.log
+	rm -rf mergers_cdf*.png
