@@ -482,34 +482,35 @@ def main():
                         opts.timestep,
                         opts.crit_ecc
                     )
+                    if (opts.dynamic_enc > 0):
                     # Harden/soften binaries via dynamical encounters
                     #Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
-                    binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
-                        rng,
-                        opts.mass_smbh,
-                        prograde_bh_locations,
-                        prograde_bh_masses,
-                        prograde_bh_orb_ecc ,
-                        opts.timestep,
-                        opts.crit_ecc,
-                        opts.de,
-                        binary_bh_array,
-                        bin_index
-                    )
+                        binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
+                            rng,
+                            opts.mass_smbh,
+                            prograde_bh_locations,
+                            prograde_bh_masses,
+                            prograde_bh_orb_ecc ,
+                            opts.timestep,
+                            opts.crit_ecc,
+                            opts.de,
+                            binary_bh_array,
+                            bin_index
+                        )
 
-                    #Soften/ ionize binaries due to encounters with eccentric singletons
-                    binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
-                        rng,
-                        opts.mass_smbh,
-                        prograde_bh_locations,
-                        prograde_bh_masses,
-                        prograde_bh_orb_ecc ,
-                        opts.timestep,
-                        opts.crit_ecc,
-                        opts.de,
-                        binary_bh_array,
-                        bin_index
-                    ) 
+                        #Soften/ ionize binaries due to encounters with eccentric singletons
+                        binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
+                            rng,
+                            opts.mass_smbh,
+                            prograde_bh_locations,
+                            prograde_bh_masses,
+                            prograde_bh_orb_ecc ,
+                            opts.timestep,
+                            opts.crit_ecc,
+                            opts.de,
+                            binary_bh_array,
+                            bin_index
+                        ) 
                     # Harden binaries via gas
                     #Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                     binary_bh_array = baruteau11.bin_harden_baruteau(
@@ -554,16 +555,17 @@ def main():
                         bin_index
                     )
 
-                    #Spheroid encounters
-                    binary_bh_array = dynamics.bin_spheroid_encounter(
-                        opts.mass_smbh,
-                        opts.timestep,
-                        binary_bh_array,
-                        time_passed,
-                        bin_index,
-                        opts.mbh_powerlaw_index,
-                        opts.mode_mbh_init
-                    )
+                    if (opts.dynamic_enc > 0):
+                        #Spheroid encounters
+                        binary_bh_array = dynamics.bin_spheroid_encounter(
+                            opts.mass_smbh,
+                            opts.timestep,
+                            binary_bh_array,
+                            time_passed,
+                            bin_index,
+                            opts.mbh_powerlaw_index,
+                            opts.mode_mbh_init
+                        )
                     #Migrate binaries
                     # First if feedback present, find ratio of feedback heating torque to migration torque
                     #print("feedback",feedback)
