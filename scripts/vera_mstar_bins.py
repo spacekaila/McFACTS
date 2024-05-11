@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 ######## Globals ########
-N_IT = 100
+N_IT = 10
 MSTAR_MIN = 1e9
-MSTAR_MAX = 1e12
+MSTAR_MAX = 1e13
 N_BINS = 20
 
 ######## Imports ########
@@ -41,6 +41,8 @@ def main():
     SMBH_arr = SMBH_mass_of_GSM(mstar_arr)
     NSC_early_arr = Neumayer_early_NSC_mass(mstar_arr)
     NSC_late_arr = Neumayer_late_NSC_mass(mstar_arr)
+    NSC_early_arr[NSC_early_arr > 1.e8] = 1.e8
+    NSC_late_arr[NSC_late_arr > 1.e8] = 1.e8
     os.mkdir(join(opts.wkdir, 'early'))
     os.mkdir(join(opts.wkdir, 'late'))
     # Mstar loop
@@ -55,7 +57,7 @@ def main():
         late_dir = join(opts.wkdir, 'late', mstar_str)
         os.mkdir(late_dir)
         # Make early iterations
-        cmd = "python3 %s --n_iterations %d --fname-log out.log --work-directory %s --mass_smbh %f --M_nsc %f"%(
+        cmd = "python3 %s --number_of_timesteps 100 --dynamic_enc 0 --n_iterations %d --fname-log out.log --work-directory %s --mass_smbh %f --M_nsc %f"%(
             opts.mcfacts_exe, opts.n_iterations, early_dir, mass_smbh, early_mass)
         print(cmd)
         os.system(cmd)
@@ -65,7 +67,7 @@ def main():
         print(cmd)
         os.system(cmd)
         # Make late iterations
-        cmd = "python3 %s --n_iterations %d --fname-log out.log --work-directory %s --mass_smbh %f --M_nsc %f"%(
+        cmd = "python3 %s --number_of_timesteps 100 --dynamic_enc 0 --n_iterations %d --fname-log out.log --work-directory %s --mass_smbh %f --M_nsc %f"%(
             opts.mcfacts_exe, opts.n_iterations, late_dir, mass_smbh, late_mass)
         print(cmd)
         os.system(cmd)
