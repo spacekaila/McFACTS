@@ -1,7 +1,7 @@
 # Declarations
 .PHONY: all clean
 
-all: clean tests plots
+all: clean tests plots vera_plots
 tests: mcfacts_sim
 
 ######## Definitions ########
@@ -20,6 +20,7 @@ HERE=$(shell pwd)
 #### Scripts ####
 MCFACTS_SIM_EXE = ${HERE}/scripts/mcfacts_sim.py
 POPULATION_PLOTS_EXE = ${HERE}/scripts/population_plots.py
+VERA_PLOTS_EXE = ${HERE}/scripts/vera_plots.py
 
 ######## Instructions ########
 #### Install ####
@@ -34,10 +35,17 @@ install: clean version
 #### Test one thing at a time ####
 
 mcfacts_sim: clean
-	python3 ${MCFACTS_SIM_EXE} --fname-log out.log
+	python3 ${MCFACTS_SIM_EXE} \
+		--n_iterations 100 \
+		--fname-log out.log
 
 plots:  mcfacts_sim
-	python3 ${POPULATION_PLOTS_EXE}
+	#python3 ${POPULATION_PLOTS_EXE}
+
+vera_plots: mcfacts_sim
+	python3 ${VERA_PLOTS_EXE} \
+		--cdf chi_eff chi_p M gen1 gen2 t_merge \
+		--verbose
 
 #### CLEAN ####
 clean:
@@ -50,3 +58,5 @@ clean:
 	rm -rf merger_remnant_mass.png
 	rm -rf gw_strain.png
 	rm -rf out.log
+	rm -rf mergers_cdf*.png
+	rm -rf mergers_nal*.png

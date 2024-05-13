@@ -6,9 +6,12 @@ __pycache__/
 *.swp
 *.eggs
 *.egg-info
+*.DS_Store
 m1m2.png
 merger_mass_v_radius.png
 q_chi_eff.png
 time_of_merger.png
 merger_remnant_mass.png
 gw_strain.png
+mergers_cdf*.png
+mergers_nal*.png
