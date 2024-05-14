@@ -29,15 +29,15 @@ version: clean
 	echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 
 install: clean version
-	pip3 install -e .
+	pip install -e .
 
 #### Test one thing at a time ####
 
 mcfacts_sim: clean
-	python3 ${MCFACTS_SIM_EXE} --fname-log out.log
+	python ${MCFACTS_SIM_EXE} --fname-log out.log
 
 plots:  mcfacts_sim
-	python3 ${POPULATION_PLOTS_EXE}
+	python ${POPULATION_PLOTS_EXE}
 
 #### CLEAN ####
 clean:
