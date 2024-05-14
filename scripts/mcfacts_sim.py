@@ -19,7 +19,9 @@ from mcfacts.setup import setupdiskblackholes
 from mcfacts.setup import setupdiskstars
 from mcfacts.physics.migration.type1 import type1
 from mcfacts.physics.accretion.eddington import changebhmass
+from mcfacts.physics.accretion.eddington import changestarsmass
 from mcfacts.physics.accretion.torque import changebh
+from mcfacts.physics.accretion.torque import changestars
 from mcfacts.physics.feedback.hankla21 import feedback_hankla21
 from mcfacts.physics.dynamics import dynamics
 from mcfacts.physics.eccentricity import orbital_ecc
@@ -35,9 +37,9 @@ from mcfacts.physics.binary.merge import tgw
 from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
-binary_star_field_names="R1 R2 M1 M2 R1_star R2_star a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
+binary_stars_field_names="R1 R2 M1 M2 R1_star R2_star a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
-merger_star_field_names=' '.join(mergerfile.names_rec)
+merger_stars_field_names=' '.join(mergerfile.names_rec)
 bh_initial_field_names = "disk_location mass spin spin_angle orb_ang_mom orb_ecc orb_incl"
 stars_initial_field_names = "disk_location mass radius X Y Z spin spin_angle orb_ang_mom _orb_ecc orb_incl"
 DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
@@ -204,8 +206,23 @@ def main():
             opts.nsc_index_inner,
         )
 
-        #For now setting number of stars = number of BH. KN: Needs to be updated.
-        n_stars = n_bh
+        #This generates 10^6 more stars than BH so for right now I have artificially limited it to 5000 stars.
+        n_stars = setupdiskstars.setup_disk_nstars(
+            opts.M_nsc,
+            opts.nbh_nstar_ratio,
+            opts.mbh_mstar_ratio,
+            opts.r_nsc_out,
+            opts.nsc_index_outer,
+            opts.mass_smbh,
+            opts.disk_outer_radius,
+            opts.h_disk_average,
+            opts.r_nsc_crit,
+            opts.nsc_index_inner,
+        )
+        n_stars = np.int64(5000)
+
+        print('n_bh = {}, n_stars = {}'.format(n_bh,n_stars))
+        
 
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
@@ -395,6 +412,10 @@ def main():
         prograde_stars_spins = stars_initial_spins[prograde_stars_orb_ang_mom_indices]
         prograde_stars_spin_angles = stars_initial_spin_angles[prograde_stars_orb_ang_mom_indices]
         prograde_stars_generations = stars_initial_generations[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_radii = stars_initial_radii[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_X = stars_initial_X[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_Y = stars_initial_Y[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_Z = stars_initial_Z[prograde_stars_orb_ang_mom_indices]
 
 
 
@@ -428,8 +449,6 @@ def main():
         )
 
 
-
-
         # Housekeeping:
         # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc, nu_gw, h_bin)
         number_of_bin_properties = len(binary_field_names.split())+1
@@ -441,7 +460,7 @@ def main():
         number_of_mergers = 0
         int_n_timesteps = int(opts.number_of_timesteps)
 
-        number_of_stars_bin_properties = len(binary_star_field_names.split())+1
+        number_of_stars_bin_properties = len(binary_stars_field_names.split())+1
         integer_stars_nbinprop = int(number_of_stars_bin_properties)
         bin_stars_index = 0
         nbin_stars_ever_made_index = 0
@@ -487,6 +506,7 @@ def main():
             # Record 
             if not(opts.no_snapshots):
                 n_bh_out_size = len(prograde_bh_locations)
+                n_stars_out_size = len(prograde_stars_locations)
 
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
                 # Single output:  does work
@@ -501,6 +521,29 @@ def main():
                     os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_binary_{n_timestep_index}.dat"),
                     binary_bh_array[:,:n_mergers_so_far+1].T,
                     header=binary_field_names
+                )
+
+                #Save star params
+                np.savetxt(
+                    os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_{n_timestep_index}.dat"),
+                    np.c_[prograde_stars_locations.T, 
+                          prograde_stars_masses.T, 
+                          prograde_stars_radii.T, 
+                          prograde_stars_X.T, 
+                          prograde_stars_Y.T, 
+                          prograde_stars_Z.T, 
+                          prograde_stars_spins.T, 
+                          prograde_stars_spin_angles.T, 
+                          prograde_stars_orb_ecc.T, 
+                          prograde_stars_generations[:n_stars_out_size].T],
+                    header="disk_location mass radius x y z spin theta ecc gen"
+                )
+                # np.savetxt(os.path.join(work_directory, "output_bh_single_{}.dat".format(n_timestep_index)), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
+                # Binary output: does not work
+                np.savetxt(
+                    os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_binary_{n_timestep_index}.dat"),
+                    binary_stars_array[:,:n_stars_mergers_so_far+1].T,
+                    header=binary_stars_field_names
                 )
                 # np.savetxt(os.path.join(work_directory, "output_bh_binary_{}.dat".format(n_timestep_index)), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
                 n_timestep_index +=1
@@ -519,7 +562,14 @@ def main():
                 ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(
                     prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
             else:
-                ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
+                ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))  
+            
+            #now for stars
+            if opts.feedback > 0:
+                ratio_heat_mig_stars_torques = feedback_hankla21.feedback_hankla(
+                    prograde_stars_locations, surf_dens_func, opts.frac_star_Eddington_ratio, opts.alpha)
+            else:
+                ratio_heat_mig_stars_torques = np.ones(len(prograde_stars_locations))   
             # then migrate as usual
             #print("TIME=", time_passed, prograde_bh_locations)
             prograde_bh_locations = type1.type1_migration(
