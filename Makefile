@@ -41,7 +41,7 @@ mcfacts_sim: clean
 		--fname-log out.log
 
 plots:  mcfacts_sim
-	#python3 ${POPULATION_PLOTS_EXE}
+	python3 ${POPULATION_PLOTS_EXE} 
 
 vera_plots: mcfacts_sim
 	python3 ${VERA_PLOTS_EXE} \
