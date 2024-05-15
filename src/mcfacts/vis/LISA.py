@@ -2,7 +2,7 @@ import numpy as np
 from scipy import interpolate
 import matplotlib.pyplot as plt
 
-import PhenomA as pa
+from mcfacts.vis import PhenomA as pa
 
 # constants
 fm     = 3.168753575e-8   # LISA modulation frequency

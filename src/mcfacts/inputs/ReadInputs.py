@@ -3,8 +3,12 @@ import numpy as np
 import configparser as ConfigParser
 from io import StringIO
 
+# Grab those txt files
+from importlib import resources as impresources
+from mcfacts.inputs import data
 
-def ReadInputs_ini(fname='inputs/model_choice.txt'):
+
+def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     """This function reads your input choices from a file user specifies or
     default (inputs/model_choice.txt), and returns the chosen variables for 
     manipulation by main.    
@@ -108,57 +112,75 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     config.optionxform=str # force preserve case! Important for --choose-data-LI-seglen
 
     # Default format has no section headings ...
-    #config.read(opts.use_ini)
-    with open(fname) as stream:
-        stream = StringIO("[top]\n" + stream.read())
-        config.readfp(stream)
+    config.read(fname)
+    #with open(fname) as stream:
+    #    stream = StringIO("[top]\n" + stream.read())
+    #    config.read_file(stream)
 
     # convert to dict
     input_variables = dict(config.items('top'))
+
+    # Dictionary of types
+    input_types = {
+        'disk_model_name' : str,
+        'mass_smbh' : float,
+        'trap_radius' : float,
+        'disk_outer_radius' : float,
+        'alpha' : float,
+        'n_iterations' : int,
+        'mode_mbh_init' : float,
+        'max_initial_bh_mass' : float,
+        'mbh_powerlaw_index' : float,
+        'mu_spin_distribution' : float,
+        'sigma_spin_distribution' : float,
+        'spin_torque_condition' : float,
+        'frac_Eddington_ratio' : float,
+        'max_initial_eccentricity' : float,
+        'timestep' : float,
+        'number_of_timesteps' : int,
+        'retro' : int,
+        'feedback' : int,
+        'capture_time' : float,
+        'outer_capture_radius' : float,
+        'crit_ecc' : float,
+        'r_nsc_out' : float,
+        'M_nsc' : float,
+        'r_nsc_crit' : float,
+        'nbh_nstar_ratio' : float,
+        'mbh_mstar_ratio' : float,
+        'nsc_index_inner' : float,
+        'nsc_index_outer' : float,
+        'h_disk_average' : float,
+        'dynamic_enc' : int,
+        'de' : float,
+        'orb_ecc_damping' : int,
+    }
+
     # try to pretty-convert these to quantites
     for name in input_variables:
-        if '.' in input_variables[name]:
+        if name in input_types:
+            input_variables[name] = input_types[name](input_variables[name])
+        elif '.' in input_variables[name]:
             input_variables[name]=float(input_variables[name])
         elif input_variables[name].isdigit():
             input_variables[name] =int(input_variables[name])
         else:
+            input_variables[name] = str(input_variables[name])
+    # Clean up strings
+    for name in input_variables:
+        if isinstance(input_variables[name], str):
             input_variables[name] = input_variables[name].strip("'")
-    print(input_variables)
 
-    disk_model_name = input_variables['disk_model_name']
+    # Make sure you got all of the ones you were expecting
+    for name in input_types:
+        assert name in input_variables
+        assert type(input_variables[name]) == input_types[name]
 
-    mass_smbh = float(input_variables['mass_smbh'])
-    trap_radius = float(input_variables['trap_radius'])
-    disk_outer_radius = float(input_variables['disk_outer_radius'])
-    alpha = float(input_variables['alpha'])
-    n_iterations = int(input_variables['n_iterations'])
-    mode_mbh_init = float(input_variables['mode_mbh_init'])
-    max_initial_bh_mass = float(input_variables['max_initial_bh_mass'])
-    mbh_powerlaw_index = float(input_variables['mbh_powerlaw_index'])
-    mu_spin_distribution = float(input_variables['mu_spin_distribution'])
-    sigma_spin_distribution = float(input_variables['sigma_spin_distribution'])
-    spin_torque_condition = float(input_variables['spin_torque_condition'])
-    frac_Eddington_ratio = float(input_variables['frac_Eddington_ratio'])
-    max_initial_eccentricity = float(input_variables['max_initial_eccentricity'])
-    timestep = float(input_variables['timestep'])
-    number_of_timesteps = int(input_variables['number_of_timesteps'])
-    retro = int(input_variables['retro'])
-    feedback = int(input_variables['feedback'])
-    capture_time = float(input_variables['capture_time'])
-    outer_capture_radius = float(input_variables['outer_capture_radius'])
-    crit_ecc = float(input_variables['crit_ecc'])
-    r_nsc_out = float(input_variables['r_nsc_out'])
-    M_nsc = float(input_variables['M_nsc'])
-    r_nsc_crit = float(input_variables['r_nsc_crit'])
-    nbh_nstar_ratio = float(input_variables['nbh_nstar_ratio'])
-    mbh_mstar_ratio = float(input_variables['mbh_mstar_ratio'])
-    nsc_index_inner = float(input_variables['nsc_index_inner'])
-    nsc_index_outer = float(input_variables['nsc_index_outer'])
-    h_disk_average = float(input_variables['h_disk_average'])
-    dynamic_enc = int(input_variables['dynamic_enc'])
-    de = float(input_variables['de'])
-    orb_ecc_damping = int(input_variables['orb_ecc_damping'])
-    print("I put your variables where they belong")
+    if verbose:
+        print("input_variables:")
+        for key in input_variables:
+            print(key, input_variables[key], type(input_variables[key]))
+        print("I put your variables where they belong")
 
     # open the disk model surface density file and read it in
     # Note format is assumed to be comments with #
@@ -166,8 +188,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
     infile_suffix = '_surface_density.txt'
-    infile_path = 'inputs/'
-    infile = infile_path+disk_model_name+infile_suffix
+    infile = input_variables['disk_model_name']+infile_suffix
+    infile = impresources.files(data) / infile
     surface_density_file = open(infile, 'r')
     density_list = []
     radius_list = []
@@ -188,7 +210,10 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     disk_model_radius_array = np.array(radius_list)
 
     #truncate disk at outer radius
-    truncated_disk = np.extract(np.where(disk_model_radius_array < disk_outer_radius),disk_model_radius_array)
+    truncated_disk = np.extract(
+        np.where(disk_model_radius_array < input_variables['disk_outer_radius']),
+        disk_model_radius_array
+    )
     #print('truncated disk', truncated_disk)
     truncated_surface_density_array = surface_density_array[0:len(truncated_disk)]
     #print('truncated surface density', truncated_surface_density_array)
@@ -200,7 +225,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     #       (radius is actually ignored in this file!)
     #   filename = model_aspect_ratio.txt, where model is user choice
     infile_suffix = '_aspect_ratio.txt'
-    infile = infile_path+disk_model_name+infile_suffix
+    infile = input_variables['disk_model_name']+infile_suffix
+    infile = impresources.files(data) / infile
     aspect_ratio_file = open(infile, 'r')
     aspect_ratio_list = []
     for line in aspect_ratio_file:
@@ -225,21 +251,12 @@ def ReadInputs_ini(fname='inputs/model_choice.txt'):
     aspect_ratio_array = truncated_aspect_ratio_array
 
     # Housekeeping from input variables
-    disk_outer_radius = disk_model_radius_array[-1]
-    disk_inner_radius = disk_model_radius_array[0]
+    input_variables['disk_outer_radius'] = disk_model_radius_array[-1]
+    input_variables['disk_inner_radius'] = disk_model_radius_array[0]
 
     #Truncate disk models at outer disk radius
+    if verbose:
+        print("I read and digested your disk model")
+        print("Sending variables back")
 
-    print("I read and digested your disk model")
-
-    print("Sending variables back")
-
-    return mass_smbh, trap_radius, disk_outer_radius, alpha, n_iterations, mode_mbh_init, max_initial_bh_mass, \
-        mbh_powerlaw_index, mu_spin_distribution, sigma_spin_distribution, \
-            spin_torque_condition, frac_Eddington_ratio, max_initial_eccentricity, orb_ecc_damping, \
-                timestep, number_of_timesteps, disk_model_radius_array, disk_inner_radius,\
-                    disk_outer_radius, surface_density_array, aspect_ratio_array, retro, feedback, capture_time, outer_capture_radius, crit_ecc, \
-                        r_nsc_out, M_nsc, r_nsc_crit, nbh_nstar_ratio, mbh_mstar_ratio, nsc_index_inner, nsc_index_outer, h_disk_average, dynamic_enc, de\
-
-
-
+    return input_variables, disk_model_radius_array, surface_density_array, aspect_ratio_array
