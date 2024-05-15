@@ -15,7 +15,8 @@ VERSION=0.0.0
 
 ### Should work for everyone ###
 # Current directory
-HERE=$(shell pwd)
+#HERE=$(shell pwd)
+HERE=./
 
 #### Scripts ####
 MCFACTS_SIM_EXE = ${HERE}/scripts/mcfacts_sim.py
