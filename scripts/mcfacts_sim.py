@@ -470,6 +470,10 @@ def main():
                     binary_bh_array = np.delete(binary_bh_array,reality_flag,1) 
                     bin_index = bin_index - 1
                 else:
+<<<<<<< HEAD:test1.py
+                
+=======
+>>>>>>> caebd52e86e5d795487c203086073090c4a6c4b7:scripts/mcfacts_sim.py
                 #If there are still binaries after this, evolve them.
                 #if bin_index > 0:
                     # If there are binaries, evolve them
