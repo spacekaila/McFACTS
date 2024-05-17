@@ -34,6 +34,9 @@ def main():
     opts = arg()
     mergers = np.loadtxt(opts.fname_mergers, skiprows=2)
 
+    mask = np.isfinite(mergers[:,2])
+    mergers = mergers[mask]
+
     # plt.figure(figsize=(10,6))
     # plt.figure()
 
