@@ -22,6 +22,9 @@ def arg():
     parser.add_argument("--fname-mergers",
         default="output_mergers_population.dat",
         type=str, help="output_mergers file")
+    parser.add_argument("--plots-directory",
+        default=".",
+        type=str, help="directory to save plots")
     opts = parser.parse_args()
     assert os.path.isfile(opts.fname_mergers)
     return opts
@@ -56,11 +59,9 @@ def main():
     ax = plt.gca()
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
-    plt.savefig("./merger_remnant_mass.png", format='png')
+    plt.savefig(opts.plots_directory+"/merger_remnant_mass.png", format='png')
     plt.tight_layout()
     plt.close()
-
-
 
 
     trap_radius = 700
@@ -83,7 +84,7 @@ def main():
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
     plt.tight_layout()
-    plt.savefig("./merger_mass_v_radius.png", format='png')
+    plt.savefig(opts.plots_directory+"/merger_mass_v_radius.png", format='png')
     plt.close()
 
 
@@ -113,7 +114,7 @@ def main():
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
     plt.tight_layout()
-    plt.savefig("./q_chi_eff.png", format='png')
+    plt.savefig(opts.plots_directory+"/q_chi_eff.png", format='png')
     plt.close()
 
 
@@ -142,7 +143,7 @@ def main():
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
     plt.tight_layout()
-    plt.savefig('./time_of_merger.png', format='png')
+    plt.savefig(opts.plots_directory+'/time_of_merger.png', format='png')
     plt.close()
 
 
@@ -157,7 +158,7 @@ def main():
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
     plt.tight_layout()
-    plt.savefig('./m1m2.png', format='png')
+    plt.savefig(opts.plots_directory+'/m1m2.png', format='png')
 
     #GW strain figure: 
     #make sure LISA.py and PhenomA.py in /vis directory
@@ -210,7 +211,7 @@ def main():
     #ax.loglog(f_gw,h,color ='black', label='GW150914')
 
     ax.legend()
-    plt.savefig('./gw_strain.png', format='png')
+    plt.savefig(opts.plots_directory+'/gw_strain.png', format='png')
     plt.close()
 
 ######## Execution ########
