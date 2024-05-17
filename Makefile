@@ -33,20 +33,22 @@ install: clean version
 
 #### Test one thing at a time ####
 
+wd=$(shell pwd)/test_output
+
 mcfacts_sim: clean
-	python ${MCFACTS_SIM_EXE} --fname-log out.log
+	python ${MCFACTS_SIM_EXE} --fname-log out.log --work-directory ${wd}
 
 plots:  mcfacts_sim
-	python ${POPULATION_PLOTS_EXE}
+	python ${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
 
 #### CLEAN ####
 clean:
-	rm -rf run*
-	rm -rf output_mergers_population.dat
-	rm -rf m1m2.png
-	rm -rf merger_mass_v_radius.png
-	rm -rf q_chi_eff.png
-	rm -rf time_of_merger.png
-	rm -rf merger_remnant_mass.png
-	rm -rf gw_strain.png
-	rm -rf out.log
+	rm -rf ${wd}/run*
+	rm -rf ${wd}/output_mergers_population.dat
+	rm -rf ${wd}/m1m2.png
+	rm -rf ${wd}/merger_mass_v_radius.png
+	rm -rf ${wd}/q_chi_eff.png
+	rm -rf ${wd}/time_of_merger.png
+	rm -rf ${wd}/merger_remnant_mass.png
+	rm -rf ${wd}/gw_strain.png
+	rm -rf ${wd}/out.log
