@@ -52,14 +52,17 @@ def main():
     NSC_early_arr[NSC_early_arr > opts.max_nsc_mass] = opts.max_nsc_mass
     NSC_late_arr[NSC_late_arr > opts.max_nsc_mass] = opts.max_nsc_mass
     # Create directories for early and late-type runs
-    os.mkdir(join(opts.wkdir, 'early'))
-    os.mkdir(join(opts.wkdir, 'late'))
+    if not isdir(join(opts.wkdir, 'early')):
+        os.mkdir(join(opts.wkdir, 'early'))
+    if not isdir(join(opts.wkdir, 'late')):
+        os.mkdir(join(opts.wkdir, 'late'))
 
     # Initialize mcfacts arguments dictionary
     mcfacts_arg_dict = {
                         "--number_of_timesteps" : opts.number_of_timesteps,
                         "--dynamic_enc"         : int(opts.dynamics),
                         "--n_iterations"        : opts.n_iterations,
+                        "--n_bins_max"          : 10_000,
                         "--fname-log"           : "out.log",
                        }
     mcfacts_args = ""
@@ -77,9 +80,11 @@ def main():
         mstar_str = "%.8f"%np.log10(mstar)
         # Generate directories
         early_dir = join(opts.wkdir, 'early', mstar_str)
-        os.mkdir(early_dir)
+        if not isdir(early_dir):
+            os.mkdir(early_dir)
         late_dir = join(opts.wkdir, 'late', mstar_str)
-        os.mkdir(late_dir)
+        if not isdir(late_dir):
+            os.mkdir(late_dir)
         # Make early iterations
         cmd = "python3 %s %s --work-directory %s --mass_smbh %f --M_nsc %f"%(
             opts.mcfacts_exe, mcfacts_args, early_dir, mass_smbh, early_mass)
