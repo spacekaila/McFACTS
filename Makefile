@@ -1,7 +1,7 @@
 # Declarations
 .PHONY: all clean
 
-all: clean tests plots vera_plots
+all: clean tests plots #vera_plots
 tests: mcfacts_sim
 
 ######## Definitions ########
@@ -21,7 +21,7 @@ HERE=./
 #### Scripts ####
 MCFACTS_SIM_EXE = ${HERE}/scripts/mcfacts_sim.py
 POPULATION_PLOTS_EXE = ${HERE}/scripts/population_plots.py
-VERA_PLOTS_EXE = ${HERE}/scripts/vera_plots.py
+#VERA_PLOTS_EXE = ${HERE}/scripts/vera_plots.py
 
 ######## Instructions ########
 #### Install ####
