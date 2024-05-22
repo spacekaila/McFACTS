@@ -67,7 +67,7 @@ def retro_mig(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     eta_plus = np.sqrt(1.0 + ecc*np.cos(omega))
     eta_minus = np.sqrt(1.0 - ecc*np.cos(omega))
     # WZL Eqn 65
-    kappa_bar = 0.5 * (np.sqrt(1/eta_plus**7) + np.sqrt(1/eta_minus**7))
+    kappa_bar = 0.5 * (np.sqrt(1.0/eta_plus**7) + np.sqrt(1.0/eta_minus**7))
     # WZL Eqn 66
     xi_bar = 0.5 * (np.sqrt(sigma_plus**4/eta_plus**13) + np.sqrt(sigma_minus**4/eta_minus**13))
     # WZL Eqn 67
