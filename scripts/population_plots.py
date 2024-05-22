@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ######## Globals ########
-COLUMN_NAMES = "iter CM M chi_eff a_tot spin_angle m1 m2 a1 a2 theta1 theta2 gen1 gen2 t_merge"
+COLUMN_NAMES = "iter CM M chi_eff a_tot spin_angle m1 m2 a1 a2 theta1 theta2 gen1 gen2 t_merge chi_p"
 
 ######## Imports ########
 import matplotlib.pyplot as plt
@@ -103,6 +103,7 @@ def main():
             m2[i] = mergers[i,7]
 
     chi_eff = mergers[:,3]
+    chi_p = mergers[:,15]
     plt.scatter(chi_eff, mass_ratio, color='darkgoldenrod')
     plt.title("Mass Ratio vs. Effective Spin")
     plt.ylabel(r'$q = M_1 / M_2$ ($M_1 > M_2$)')
@@ -116,6 +117,19 @@ def main():
     plt.savefig("./q_chi_eff.png", format='png')
     plt.close()
 
+    #chi_p plot vs disk radius
+    plt.scatter(mergers[:,1],chi_p, color='darkgoldenrod')
+    plt.title("In-plane effective Spin vs. Merger radius")
+    plt.ylabel(r'$\chi_{\rm p}$')
+    plt.xlabel(r'$Disk radius$')
+    plt.ylim(-1,1)
+    plt.xlim(0.,5.e4)
+    ax = plt.gca()
+    ax.set_axisbelow(True)
+    plt.grid(True, color='gray', ls='dashed')
+    plt.tight_layout()
+    plt.savefig("./r_chi_p.png", format='png')
+    plt.close()
 
 
     # plt.figure()
