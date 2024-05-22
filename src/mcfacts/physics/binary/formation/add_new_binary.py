@@ -133,7 +133,7 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
                 if retro == 0:
                     bh_initial_orb_ang_mom = np.fabs(bh_initial_orb_ang_mom)
                 bin_array[16,j] = bh_initial_orb_ang_mom                
-                #Set up binary inclination. Will want this to be pi radians if retrograde.
+                #Set up binary inclination (in units radians). Will want this to be pi radians if retrograde.
                 bin_array[17,j] = 0
                 # Set up binary orbital eccentricity of com around SMBH. Assume initially v.small (e~0.01)
                 bin_array[18,j] = 0.01

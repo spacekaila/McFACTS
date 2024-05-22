@@ -24,7 +24,6 @@ from mcfacts.physics.dynamics import dynamics
 from mcfacts.physics.eccentricity import orbital_ecc
 from mcfacts.physics.binary.formation import hillsphere
 from mcfacts.physics.binary.formation import add_new_binary
-#from mcfacts.physics.binary.formation import secunda20
 from mcfacts.physics.binary.evolve import evolve
 from mcfacts.physics.binary.harden import baruteau11
 from mcfacts.physics.binary.merge import tichy08
@@ -564,8 +563,17 @@ def main():
                             time_passed,
                             bin_index,
                             opts.mbh_powerlaw_index,
-                            opts.mode_mbh_init
+                            opts.mode_mbh_init,
+                            opts.de
                         )
+
+                    if (opts.dynamic_enc > 0):
+                        #Recapture bins out of disk plane
+                        binary_bh_array = dynamics.bin_recapture(
+                            bin_index,
+                            binary_bh_array,
+                            opts.timestep
+                        )    
                     #Migrate binaries
                     # First if feedback present, find ratio of feedback heating torque to migration torque
                     #print("feedback",feedback)
@@ -745,7 +753,8 @@ def main():
                                 binary_bh_array[5,merger_indices[i]],
                                 binary_bh_array[6,merger_indices[i]],
                                 binary_bh_array[7,merger_indices[i]],
-                                binary_bh_array[16,merger_indices[i]]
+                                binary_bh_array[16,merger_indices[i]],
+                                binary_bh_array[17,merger_indices[i]]
                             )
                             merged_bh_array[:,n_mergers_so_far + i] = mergerfile.merged_bh(
                                 merged_bh_array,
