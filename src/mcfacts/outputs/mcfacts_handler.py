@@ -26,6 +26,8 @@ class McfactsHandler(object):
         self._batches = {}
         # Return batch index
         self._batch_index = {}
+        # Return inverse batch index
+        self._inverse_batch_index = {}
         # Initialize nbatch
         self._nbatch = 0
 
@@ -40,6 +42,11 @@ class McfactsHandler(object):
         '''Return index of each batch'''
         #np.asarray(list(self._batch_index.keys()))
         return self._batch_index
+
+    @property
+    def inv_batch_index(self):
+        '''Return the inverse of the batch index'''
+        return self._inverse_batch_index
 
     @property
     def nbatch(self):
@@ -112,11 +119,86 @@ class McfactsHandler(object):
         # Return quantity
         return quantity
 
+    def batch_samples(self, quantity, batch_id, binary_id):
+        '''Return samples from batches'''
+        ## Check binary_id
+        # Check that binary id is a numpy array
+        assert isinstance(binary_id, np.ndarray), "binary_id is not a NumPy array"
+        # Check that binary_id is one dimensional
+        assert len(binary_id.shape) == 1, "binary_id should be one-dimensional"
+        # Make sure we can interpret as an integer
+        binary_id = np.asarray(binary_id, dtype=int)
+        # Get the number of systems
+        nsystems = binary_id.size
+        ## Check quantitiy
+        # Find a batch that isn't empty
+        _example_batch = None
+        for _id in self._batches.keys():
+            if self._batches[_id].nsystems != 0:
+                _example_batch = _id
+                break
+        # Check that we did find a batch that isn't empty
+        assert not(_example_batch is None), "All of the batches seem to be empty"
+        # Check that quantity is a string
+        assert isinstance(quantity, str), "quantity should be a string"
+        # Check that batches have quantity
+        assert hasattr(self._batches[_example_batch], quantity), "No such quantity"
+        # Check that quantity is not a scalar
+        assert hasattr(getattr(self._batches[_example_batch], quantity), 'size'), "invalid quantity"
+        # Check units
+        if hasattr(getattr(self._batches[_example_batch],quantity), 'unit'):
+            unit = getattr(getattr(self._batches[_example_batch],quantity), 'unit')
+        else:
+            unit = None
+        # Check dtype
+        dtype = getattr(getattr(self._batches[_example_batch],quantity), 'dtype')
+        ## Check batch_id
+        batch_id = np.asarray(batch_id, dtype=int)
+        
+        ## Get samples for trivial case ##
+        if batch_id.size == 1:
+            # If there's only one batch_id, we need to draw samples from that batch
+            return getattr(self._batches[self.inv_batch_index[int(batch_id)]], quantity)[binary_id]
+
+        ## Continue checking batch id##
+        assert batch_id.shape == binary_id.shape, \
+            "batch_id and binary_id should be the same shape"
+        # Check that all batch ids are present
+        for _id in batch_id:
+            # Find the actual label for the batch
+            _label = self.inv_batch_index[_id]
+            assert _label in self._batches
+        
+        # Construct output array
+        q = np.empty(nsystems, dtype=dtype)
+        # Construct a filled flag array for safety reasons
+        filled = np.zeros(nsystems, dtype=bool)
+        # Loop the unique ids
+        for _id in np.unique(batch_id):
+            # Find the matching ids
+            mask = batch_id == _id
+            # Find the actual label for the batch
+            _label = self.inv_batch_index[_id]
+            # Fetch the values
+            if unit is None:
+                q[mask] = getattr(self._batches[_label], quantity)[binary_id[mask]]
+            else:
+                q[mask] = getattr(self._batches[_label], quantity)[binary_id[mask]].value
+            # Update the filled flag
+            filled[mask] = True
+        # Check that all values have been filled
+        assert np.sum(filled) == nsystems, "There was an error filling the quantity array"
+        # Check the units
+        if not unit is None:
+            q = q * unit
+        return q
+
     def append_batch(self, label, batch):
         '''Append a new batch'''
         assert isinstance(batch, McfactsBatch)
         self._batches[label] = batch
         self._batch_index[label] = self._nbatch
+        self._inverse_batch_index[self._nbatch] = label
         self._nbatch += 1
         assert self._batches.keys() == self._batch_index.keys()
 
@@ -188,6 +270,29 @@ def main():
     print("mass_nsc:", MH.batch_param('M_nsc'))
     print("BBH mergers:",MH.nsystems)
     print("Avg BBH mergers:",MH.avg_systems)
+    print(MH._batches.keys())
+    # Check samples
+    for _id, n in enumerate(MH.nsystems):
+        if n == 0:
+            print("batch: %d has no samples"%_id)
+        else:
+            M = MH.batch_samples('M', _id, np.arange(n))
+            chi_eff = MH.batch_samples('chi_eff', _id, np.arange(n))
+            print("Successfully sampled batch %d"%_id)
+    ## Get the first sample from every batch
+    # Get the indices of nonzero nsystems
+    nonzero = np.asarray(np.nonzero(MH.nsystems)).flatten()
+    all_mass = MH.batch_samples("M", nonzero, np.zeros(nonzero.size, dtype=int))
+    all_chi_eff = MH.batch_samples("chi_eff", nonzero, np.zeros(nonzero.size, dtype=int))
+    print("Successfully sampled first sample of nonzero batches")
+    ## Get the first and third sample from every batch
+    # Get the indices of nonzero nsystems
+    few = np.asarray(np.where(MH.nsystems > 2)).flatten()
+    all_mass = MH.batch_samples("M", np.repeat(few,2), np.tile([0,2],few.size))
+    all_chi_eff = MH.batch_samples("chi_eff", np.repeat(few,2), np.tile([0,2],few.size))
+    print("Successfully sampled first and third sample of nonzero batches")
+
+    
 
 ######## Execution ########
 if __name__ == "__main__":
