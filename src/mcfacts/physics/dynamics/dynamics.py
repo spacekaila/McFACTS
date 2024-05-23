@@ -2,6 +2,8 @@ import numpy as np
 
 import scipy
 
+from astropy.constants import M_sun
+
 def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, crit_ecc, de):
     """"Return array of modified singleton BH orbital eccentricities perturbed by encounters within f*R_Hill, where f is some fraction/multiple of Hill sphere radius R_H
     
@@ -333,7 +335,8 @@ def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locatio
     
     #Housekeeping
     #Mass of Sun in kg
-    solar_mass = 2.e30
+    solar_mass = M_sun.value
+    #solar_mass = 2.e30
 
     number_of_binaries = bindex
     # set up 1-d arrays for bin com, masses, separations, velocities of com, orbit time (in yrs), orbits/timestep
