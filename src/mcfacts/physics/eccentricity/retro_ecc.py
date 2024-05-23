@@ -87,7 +87,7 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     stupid fast--in fact at modest initial a, the decay speed (a_0/tau_a_dyn) is > c, 
     so that's wrong.
     I think this is due to the sin(inc) in tau_a_dyn. However, if you're just a bit
-    away from inc = pi (say, pi - 1e-6--but haven't done thorough param search) 
+    away from inc = pi (say, pi - 1e-8--but haven't done thorough param search) 
     you get something like sensible answers.
     So we gotta watch out for this
 
@@ -146,7 +146,7 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     # call function for tau_p_dyn (WZL Eqn 70)
     tau_p_dyn = retro_semi_lat(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_bh_orb_ecc,retrograde_bh_orb_inc,retro_arg_periapse,disk_surf_model)
     # retro_mig function actually comuptes change in a, so need to find tau_a_dyn again, but
-    #   fortunately it's a few factors off of tau_p_dyn (this may be a dumb thing)
+    #   fortunately it's a few factors off of tau_p_dyn (this may be a dumb way to handle it)
     tau_a_dyn = tau_p_dyn * (1.0 - ecc**2) * kappa * np.abs(np.cos(inc) - zeta)/(kappa_bar * np.abs(np.cos(inc) - zeta_bar))
     # WZL Eqn 73
     tau_e_dyn = (2.0 * ecc**2 / (1.0 - ecc**2)) * 1.0 / np.abs(1.0/tau_a_dyn - 1.0/tau_p_dyn)
@@ -154,6 +154,12 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     # assume the fractional change in eccentricity is the fraction
     #   of tau_e_dyn represented by one timestep
     frac_change = timestep / tau_e_dyn
+
+    # Unlike in the retro_mig function I have not set up a check for when
+    #   tau_e_dyn < timestep because it appears that when that happens,
+    #   tau_a_dyn is also < timestep, so a gets sent to zero before
+    #   we even worry about eccentricity, but, uh, yeah, putting a note here
+    #   in case there are exceptions I haven't found and should worry about...
 
     # need to figure out which way the eccentricity is going; use
     #   Eqn 69 in WZL for cosine of critical inclination

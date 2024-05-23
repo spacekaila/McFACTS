@@ -2,10 +2,13 @@ import numpy as np
 import scipy
 
 from mcfacts.physics.migration.type1 import retro_mig
+from mcfacts.physics.eccentricity import retro_ecc
 
 if __name__ == "__main__":
     # I just want to run retro_mig.py on its own to see if it runs, so I'm
     #   setting up this dummy test
+    # and while I'm at it, I'll test retro_ecc.py too... and eventually I bet
+    #   I'll add retro_inc, or even just some kind of inc method...
 
     # But I need to import a surface density profile and set it up as a function
     infile = "../inputs/data/sirko_goodman_surface_density.txt" # this is violence, sorry
@@ -41,7 +44,7 @@ if __name__ == "__main__":
     retro_arg_periapse = 0.0 * np.pi * np.ones(7)
     timestep = 1e4
 
-    thing = retro_mig.retro_mig(
+    thing1 = retro_mig.retro_mig(
         mass_smbh,
         retrograde_bh_locations,
         retrograde_bh_masses,
@@ -51,4 +54,18 @@ if __name__ == "__main__":
         timestep,
         surf_dens_func)
     
-    print(thing)
+    print("retro_mig")
+    print(thing1)
+
+    thing2 = retro_ecc.retro_ecc(
+        mass_smbh,
+        retrograde_bh_locations,
+        retrograde_bh_masses,
+        retrograde_bh_orb_ecc,
+        retrograde_bh_orb_inc,
+        retro_arg_periapse,
+        timestep,
+        surf_dens_func)
+    
+    print("retro_ecc")
+    print(thing2)
