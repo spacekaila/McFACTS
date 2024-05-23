@@ -846,7 +846,11 @@ def bin_spheroid_encounter(mass_smbh, timestep, bin_array, time_passed, bindex, 
     # Magnitude of energy change to drive binary to merger in ~2 interactions in a strong encounter. Say de_strong=0.9
     de_strong =0.9
     # Spheroid normalization to allow for non-ideal NSC (cored/previous AGN episodes/disky population concentration/whatever)
-    sph_norm = 0.1
+    sph_norm = 1.0
+    #Default initial value of i3,i3_rad
+    i3 = 0.0
+    i3_rad = 0.0
+
     #Read in values of binaries at start of timestep
     for j in range(0, number_of_binaries-1):
         bin_coms[j] = bin_array[9,j]
