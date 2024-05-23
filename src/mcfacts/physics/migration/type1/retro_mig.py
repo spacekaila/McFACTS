@@ -83,18 +83,16 @@ def retro_mig(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
 
     # assume the fractional change in semi-major axis is the fraction
     #   of tau_a_dyn represented by one timestep; in case of semi-maj axis
-    #   always moving inwards (because drag) but will need to be careful
-    #   when writing ecc function
+    #   always moving inwards (because drag)
     frac_change = timestep / tau_a_dyn
 
-    print("speed (m/s)")
-    print(semi_maj_axis/tau_a_dyn)
+    # if the timescale for change of semi-major axis is larger than the timestep
+    #    send the new location to zero (btw we should probably have a special
+    #    handling procedure for these--like, remove & count them)
+    # we may also want to add a check for if a_0/tau_a_dyn > c (should only cause
+    #    issues not handled here at very small a_0 or very large timesteps)
+    frac_change[frac_change>1.0] = 1.0
 
     retrograde_bh_new_locations = retrograde_bh_locations * (1.0 - frac_change)
-    # this is not actually handled correctly for an array... and also what do we do if location = 0?
-    #if (frac_change < 1.0):
-    #    retrograde_bh_new_locations = retrograde_bh_locations * (1.0 - frac_change)
-    #else:
-    #    retrograde_bh_new_locations = 0.0
 
     return retrograde_bh_new_locations

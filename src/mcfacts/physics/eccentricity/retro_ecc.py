@@ -155,7 +155,14 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     #   of tau_e_dyn represented by one timestep
     frac_change = timestep / tau_e_dyn
 
-    # THIS IS WRONG. Must account for possible increase OR decrease in ecc
+    # need to figure out which way the eccentricity is going; use
+    #   Eqn 69 in WZL for cosine of critical inclination
+    cos_inc_crit = (xi_bar - (1.0 - ecc**2) * xi)/(kappa_bar - (1.0 - ecc**2) * kappa)
+    # if the cos(inc) is less than cos(inc_crit), ecc is excited, else it is damped
+    frac_change[np.cos(inc) < cos_inc_crit] = -frac_change
+
+    # accounting for poss increase OR decrease in ecc by flipping sign 
+    #   on frac_change above (where appropriate)
     retrograde_bh_new_ecc = retrograde_bh_orb_ecc * (1.0 - frac_change)
 
     return retrograde_bh_new_ecc
