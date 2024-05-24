@@ -41,7 +41,7 @@ class AGNObject(object):
                         spin_angle = None, #angle between J and orbit around SMBH for binary
                         orbit_a = None, #location
                         orbit_inclination= None, #of CoM for binary around SMBH
-                        orb_ang_mom = None,
+#                        orb_ang_mom = None,  # redundant, should be computed from keplerian orbit formula for L in terms of mass, a, eccentricity
                         orbit_e = None,
                         nsystems = None):
         
@@ -51,7 +51,7 @@ class AGNObject(object):
         if spin_angle is None: raise AttributeError('spin_angle is not included in inputs')
         if orbit_a is None: raise AttributeError('orbit_a is not included in inputs')
         if orbit_inclination is None: raise AttributeError('orbit_inclination is not included in inputs')
-        if orb_ang_mom is None: raise AttributeError('orb_ang_mom is not included in inputs')
+#        if orb_ang_mom is None: raise AttributeError('orb_ang_mom is not included in inputs')
         if orbit_e is None: raise AttributeError('orbit_e is not included in inputs')
 
         if nsystems is None: nsystems = mass.size
@@ -61,7 +61,7 @@ class AGNObject(object):
         assert spin_angle.shape == (nsystems,),"spin_angle: all arrays must be 1d and the same length"
         assert orbit_a.shape == (nsystems,),"orbit_a: all arrays must be 1d and the same length"
         assert orbit_inclination.shape == (nsystems,),"orbit_inclination: all arrays must be 1d and the same length"
-        assert orb_ang_mom.shape == (nsystems,),"orb_ang_mom: all arrays must be 1d and the same length"
+#        assert orb_ang_mom.shape == (nsystems,),"orb_ang_mom: all arrays must be 1d and the same length"
         assert orbit_e.shape == (nsystems,),"orbit_e: all arrays must be 1d and the same length"
         
         self.mass = mass #Should be array. TOTAL masses.
@@ -69,7 +69,7 @@ class AGNObject(object):
         self.spin_angle = spin_angle #should be array
         self.orbit_a = orbit_a #Should be array. Semimajor axis
         self.orbit_inclination = orbit_inclination #Should be array. Allows for misaligned orbits.
-        self.orb_ang_mom = orb_ang_mom #Should be array
+#        self.orb_ang_mom = orb_ang_mom #Should be array
         self.orbit_e = orbit_e #Should be array. Allows for eccentricity.
         self.generations = np.full(len(self.mass),1)
     
@@ -78,7 +78,7 @@ class AGNObject(object):
                               new_spin_angle = None,
                               new_a = None,
                               new_inclination = None,
-                              new_orb_ang_mom = None,
+#                              new_orb_ang_mom = None,
                               new_e = None,
                               nsystems = None):
         """
@@ -91,7 +91,7 @@ class AGNObject(object):
         if new_spin_angle is None: raise AttributeError('new_spin_angle is not included in inputs')
         if new_a is None: raise AttributeError('new_a is not included in inputs')
         if new_inclination is None: raise AttributeError('new_inclination is not included in inputs')
-        if new_orb_ang_mom is None: raise AttributeError('new_orb_ang_mom is not included in inputs')
+#        if new_orb_ang_mom is None: raise AttributeError('new_orb_ang_mom is not included in inputs')
         if new_e is None: raise AttributeError('new_e is not included in inputs')
 
         if nsystems is None: nsystems = new_mass.size
@@ -101,7 +101,7 @@ class AGNObject(object):
         assert new_spin_angle.shape == (nsystems,),"new_spin_angle: all arrays must be 1d and the same length"
         assert new_a.shape == (nsystems,),"new_a: all arrays must be 1d and the same length"
         assert new_inclination.shape == (nsystems,),"new_inclination: all arrays must be 1d and the same length"
-        assert new_orb_ang_mom.shape == (nsystems,),"new_orb_ang_mom: all arrays must be 1d and the same length"
+#        assert new_orb_ang_mom.shape == (nsystems,),"new_orb_ang_mom: all arrays must be 1d and the same length"
         assert new_e.shape == (nsystems,),"new_e: all arrays must be 1d and the same length"
 
 
@@ -110,7 +110,7 @@ class AGNObject(object):
         self.spin_angle = np.concatenate([self.spin_angle,new_spin_angle])
         self.orbit_a = np.concatenate([self.orbit_a,new_a])
         self.orbit_inclination = np.concatenate([self.orbit_inclination,new_inclination])
-        self.orb_ang_mom = np.concatenate([self.orb_ang_mom,new_orb_ang_mom])
+#        self.orb_ang_mom = np.concatenate([self.orb_ang_mom,new_orb_ang_mom])
         self.orbit_e = np.concatenate([self.orbit_e,new_e])
         self.generations = np.concatenate([self.generations,np.full(len(new_mass),1)])
 
@@ -289,6 +289,12 @@ class AGNBlackHole(AGNObject):
 class AGNBinaryStar(AGNObject):
     """
     An array of binary stars. Should include all objects of this type. No other objects should include objects of this type.
+    Properties of this class:
+        * scalar properties of each star:  masses, radius, Y,Z (star_mass1,star_mass2, star_radius1, star_radius2, ...)
+         * vector properties of each star: individual angular momentum vectors (spin1,spin_angle_1) *relative to the z axis of the binary orbit*,
+           not SMBH
+         * orbit properties: use a reduced mass hamiltonian, you have 'r = r2 - r1' (vector) for which we get binary_a, binary_e, binary_inclination (relative to SMBH)
+
     """
 
     def __init__(self, star_mass1 = None,
@@ -303,14 +309,12 @@ class AGNBinaryStar(AGNObject):
                        star_spin2 = None,
                        star_spin_angle1 = None,
                        star_spin_angle2 = None,
-                       star_orbit_a1 = None,
-                       star_orbit_a2 = None,
-                       star_orbit_inclination1 = None,
-                       star_orbit_inclination2 = None,
-                       star_orb_ang_mom1 = None,
-                       star_orb_ang_mom2 = None,
                        binary_e = None,
                        binary_a = None,
+                       binary_inclination=None,
+                       cm_orbit_a=None,
+                       cm_orbit_inclination=None,
+                       cm_orbit_e=None,
                        nsystems = None,
                      **kwargs):
         
@@ -327,12 +331,6 @@ class AGNBinaryStar(AGNObject):
         if star_spin2 is None: raise AttributeError("star_spin2 is not included in inputs")
         if star_spin_angle1 is None: raise AttributeError("star_spin_angle1 is not included in inputs")
         if star_spin_angle2 is None: raise AttributeError("star_spin_angle2 is not included in inputs")
-        if star_orbit_a1 is None: raise AttributeError("star_orbit_a1 is not included in inputs")
-        if star_orbit_a2 is None: raise AttributeError("star_orbit_a2 is not included in inputs")
-        if star_orbit_inclination1 is None: raise AttributeError("star_orbit_inclination1 is not included in inputs")
-        if star_orbit_inclination2 is None: raise AttributeError("star_orbit_inclination2 is not included in inputs")
-        if star_orb_ang_mom1 is None: raise AttributeError("star_orb_ang_mom1 is not included in inputs")
-        if star_orb_ang_mom2 is None: raise AttributeError("star_orb_ang_mom2 is not included in inputs")
         if binary_e is None: raise AttributeError("binary_e is not included in inputs")
         if binary_a is None: raise AttributeError("binary_a is not included in inputs")
 
@@ -347,12 +345,6 @@ class AGNBinaryStar(AGNObject):
         assert star_spin2.shape == (nsystems,),"star_spin2: all arrays must be 1d and the same length"
         assert star_spin_angle1.shape == (nsystems,),"star_spin_angle1: all arrays must be 1d and the same length"
         assert star_spin_angle2.shape == (nsystems,),"star_spin_angle2: all arrays must be 1d and the same length"
-        assert star_orbit_a1.shape == (nsystems,),"star_orbit_a1: all arrays must be 1d and the same length"
-        assert star_orbit_a2.shape == (nsystems,),"star_orbit_a2: all arrays must be 1d and the same length"
-        assert star_orbit_inclination1.shape == (nsystems,),"star_orbit_inclination1: all arrays must be 1d and the same length"
-        assert star_orbit_inclination2.shape == (nsystems,),"star_orbit_inclination2: all arrays must be 1d and the same length"
-        assert star_orb_ang_mom1.shape == (nsystems,),"star_orb_ang_mom1: all arrays must be 1d and the same length"
-        assert star_orb_ang_mom2.shape == (nsystems,),"star_orb_ang_mom2: all arrays must be 1d and the same length"
         assert binary_e.shape == (nsystems,),"binary_e: all arrays must be 1d and the same length"
         assert binary_a.shape == (nsystems,),"binary_a: all arrays must be 1d and the same length"
 
@@ -395,24 +387,16 @@ class AGNBinaryStar(AGNObject):
         self.star_spin2 = star_spin2
         self.star_spin_angle1 = star_spin_angle1
         self.star_spin_angle2 = star_spin_angle2
-        self.star_orbit_a1 = star_orbit_a1
-        self.star_orbit_a2 = star_orbit_a2
-        self.star_orbit_inclination1 = star_orbit_inclination1
-        self.star_orbit_inclination2 = star_orbit_inclination2
-        self.star_orb_ang_mom1 = star_orb_ang_mom1
-        self.star_orb_ang_mom2 = star_orb_ang_mom2
         self.binary_e = binary_e
         self.binary_a = binary_a
+        self.binary_inclination = binary_inclination
 
         #Now calculate properties for the AGNObject class aka the totals
         total_mass = star_mass1 + star_mass2
-        total_spin = star_spin1 + star_spin2
-        total_spin_angle = star_spin_angle1 + star_spin_angle2
-        total_orbit_a = star_orbit_a1 + star_orbit_a2
-        total_orbit_inclination = star_orbit_inclination1 + star_orbit_inclination2
-        total_orb_ang_mom = star_orb_ang_mom1 + star_orb_ang_mom2
+        total_spin = None # we will pass None for now, until we decide how to treat angular momentum
+        total_spin_angle = None  # we will pass None for now, until we decide how to treat angular momentum
 
-        super(AGNBinaryStar,self).__init__(mass = total_mass, spin = total_spin, spin_angle = total_spin_angle, orbit_a = total_orbit_a, orbit_inclination = total_orbit_inclination, orb_ang_mom = total_orb_ang_mom, orbit_e = binary_e, nsystems = nsystems)
+        super(AGNBinaryStar,self).__init__(mass = total_mass, spin = None, spin_angle = None, orbit_a = cm_orbit_a, orbit_inclination = cm_orbit_inclination, orbit_e = cm_orbit_e, nsystems = nsystems)
         
 
     def __repr__(self):
@@ -432,12 +416,12 @@ class AGNBinaryStar(AGNObject):
                         new_star_spin_angle2 = None,
                         new_star_orbit_a1 = None,
                         new_star_orbit_a2 = None,
-                        new_star_orbit_inclination1 = None,
-                        new_star_orbit_inclination2 = None,
-                        new_star_orb_ang_mom1 = None,
-                        new_star_orb_ang_mom2 = None,
                         new_binary_e = None,
                         new_binary_a = None,
+                        new_binary_inclination=None,
+                        new_cm_orbit_a=None,
+                        new_cm_orbit_inclination=None,
+                        new_cm_orbit_e=None,
                         nsystems = None,
                     **kwargs):
         
@@ -455,12 +439,6 @@ class AGNBinaryStar(AGNObject):
         if new_star_spin2 is None: raise AttributeError("new_star_spin2 is not included in inputs")
         if new_star_spin_angle1 is None: raise AttributeError("new_star_spin_angle1 is not included in inputs")
         if new_star_spin_angle2 is None: raise AttributeError("new_star_spin_angle2 is not included in inputs")
-        if new_star_orbit_a1 is None: raise AttributeError("new_star_orbit_a1 is not included in inputs")
-        if new_star_orbit_a2 is None: raise AttributeError("new_star_orbit_a2 is not included in inputs")
-        if new_star_orbit_inclination1 is None: raise AttributeError("new_star_orbit_inclination1 is not included in inputs")
-        if new_star_orbit_inclination2 is None: raise AttributeError("new_star_orbit_inclination2 is not included in inputs")
-        if new_star_orb_ang_mom1 is None: raise AttributeError("new_star_orb_ang_mom1 is not included in inputs")
-        if new_star_orb_ang_mom2 is None: raise AttributeError("new_star_orb_ang_mom2 is not included in inputs")
         if new_binary_e is None: raise AttributeError("new_binary_e is not included in inputs")
         if new_binary_a is None: raise AttributeError("new_binary_a is not included in inputs")
 
@@ -475,12 +453,6 @@ class AGNBinaryStar(AGNObject):
         assert new_star_spin2.shape == (nsystems,),"new_star_spin2: all arrays must be 1d and the same length"
         assert new_star_spin_angle1.shape == (nsystems,),"new_star_spin_angle1: all arrays must be 1d and the same length"
         assert new_star_spin_angle2.shape == (nsystems,),"new_star_spin_angle2: all arrays must be 1d and the same length"
-        assert new_star_orbit_a1.shape == (nsystems,),"new_star_orbit_a1: all arrays must be 1d and the same length"
-        assert new_star_orbit_a2.shape == (nsystems,),"new_star_orbit_a2: all arrays must be 1d and the same length"
-        assert new_star_orbit_inclination1.shape == (nsystems,),"new_star_orbit_inclination1: all arrays must be 1d and the same length"
-        assert new_star_orbit_inclination2.shape == (nsystems,),"new_star_orbit_inclination2: all arrays must be 1d and the same length"
-        assert new_star_orb_ang_mom1.shape == (nsystems,),"new_star_orb_ang_mom1: all arrays must be 1d and the same length"
-        assert new_star_orb_ang_mom2.shape == (nsystems,),"new_star_orb_ang_mom2: all arrays must be 1d and the same length"
         assert new_binary_e.shape == (nsystems,),"new_binary_e: all arrays must be 1d and the same length"
         assert new_binary_a.shape == (nsystems,),"new_binary_a: all arrays must be 1d and the same length"
 
@@ -523,29 +495,17 @@ class AGNBinaryStar(AGNObject):
         self.star_spin2 = np.concatenate([self.star_spin2, new_star_spin2])
         self.star_spin_angle1 = np.concatenate([self.star_spin_angle1, new_star_spin_angle1])
         self.star_spin_angle2 = np.concatenate([self.star_spin_angle2, new_star_spin_angle2])
-        self.star_orbit_a1 = np.concatenate([self.star_orbit_a1, new_star_orbit_a1])
-        self.star_orbit_a2 = np.concatenate([self.star_orbit_a2, new_star_orbit_a2])
-        self.star_orbit_inclination1 = np.concatenate([self.star_orbit_inclination1, new_star_orbit_inclination1])
-        self.star_orbit_inclination2 = np.concatenate([self.star_orbit_inclination2, new_star_orbit_inclination2])
-        self.star_orb_ang_mom1 = np.concatenate([self.star_orb_ang_mom1, new_star_orb_ang_mom1])
-        self.star_orb_ang_mom2 = np.concatenate([self.star_orb_ang_mom2, new_star_orb_ang_mom2])
         self.binary_e = np.concatenate([self.binary_e, new_binary_e])
         self.binary_a = np.concatenate([self.binary_a, new_binary_a])
 
         new_total_mass = new_star_mass1 + new_star_mass2
-        new_total_spin = new_star_spin1 + new_star_spin2
-        new_total_spin_angle = new_star_spin1 + new_star_spin2
-        new_total_orbit_a = new_star_orbit_a1 + new_star_orbit_a2
-        new_total_orbit_inclination = new_star_orbit_inclination1 + new_star_orbit_inclination2
-        new_total_orb_ang_mom = new_star_orb_ang_mom1 + new_star_orb_ang_mom2
 
         super(AGNBinaryStar,self).__add_objects__(new_mass = new_total_mass,
-                                                   new_spin=new_total_spin,
-                                                   new_spin_angle=new_total_spin_angle,
-                                                   new_a = new_total_orbit_a,
-                                                   new_inclination=new_total_orbit_inclination,
-                                                   new_orb_ang_mom=new_total_orb_ang_mom,
-                                                   new_e=new_binary_e,
+                                                   new_spin=None,
+                                                   new_spin_angle=None,
+                                                   new_a = new_cm_orbit_a,
+                                                   new_inclination=new_cm_orbit_inclination,
+                                                   new_e=new_cm_orbit_e,
                                                    nsystems=nsystems)
 
 
