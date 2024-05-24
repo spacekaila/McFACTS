@@ -718,33 +718,33 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
 
     return bin_array
 
-def bin_spheroid_encounter(mass_smbh, timestep, bin_array, time_passed, bindex, mbh_powerlaw_index, mode_mbh_init,de):
+def bin_spheroid_encounter(mass_smbh, timestep, bin_array, time_passed, bindex, mbh_powerlaw_index, mode_mbh_init, de, sph_norm):
     """ Use Leigh+18 to figure out the rate at which spheroid encounters happen to binaries embedded in the disk
     Binaries at small disk radii encounter spheroid objects at high rate, particularly early on in the disk lifetime
     However, orbits at those small radii get captured quickly by the disk.
      
     From Fig.1 in Leigh+18, Rate of sph. encounter = 20/Myr at t=0, normalized to a_bin=1AU, R_disk=10^3r_g or 0.2/10kyr timestep.
-    Introduce a spheroid normalization factor sph_norm=0.1 (default) allowing for non-ideal NSC (previous episodes; disky populations etc). 
+    Introduce a spheroid normalization factor sph_norm=1 (default) allowing for non-ideal NSC (previous episodes; disky populations etc). 
     Within 1Myr, for a dense model disk (e.g. Sirko & Goodman), most of those inner stellar orbits have been captured by the disk.
     So rate of sph. encounter ->0/Myr at t=1Myr since those orbits are gone (R<10^3r_g; assuming approx circular orbits!) for SG disk model
     For TQM disk model, rate of encounter slightly lower but non-zero.
 
     So, inside R_com<10^3r_g: (would be rt of enc =0.2 if sph_norm=1)
-    Assume: Rate of encounter = 0.02 (sph_norm/0.1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
+    Assume: Rate of encounter = 0.2 (sph_norm/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
     Generate random number from uniform [0,1] distribution and if <0.2 (normalized to above condition) then encounter
     
-    Encounter rt starts at = 0.02 (sph_norm/0.1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 at t=0
-    decreases to          = 0(sph_norm/0.1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 (time_passed/1Myr)
+    Encounter rt starts at = 0.2 (sph_norm/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 at t=0
+    decreases to          = 0(sph_norm/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 (time_passed/1Myr)
     at R<10^3r_g.
     Outside: R_com>10^3r_g
     Normalize to rate at (R_com/10^4r_g) so that rate is non-zero at R_com=[1e3,1e4]r_g after 1Myr.
     Decrease rate with time, but ensure it goes to zero at R_com<1.e3r_g.
 
     So, rate of sph. encounter = 2/Myr at t=0, normalized to a_bin=1AU, R_disk=10^4r_g which is equivalently
-    Encounter rate = 0.002 (sph_norm/0.1)(timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2
+    Encounter rate = 0.02 (sph_norm/1)(timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2
     Drop this by an order of magnitude over 1Myr.
-    Encounter rate = 0.002 (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2 (time_passed/10kyr)^-1/2   
-    so ->0.0002 after a Myr
+    Encounter rate = 0.02 (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2 (time_passed/10kyr)^-1/2   
+    so ->0.002 after a Myr
     For R_com < 10^3r_g:
         if time_passed <=1Myr
             Encounter rt = 0.02*(sph_norm/0.1)*(1-(1Myr/time_passed))(timestep/10kyr)^{-1}(R_com/10^3r_g)^-1 (a_bin/1r_gM8)^2 ....(1)
@@ -846,7 +846,7 @@ def bin_spheroid_encounter(mass_smbh, timestep, bin_array, time_passed, bindex, 
     # Magnitude of energy change to drive binary to merger in ~2 interactions in a strong encounter. Say de_strong=0.9
     de_strong =0.9
     # Spheroid normalization to allow for non-ideal NSC (cored/previous AGN episodes/disky population concentration/whatever)
-    sph_norm = 1.0
+    #sph_norm = 1.0
     #Default initial value of i3,i3_rad
     i3 = 0.0
     i3_rad = 0.0
