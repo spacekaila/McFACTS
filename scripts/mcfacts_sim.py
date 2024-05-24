@@ -564,7 +564,8 @@ def main():
                             bin_index,
                             opts.mbh_powerlaw_index,
                             opts.mode_mbh_init,
-                            opts.de
+                            opts.de,
+                            opts.sph_norm
                         )
 
                     if (opts.dynamic_enc > 0):
