@@ -121,7 +121,7 @@ def main():
     plt.scatter(mergers[:,1],chi_p, color='darkgoldenrod')
     plt.title("In-plane effective Spin vs. Merger radius")
     plt.ylabel(r'$\chi_{\rm p}$')
-    plt.xlabel(r'$Disk radius$')
+    plt.xlabel(r'Radius ($R_g$)')
     plt.ylim(-1,1)
     plt.xlim(0.,5.e4)
     ax = plt.gca()
