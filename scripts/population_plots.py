@@ -3,6 +3,7 @@
 ######## Globals ########
 COLUMN_NAMES = "iter CM M chi_eff a_tot spin_angle m1 m2 a1 a2 theta1 theta2 gen1 gen2 t_merge"
 
+
 ######## Imports ########
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,6 +27,7 @@ def arg():
         default=".",
         type=str, help="directory to save plots")
     opts = parser.parse_args()
+    print(opts.fname_mergers)
     assert os.path.isfile(opts.fname_mergers)
     return opts
 
