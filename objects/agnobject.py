@@ -396,7 +396,7 @@ class AGNBinaryStar(AGNObject):
         total_spin = None # we will pass None for now, until we decide how to treat angular momentum
         total_spin_angle = None  # we will pass None for now, until we decide how to treat angular momentum
 
-        super(AGNBinaryStar,self).__init__(mass = total_mass, spin = None, spin_angle = None, orbit_a = cm_orbit_a, orbit_inclination = cm_orbit_inclination, orbit_e = cm_orbit_e, nsystems = nsystems)
+        super(AGNBinaryStar,self).__init__(mass = total_mass, spin = star_spin_angle2, spin_angle = star_spin_angle2, orbit_a = cm_orbit_a, orbit_inclination = cm_orbit_inclination, orbit_e = cm_orbit_e, nsystems = nsystems)
         
 
     def __repr__(self):
