@@ -15,7 +15,10 @@ import argparse
 
 from mcfacts.inputs import ReadInputs
 
+from objects.agnobject import AGNStar
+
 from mcfacts.setup import setupdiskblackholes
+from mcfacts.setup import setupdiskstars
 from mcfacts.physics.migration.type1 import type1
 from mcfacts.physics.accretion.eddington import changebhmass
 from mcfacts.physics.accretion.torque import changebh
@@ -238,6 +241,22 @@ def main():
         #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
 
         bh_initial_generations = np.ones((n_bh,),dtype=int)
+
+        #----------now stars
+        n_stars = 200 #working on making this physical
+
+        #this doesn't work like it should. need some sort of initialization function. radius should call the masses function.
+
+        stars = AGNStar(mass = setupdiskstars.setup_disk_stars_masses(rng, n_stars, min_initial_star_mass,max_initial_star_mass,mstar_powerlaw_index),
+                        spin = setupdiskstars.setup_disk_stars_spins(rng, n_stars, mu_star_spin_distribution, sigma_star_spin_distribution),
+                        spin_angle = setupdiskstars.setup_disk_stars_spin_angles(rng, n_stars, stars_initial_spins),
+                        orbit_a = setupdiskstars.setup_disk_stars_location(rng, n_stars, disk_outer_radius),
+                        orbit_inclination = setupdiskstars.setup_disk_stars_inclination(rng, n_stars),
+                        #orb_ang_mom = orb_ang_mom,
+                        orbit_e = setupdiskstars.setup_disk_stars_eccentricity_uniform(rng, n_stars),
+                        star_radius = setupdiskstars.setup_disk_stars_radii(masses),
+                        star_Y = 0.0088,
+                        star_Z = 0.026)
 
         # assign functions to variable names (continuity issue)
         # Disk surface density (in kg/m^2) is a function of radius, where radius is in r_g
