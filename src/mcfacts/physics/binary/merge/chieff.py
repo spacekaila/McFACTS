@@ -52,18 +52,18 @@ def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle1, spin_angle2, bin_ang_mom,
     spin_angle2 = spin_angle2 + bin_inclination_wrt_disk
     #print("spins & orb inc",spin_angle1, spin_angle2)
     #Define default spins
-    spin_1_perp = spin_1*np.sin(spin_angle1)
-    spin_2_perp = spin_2*np.sin(spin_angle2)
+    spin_1_perp = abs(spin_1)*np.sin(spin_angle1)
+    spin_2_perp = abs(spin_2)*np.sin(spin_angle2)
     
     if mass_1 > mass_2:
          q=mass_2/mass_1
-         spin_1_perp = spin_1*np.sin(spin_angle1)
-         spin_2_perp = spin_2*np.sin(spin_angle2)
+         spin_1_perp = abs(spin_1)*np.sin(spin_angle1)
+         spin_2_perp = abs(spin_2)*np.sin(spin_angle2)
     # If mass2 is the dominant binary partner
     if mass_2 > mass_1:
          q=mass_1/mass_2
-         spin_1_perp = spin_2*np.sin(spin_angle2)
-         spin_2_perp = spin_1*np.sin(spin_angle1)     
+         spin_1_perp = abs(spin_2)*np.sin(spin_angle2)
+         spin_2_perp = abs(spin_1)*np.sin(spin_angle1)     
 
     q_factor = q*((4.0*q) + 3.0)/(4.0+(3.0*q))
     
