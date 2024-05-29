@@ -256,19 +256,18 @@ def main():
         #retrograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == -1)
         prograde_bh_locations = bh_initial_locations[prograde_orb_ang_mom_indices]
         sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
-        print("Sorted prograde BH locations:",
-        len(sorted_prograde_bh_locations), len(prograde_bh_locations))
-        print(sorted_prograde_bh_locations)
-        print(prograde_bh_locations)
+        #print("Sorted prograde BH locations:",len(sorted_prograde_bh_locations), len(prograde_bh_locations))
+        #print(sorted_prograde_bh_locations)
+        #print(prograde_bh_locations)
         #print("Aspect ratio",aspect_ratio_func(prograde_bh_locations))
         #Use masses of prograde BH only
         prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
-        print("Prograde BH initial masses", len(prograde_bh_masses))
-        print("Prograde BH initital spins",bh_initial_spins[prograde_orb_ang_mom_indices])
-        print("Prograde BH initial spin angles",bh_initial_spin_angles[prograde_orb_ang_mom_indices])
+        #print("Prograde BH initial masses", len(prograde_bh_masses))
+        #print("Prograde BH initital spins",bh_initial_spins[prograde_orb_ang_mom_indices])
+        #print("Prograde BH initial spin angles",bh_initial_spin_angles[prograde_orb_ang_mom_indices])
         # Orbital eccentricities
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
-        print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
+        #print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
         # Find which orbital eccentricities are <=h the disk aspect ratio and set up a mask
         #prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
         # Orb eccentricities <2h (simple exponential damping): mask entries > 2*aspect_ratio
@@ -298,7 +297,7 @@ def main():
 
         #Orbital inclinations
         prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
-        print("Prograde orbital inclinations")
+        #print("Prograde orbital inclinations")
 
         # Housekeeping: Fractional rate of mass growth per year at 
         # the Eddington rate(2.3e-8/yr)

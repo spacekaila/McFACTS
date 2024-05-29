@@ -50,6 +50,14 @@ def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle1, spin_angle2, bin_ang_mom,
     #print("initial spins",spin_angle1, spin_angle2)
     spin_angle1 = spin_angle1 + bin_inclination_wrt_disk
     spin_angle2 = spin_angle2 + bin_inclination_wrt_disk
+    #Make sure angles are <pi radians! 
+    diff1 = spin_angle1 - np.pi
+    diff2 = spin_angle2 - np.pi
+    if diff1 > 0:
+         spin_angle1 = spin_angle1 - diff1
+    if diff2 > 0:
+         spin_angle2 = spin_angle2 - diff2
+
     #print("spins & orb inc",spin_angle1, spin_angle2)
     #Define default spins
     spin_1_perp = abs(spin_1)*np.sin(spin_angle1)
@@ -72,5 +80,9 @@ def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle1, spin_angle2, bin_ang_mom,
     #if not then change chi_p definition and output
     if chi_p < q_factor*spin_2_perp:
          chi_p = q_factor*spin_2_perp
+
+    if chi_p < 0:
+         print("chi_p,m1,m2,a1,a2,a1p,a2p,theta1,theta2,bin_inc,q_factor=",chi_p,mass_1,mass_2,spin_1,spin_2,abs(spin_1),abs(spin_2),spin_1_perp,spin_2_perp,spin_angle1,spin_angle2,bin_inclination_wrt_disk,q_factor)
+
 
     return chi_p
