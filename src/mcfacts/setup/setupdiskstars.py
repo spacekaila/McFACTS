@@ -13,8 +13,8 @@ def setup_disk_stars_masses(rng,n_star,min_initial_star_mass,max_initial_star_ma
     #Taken from here: https://python4mpia.github.io/fitting_data/MC-sampling-from-Salpeter.html
 
     #Convert limits from M to logM
-    log_M_min = np.log10(min_initial_star_mass)
-    log_M_max = np.log10(max_initial_star_mass)
+    log_M_min = np.log(min_initial_star_mass)
+    log_M_max = np.log(max_initial_star_mass)
 
     #Max likelihood is at M_min
     maxlik = np.power(min_initial_star_mass, 1.0 - mstar_powerlaw_index)
