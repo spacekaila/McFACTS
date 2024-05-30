@@ -91,6 +91,13 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     you get something like sensible answers.
     So we gotta watch out for this
 
+    Also, I think this function will still work fine if you feed it prograde bh
+    just change the variable name in the function call... (this is not true for migration)
+    BUT it has not been tested...
+
+    However, I'm not sure if it is physically correct to do so, since you're assuming a
+    timescale for semi-major axis change that is slower than a migration timescale???
+
     Parameters
     ----------
     mass_smbh : float

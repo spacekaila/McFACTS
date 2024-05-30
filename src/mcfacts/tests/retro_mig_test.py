@@ -40,8 +40,8 @@ if __name__ == "__main__":
     retrograde_bh_locations = np.array([50.0, 100.0, 500.0, 1e3, 5e3, 1e4, 5e4])
     retrograde_bh_masses = np.array([5.0, 10.0, 10.0, 10.0, 20.0, 35.0, 35.0])
     retrograde_bh_orb_ecc = np.array([0.5, 0.1, 0.5, 0.9, 0.5, 0.5, 0.9])
-    retrograde_bh_orb_inc = (np.pi - 1e-8) * np.ones(7)
-    retro_arg_periapse = 0.0 * np.pi * np.ones(7)
+    retrograde_bh_orb_inc = (np.pi - 1e-6) * np.ones(7)
+    retro_arg_periapse = 1.0 * np.pi * np.ones(7)
     timestep = 1e4
 
     thing1 = retro_mig.retro_mig(
@@ -69,3 +69,16 @@ if __name__ == "__main__":
     
     print("retro_ecc")
     print(thing2)
+
+    thing3 = orb_inc_damping(
+        mass_smbh,
+        retrograde_bh_locations,
+        retrograde_bh_masses,
+        retrograde_bh_orb_ecc,
+        retrograde_bh_orb_inc,
+        retro_arg_periapse,
+        timestep,
+        surf_dens_func)
+    
+    print("retro_inc")
+    print(thing3)
