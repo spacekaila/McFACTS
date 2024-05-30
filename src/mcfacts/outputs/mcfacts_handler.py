@@ -20,6 +20,7 @@ class McfactsHandler(object):
 
     def __init__(
                  self,
+                 model,
                 ):
         '''Initialize mcfacts handler'''
         # Initialize empty batches array
@@ -30,8 +31,15 @@ class McfactsHandler(object):
         self._inverse_batch_index = {}
         # Initialize nbatch
         self._nbatch = 0
+        # Initialize model
+        self._model = model
 
     #### Properties ####
+    @property
+    def model(self):
+        '''Return model identifier'''
+        return self._model
+
     @property
     def batches(self):
         '''Return batch labels'''
@@ -203,7 +211,7 @@ class McfactsHandler(object):
         assert self._batches.keys() == self._batch_index.keys()
 
     @staticmethod
-    def from_runs(run_directory, **kwargs):
+    def from_runs(run_directory, model=None, **kwargs):
         '''Generate a mcfacts_batch object from runs'''
         # Check that we are looking at a valid directory
         assert isdir(run_directory)
@@ -212,8 +220,11 @@ class McfactsHandler(object):
         subdirs.sort()
         # Identify output*.dat
         batch_dir = []
+        # Check model
+        if model is None:
+            model = basename(run_directory)
         # Initialize McFacts Handler
-        MH = McfactsHandler()
+        MH = McfactsHandler(model)
         for _sub in subdirs:
             # identify path to sub directory
             sub = join(run_directory, _sub)
