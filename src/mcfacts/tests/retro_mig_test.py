@@ -3,6 +3,7 @@ import scipy
 
 from mcfacts.physics.migration.type1 import retro_mig
 from mcfacts.physics.eccentricity import retro_ecc
+from mcfacts.physics.disk_capture import capture
 
 if __name__ == "__main__":
     # I just want to run retro_mig.py on its own to see if it runs, so I'm
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     retrograde_bh_masses = np.array([5.0, 10.0, 10.0, 10.0, 20.0, 35.0, 35.0])
     retrograde_bh_orb_ecc = np.array([0.5, 0.1, 0.5, 0.9, 0.5, 0.5, 0.9])
     retrograde_bh_orb_inc = (np.pi - 1e-6) * np.ones(7)
-    retro_arg_periapse = 1.0 * np.pi * np.ones(7)
+    retro_arg_periapse = 0.0 * np.pi * np.ones(7)
     timestep = 1e4
 
     thing1 = retro_mig.retro_mig(
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     print("retro_ecc")
     print(thing2)
 
-    thing3 = orb_inc_damping(
+    thing3 = capture.orb_inc_damping(
         mass_smbh,
         retrograde_bh_locations,
         retrograde_bh_masses,

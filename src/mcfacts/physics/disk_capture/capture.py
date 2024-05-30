@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 def secunda20():
     """ Generate disk capture BH
@@ -22,7 +23,7 @@ def orb_inc_damping(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retro
 
     Also, I think this function will still work fine if you feed it prograde bh
     just change the variable name in the function call... (this is not true for migration)
-    BUT it has not been tested...
+    Testing implies that inc=0 or pi is actually ok, at least for omega=0 or pi
 
 
     Parameters
