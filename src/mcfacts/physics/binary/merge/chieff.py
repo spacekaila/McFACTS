@@ -28,6 +28,9 @@ def chi_effective(mass_1, mass_2, spin_1, spin_2, spin_angle1, spin_angle2, bin_
 
     chi_eff = chi_factor1 + chi_factor2
 
+    #if chi_eff < -1:
+    #     print("CHI!",chi_eff,mass_1,mass_2,total_mass,abs_spin1,abs_spin2,angle_1,angle_2)
+
     return chi_eff
 
 def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle1, spin_angle2, bin_ang_mom, bin_inclination_wrt_disk):
