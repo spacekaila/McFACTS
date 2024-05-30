@@ -26,6 +26,8 @@ def arg():
         help="Number of timesteps (10,000 yrs by default)")
     parser.add_argument("--dynamics", action='store_true',
         help="Dynamics flag")
+    parser.add_argument("--feedback", action='store_true',
+        help="Feedback flag")
     parser.add_argument("--n_iterations", default=2, type=int,
         help="Number of iterations per mass bin")
     # Handle top level working directory
@@ -61,6 +63,7 @@ def main():
     mcfacts_arg_dict = {
                         "--number_of_timesteps" : opts.number_of_timesteps,
                         "--dynamic_enc"         : int(opts.dynamics),
+                        "--feedback"            : int(opts.feedback),
                         "--n_iterations"        : opts.n_iterations,
                         "--n_bins_max"          : 10_000,
                         "--fname-log"           : "out.log",
