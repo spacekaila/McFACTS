@@ -63,13 +63,15 @@ def change_spin_magnitudes(prograde_bh_spins, frac_Eddington_ratio, spin_torque_
     #Housekeeping:
     bh_max_spin = 0.98
     bh_min_spin = -0.98
+    
     #print("OLD/NEW SPINs",prograde_bh_spins,bh_new_spins)
-    #for i in range(len(prograde_bh_spins)):
-    #    if bh_new_spins[i] < bh_min_spin:
-    #        bh_new_spins[i] = bh_min_spin
+    for i in range(len(prograde_bh_spins)):
+        if bh_new_spins[i] < bh_min_spin:
+            bh_new_spins[i] = bh_min_spin
 
-    #    if bh_new_spins[i] > bh_max_spin:
-    #        bh_new_spins[i] = bh_max_spin      
+        if bh_new_spins[i] > bh_max_spin:
+            bh_new_spins[i] = bh_max_spin      
+    
     #bh_new_spins = np.where(bh_new_spins < bh_min_spin, bh_new_spins, bh_min_spin)
     #bh_new_spins = np.where(bh_new_spins > bh_max_spin, bh_new_spins, bh_max_spin)
     #Return updated new spins    
