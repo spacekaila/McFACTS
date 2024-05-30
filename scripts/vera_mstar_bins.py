@@ -2,6 +2,7 @@
 ######## Imports ########
 import numpy as np
 import os
+import sys
 from os.path import expanduser, join, isfile, isdir
 from basil.relations import Neumayer_early_NSC_mass, Neumayer_late_NSC_mass
 from basil.relations import SchrammSilvermanSMBH_mass_of_GSM as SMBH_mass_of_GSM
@@ -30,6 +31,12 @@ def arg():
         help="Feedback flag")
     parser.add_argument("--n_iterations", default=2, type=int,
         help="Number of iterations per mass bin")
+    parser.add_argument("--scrub", action='store_true',
+        help="Remove timestep data for individual runs as we go to conserve disk space.")
+    parser.add_argument("--force", action="store_true",
+        help="Force overwrite and rerun everything?")
+    parser.add_argument("--print-only", action="store_true",
+        help="Don't run anything. Just print the commands.")
     # Handle top level working directory
     opts = parser.parse_args()
     if not isdir(opts.wkdir):
@@ -39,6 +46,68 @@ def arg():
     # Check exe
     assert isfile(opts.mcfacts_exe)
     return opts
+
+######## Batch ########
+def make_batch(opts, wkdir, mcfacts_args, mass_smbh, mass_nsc):
+    ## Early-type ##
+    # identify output_mergers_population.dat
+    outfile = join(wkdir, "output_mergers_population.dat")
+    # Check if outfile exists
+    outfile_exists = isfile(outfile)
+    # Check for runs
+    all_runs = []
+    for item in os.listdir(wkdir):
+        if isdir(join(wkdir, item)) and item.startswith("run"):
+            all_runs.append(item)
+    any_runs = len(all_runs) > 0
+
+    # Check force
+    if opts.force:
+        # remove whole wkdir
+        cmd = "rm -rf %s"%wkdir
+        # Print the command
+        print(cmd)
+        # Check print_only
+        if not opts.print_only:
+            # Execute rm command
+            os.system(cmd)
+    elif outfile_exists:
+        # The outfile already exists.
+        # We can move on
+        print("%s already exists! skipping..."%(outfile),file=sys.stderr)
+        return
+    elif any_runs:
+        # Some runs exist, but not an outfile. We can start these over
+        # remove whole wkdir
+        cmd = "rm -rf %s"%wkdir
+        # Print the command
+        print(cmd)
+        # Check print_only
+        if not opts.print_only:
+            # Execute rm command
+            os.system(cmd)
+    else:
+        # Nothing exists, and nothing needs to be forced
+        pass
+
+    # Make all iterations
+    cmd = "python3 %s --mass_smbh %f --M_nsc %f --work-directory %s %s"%(
+        opts.mcfacts_exe, mass_smbh, mass_nsc, wkdir, mcfacts_args)
+    print(cmd)
+    if not opts.print_only:
+        os.system(cmd)
+    # Make plots for all iterations
+    cmd = "python3 %s --fname-mergers %s/output_mergers_population.dat --fname-nal %s --cdf chi_eff chi_p M gen1 gen2 t_merge"%(
+        opts.vera_plots_exe, wkdir, opts.fname_nal)
+    print(cmd)
+    if not opts.print_only:
+        os.system(cmd)
+
+    # Scrub runs
+    if opts.scrub:
+        cmd = "rm -rf %s/run*"%wkdir
+        print(cmd)
+        os.system(cmd)
 
 ######## Main ########
 def main():
@@ -88,27 +157,10 @@ def main():
         late_dir = join(opts.wkdir, 'late', mstar_str)
         if not isdir(late_dir):
             os.mkdir(late_dir)
-        # Make early iterations
-        cmd = "python3 %s %s --work-directory %s --mass_smbh %f --M_nsc %f"%(
-            opts.mcfacts_exe, mcfacts_args, early_dir, mass_smbh, early_mass)
-        print(cmd)
-        os.system(cmd)
-        # Make plots for early iterations
-        cmd = "python3 %s --fname-mergers %s/output_mergers_population.dat --fname-nal %s --cdf chi_eff chi_p M gen1 gen2 t_merge"%(
-            opts.vera_plots_exe, early_dir, opts.fname_nal)
-        print(cmd)
-        os.system(cmd)
-        # Make late iterations
-        cmd = "python3 %s %s --work-directory %s --mass_smbh %f --M_nsc %f"%(
-            opts.mcfacts_exe, mcfacts_args, late_dir, mass_smbh, late_mass)
-        print(cmd)
-        os.system(cmd)
-        # Make plots for late iterations
-        cmd = "python3 %s --fname-mergers %s/output_mergers_population.dat --fname-nal %s --cdf chi_eff chi_p M gen1 gen2 t_merge"%(
-            opts.vera_plots_exe, late_dir, opts.fname_nal)
-        print(cmd)
-        os.system(cmd)
-        
+
+        make_batch(opts, early_dir, mcfacts_args, mass_smbh, early_mass)
+        make_batch(opts, late_dir,  mcfacts_args, mass_smbh, late_mass)
+
     return
 
 ######## Execution ########
