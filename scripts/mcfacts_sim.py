@@ -34,7 +34,8 @@ from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
-DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
+#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
+DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
 assert DEFAULT_INI.is_file()
 
 def arg():
@@ -722,6 +723,8 @@ def main():
                             #angle_1[i] = binary_bh_array[6,merger_indices[i]]
                             #angle_2[i] = binary_bh_array[7,merger_indices[i]]
                             #bin_ang_mom[i] = binary_bh_array[16,merger_indices]
+                            if time_passed <= opts.timestep:
+                                print("time_passed,loc1,loc2",time_passed,binary_bh_array[0,merger_indices[i]],binary_bh_array[1,merger_indices[i]])
 
                         # calculate merger properties
                             merged_mass = tichy08.merged_mass(
@@ -766,7 +769,8 @@ def main():
                                 merged_spin,
                                 nprop_mergers,
                                 n_mergers_so_far,
-                                merged_chi_p
+                                merged_chi_p,
+                                time_passed
                             )
                         #    print("Merger properties (M_f,a_f,Chi_eff,Chi_p,theta1,theta2", merged_mass, merged_spin, merged_chi_eff, merged_chi_p,binary_bh_array[6,merger_indices[i]], binary_bh_array[7,merger_indices[i]],)
                         # do another thing
