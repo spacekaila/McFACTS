@@ -49,7 +49,7 @@ mcfacts_sim: clean
 	python3 ${MCFACTS_SIM_EXE} \
 		--n_iterations 100 \
 		--fname-log out.log \
-		--seed 10000001
+		--seed 3456789012
 
 plots:  mcfacts_sim
 	python3 ${POPULATION_PLOTS_EXE} 

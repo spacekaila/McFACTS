@@ -40,7 +40,7 @@ def extend_rec_merged_bh(merged_rec_array, n_mergers_so_far, merger_indices,chi,
     return merged_rec_array
 
 
-def merged_bh(merged_array,bin_array,merger_indices,i,chi_here,mass_here,spin_here,nprops_mergers,n_mergers_so_far,chi_p):
+def merged_bh(merged_array,bin_array,merger_indices,i,chi_here,mass_here,spin_here,nprops_mergers,n_mergers_so_far,chi_p,time_passed):
     """
     Recording merger event.  Designed only to handle one event at a time, with hardcoded labels
     """
@@ -92,6 +92,7 @@ def merged_bh(merged_array,bin_array,merger_indices,i,chi_here,mass_here,spin_he
     merged_array[10,n_mergers_so_far + i] = bin_array[7,merger_indices[i]]
     merged_array[11,n_mergers_so_far + i] = bin_array[14,merger_indices[i]]
     merged_array[12,n_mergers_so_far + i] = bin_array[15,merger_indices[i]]
-    merged_array[13,n_mergers_so_far + i] = bin_array[12,merger_indices[i]]
+#    merged_array[13,n_mergers_so_far + i] = bin_array[12,merger_indices[i]]
+    merged_array[13,n_mergers_so_far + i] = time_passed
     merged_array[14,n_mergers_so_far + i] = chi_p
     return merged_array[:,n_mergers_so_far + i]

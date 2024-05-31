@@ -48,9 +48,9 @@ def main():
 
     # plt.hist(bh_masses_by_sorted_location, bins=numbins, align='left', label='Final', color='purple', alpha=0.5)
     # plt.hist(binary_bh_array[2:4,:bin_index], bins=numbins, align='left', label='Final', color=['purple'], alpha=0.5)
-    plt.title(f'Black Hole Merger Renmant Masses\n'+
-                f'Number of Mergers: {mergers.shape[0]}')
-    plt.ylabel('Number')
+    #plt.title(f'Black Hole Merger Remnant Masses\n'+
+    #            f'Number of Mergers: {mergers.shape[0]}')
+    plt.ylabel('Number of Mergers')
     plt.xlabel(r'Mass ($M_\odot$)')
 
     ax = plt.gca()
@@ -65,14 +65,14 @@ def main():
 
     trap_radius = 700
     plt.figure()
-    plt.title('Migration Trap influence')
+    #plt.title('Migration Trap influence')
     for i in range(len(mergers[:,1])):
         if mergers[i,1] < 10.0:
             mergers[i,1] = 10.0
 
     plt.scatter(mergers[:,1], mergers[:,2], color='teal')
     plt.axvline(trap_radius, color='grey', linewidth=20, zorder=0, alpha=0.6, label=f'Radius = {trap_radius} '+r'$R_g$')
-    plt.text(650, 602, 'Migration Trap', rotation='vertical', size=18, fontweight='bold')
+    #plt.text(650, 602, 'Migration Trap', rotation='vertical', size=18, fontweight='bold')
     plt.ylabel(r'Mass ($M_\odot$)')
     plt.xlabel(r'Radius ($R_g$)')
     plt.xscale('log')
@@ -105,8 +105,8 @@ def main():
     chi_eff = mergers[:,3]
     chi_p = mergers[:,15]
     plt.scatter(chi_eff, mass_ratio, color='darkgoldenrod')
-    plt.title("Mass Ratio vs. Effective Spin")
-    plt.ylabel(r'$q = M_1 / M_2$ ($M_1 > M_2$)')
+    #plt.title("Mass Ratio vs. Effective Spin")
+    plt.ylabel(r'$q = M_2 / M_1$ ($M_1 > M_2$)')
     plt.xlabel(r'$\chi_{\rm eff}$')
     plt.ylim(0,1.05)
     plt.xlim(-1,1)
@@ -119,7 +119,7 @@ def main():
 
     #chi_p plot vs disk radius
     plt.scatter(mergers[:,1],chi_p, color='darkgoldenrod')
-    plt.title("In-plane effective Spin vs. Merger radius")
+    #plt.title("In-plane effective Spin vs. Merger radius")
     plt.ylabel(r'$\chi_{\rm p}$')
     plt.xlabel(r'Radius ($R_g$)')
     plt.ylim(-1,1)
@@ -147,7 +147,7 @@ def main():
 
 
     plt.figure()
-    plt.title("Time of Merger after AGN Onset")
+    #plt.title("Time of Merger after AGN Onset")
     plt.scatter(mergers[:,14]/1e6, mergers[:,2], color='darkolivegreen')
     plt.xlabel('Time (Myr)')
     plt.ylabel(r'Mass ($M_\odot$)')
