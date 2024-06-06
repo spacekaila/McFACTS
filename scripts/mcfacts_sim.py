@@ -148,6 +148,11 @@ def arg():
                 F.write(line)
     return opts
 
+# Read in prior mergers population as possible admixture input
+#prior_mergers = np.loadtxt('../recipies/prior_mergers_population.dat',skiprows=2)
+#prior_masses = prior_mergers[:,2]
+#prior_spins = prior_mergers[:,3]
+
 def main():
     """
     """
