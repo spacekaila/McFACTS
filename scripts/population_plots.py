@@ -61,8 +61,8 @@ def main():
     plt.close()
 
 
-
-
+    # TQM has a trap at 245r_g, SG has a trap radius at 700r_g.
+    #trap_radius = 245
     trap_radius = 700
     plt.figure()
     #plt.title('Migration Trap influence')
@@ -102,9 +102,27 @@ def main():
             m1[i] = mergers[i,6]
             m2[i] = mergers[i,7]
 
+    # (q,X_eff) Figure details here:
+    # Want to highlight higher generation mergers on this plot
     chi_eff = mergers[:,3]
+    gen1 = mergers[:,12]
+    gen2 = mergers[:,13]
     chi_p = mergers[:,15]
-    plt.scatter(chi_eff, mass_ratio, color='darkgoldenrod')
+    
+    plt.ylim(0,1.05)
+    plt.xlim(-1,1)
+    fig = plt.figure()
+    ax2 = fig.add_subplot(111)
+
+    # Pipe operator (|) = logical OR. (&)= logical AND.
+    high_gen_chi_eff = np.where((gen1 > 1.0) | (gen2 > 1.0), chi_eff, np.nan)
+    extreme_gen_chi_eff = np.where((gen1 > 2.0) | (gen2 > 2.0), chi_eff, np.nan)
+
+
+    ax2.scatter(chi_eff,mass_ratio, color='darkgoldenrod')
+    ax2.scatter(high_gen_chi_eff,mass_ratio, color='rebeccapurple',marker='+')
+    ax2.scatter(extreme_gen_chi_eff,mass_ratio,color='red',marker='o')
+    #plt.scatter(chi_eff, mass_ratio, color='darkgoldenrod')
     #plt.title("Mass Ratio vs. Effective Spin")
     plt.ylabel(r'$q = M_2 / M_1$ ($M_1 > M_2$)')
     plt.xlabel(r'$\chi_{\rm eff}$')
@@ -117,12 +135,31 @@ def main():
     plt.savefig("./q_chi_eff.png", format='png')
     plt.close()
 
+    #Figure of Disk radius vs Chi_p follows.
+    # Can break out higher mass Chi_p events as test/illustration.
+    #Set up default arrays for high mass BBH (>40Msun say) to overplot vs chi_p. 
+    all_masses = mergers[:,2]
+    all_locations = mergers[:,1]
+    mass_bound = 40.0
+    #print("All BBH merger masses:",all_masses)
+    #print("All BBH merger locations:",all_locations)
+    high_masses = np.where(all_masses > mass_bound, all_masses, np.nan)
+    #print("High masses", high_masses)
+    high_masses_locations = np.where(np.isfinite(high_masses),all_locations, np.nan )
+    #print("High masses locations",high_masses_locations)
+    
     #chi_p plot vs disk radius
-    plt.scatter(mergers[:,1],chi_p, color='darkgoldenrod')
+    plt.ylim(0,1)
+    plt.xlim(0.,5.e4)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(all_locations,chi_p, color='darkgoldenrod')
+    ax1.scatter(high_masses_locations,chi_p, color='rebeccapurple',marker='+')
+    
     #plt.title("In-plane effective Spin vs. Merger radius")
     plt.ylabel(r'$\chi_{\rm p}$')
     plt.xlabel(r'Radius ($R_g$)')
-    plt.ylim(-1,1)
+    plt.ylim(0,1)
     plt.xlim(0.,5.e4)
     ax = plt.gca()
     ax.set_axisbelow(True)
