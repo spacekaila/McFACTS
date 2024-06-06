@@ -36,7 +36,9 @@ binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_m
 merger_field_names=' '.join(mergerfile.names_rec)
 #DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
 DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
+DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 assert DEFAULT_INI.is_file()
+assert DEFAULT_PRIOR_POP.is_file()
 
 def arg():
     import argparse
@@ -152,9 +154,12 @@ def arg():
     return opts
 
 # Read in prior mergers population as possible admixture input
-#prior_mergers = np.loadtxt('../recipies/prior_mergers_population.dat',skiprows=2)
-#prior_masses = prior_mergers[:,2]
-#prior_spins = prior_mergers[:,3]
+# prior_mergers = np.loadtxt('../recipies/prior_mergers_population.dat')
+# print("len(prior_mergers)=",prior_mergers.shape[0])
+# Remove rows where all the entries are identical.
+# repeat_entries = np.ma.masked_where(prior_mergers[0,:] != prior_mergers[1,:],prior_mergers)
+# repeat_indices = np.ma.nonzero(repeat_entries)
+# print("repeat indices",repeat_indices)
 
 def main():
     """
@@ -173,6 +178,8 @@ def main():
     aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     
     merged_bh_array_pop = []
+
+    surviving_bh_array_pop = []
     
     for iteration in range(opts.n_iterations):
         print("Iteration", iteration)
@@ -345,6 +352,7 @@ def main():
         nprop_mergers=len(mergerfile.names_rec)
         integer_nprop_merge=int(nprop_mergers)
         merged_bh_array = np.zeros((integer_nprop_merge,integer_test_bin_number))
+        
 
         # Start Loop of Timesteps
         print("Start Loop!")
@@ -931,6 +939,66 @@ def main():
         print("Mergers", merged_bh_array.shape)
         print("Nbh_disk",n_bh)
     
+        # Write out all the singletons after AGN episode, so can use this as input to another AGN phase.
+        # Want to store [Radius, Mass, Spin mag., Spin. angle, gen.]
+        # So num_properties_stored = 5 (for now)
+        # Note eccentricity will relax, so ignore. Inclination assumed 0deg.
+        
+        # Set up array for population that survives AGN episode, so can use as a draw for next episode.
+        # Need total of 1) size of prograde_bh_array for number of singles at end of run and 
+        # 2) size of bin_array for number of BH in binaries at end of run for
+        # number of survivors.
+        # print("No. of singles",prograde_bh_locations.shape[0])
+        # print("No of bh in bins",2*bin_index)
+        # print("binary array",binary_bh_array)
+        total_bh_survived = prograde_bh_locations.shape[0] + 2*bin_index
+        # print("Total bh=",total_bh_survived)
+        num_properties_stored = 5
+        # Set up arrays for properties:
+        bin_r1 = np.zeros(bin_index)
+        bin_r2 = np.zeros(bin_index)
+        bin_m1 = np.zeros(bin_index)
+        bin_m2 = np.zeros(bin_index)
+        bin_a1 = np.zeros(bin_index)
+        bin_a2 = np.zeros(bin_index)
+        bin_theta1 = np.zeros(bin_index)
+        bin_theta2 = np.zeros(bin_index)
+        bin_gen1 = np.zeros(bin_index)
+        bin_gen2 = np.zeros(bin_index)        
+
+        for i in range(0,bin_index):
+            bin_r1[i] = binary_bh_array[0,i]
+            bin_r2[i] = binary_bh_array[1,i]
+            bin_m1[i] = binary_bh_array[2,i]
+            bin_m2[i] = binary_bh_array[3,i]
+            bin_a1[i] = binary_bh_array[4,i]
+            bin_a2[i] = binary_bh_array[5,i]
+            bin_theta1[i] = binary_bh_array[6,i]
+            bin_theta2[i] = binary_bh_array[7,i]
+            bin_gen1[i] = binary_bh_array[14,i]
+            bin_gen2[i] = binary_bh_array[15,i]
+
+        surviving_bh_array = np.zeros((total_bh_survived,num_properties_stored))
+        #print("BH locs,bin_r1,bin_r2",prograde_bh_locations,bin_r1,bin_r2)
+        prograde_bh_locations = np.append(prograde_bh_locations,bin_r1)
+        prograde_bh_locations = np.append(prograde_bh_locations,bin_r2)
+        #print("prograde BH locs =",prograde_bh_locations)
+        prograde_bh_masses = np.append(prograde_bh_masses,bin_m1)
+        prograde_bh_masses = np.append(prograde_bh_masses,bin_m2)
+        prograde_bh_spins = np.append(prograde_bh_spins,bin_a1)
+        prograde_bh_spins = np.append(prograde_bh_spins,bin_a2)
+        prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,bin_theta1)
+        prograde_bh_spin_angles = np.append(prograde_bh_spin_angles,bin_theta2)
+        prograde_bh_generations = np.append(prograde_bh_generations,bin_gen1)
+        prograde_bh_generations = np.append(prograde_bh_generations,bin_gen2)
+
+
+        surviving_bh_array[:,0] = prograde_bh_locations
+        surviving_bh_array[:,1] = prograde_bh_masses
+        surviving_bh_array[:,2] = prograde_bh_spins
+        surviving_bh_array[:,3] = prograde_bh_spin_angles
+        surviving_bh_array[:,4] = prograde_bh_generations
+
         if True and number_of_mergers > 0: #verbose:
                 print(merged_bh_array[:,:number_of_mergers].T)
 
@@ -939,14 +1007,18 @@ def main():
 
         # Add mergers to population array including the iteration number
         iteration_row = np.repeat(iteration, number_of_mergers)
+        survivor_row = np.repeat(iteration,num_properties_stored)
         merged_bh_array_pop.append(np.concatenate((iteration_row[np.newaxis], merged_bh_array[:,:number_of_mergers])).T)
-
+        #surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:,:total_bh_survived])).T)
+        surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived,:])))
      # save all mergers from Monte Carlo
     merger_pop_field_names = "iter " + merger_field_names # Add "Iter" to field names
     population_header = f"Initial seed: {opts.seed}\n{merger_pop_field_names}" # Include initial seed
     basename, extension = os.path.splitext(opts.fname_output_mergers)
     population_save_name = f"{basename}_population{extension}"
+    survivors_save_name = f"{basename}_survivors{extension}"
     np.savetxt(os.path.join(opts.work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
+    np.savetxt(os.path.join(opts.work_directory, survivors_save_name), np.vstack(surviving_bh_array_pop))
 
 if __name__ == "__main__":
     main()
