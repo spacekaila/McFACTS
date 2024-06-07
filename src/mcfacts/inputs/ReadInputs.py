@@ -285,3 +285,70 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         print("Sending variables back")
 
     return input_variables, disk_model_radius_array, surface_density_array, aspect_ratio_array
+
+def ReadInputs_prior_mergers(fname='recipes/postagn_bh_pop1.dat', verbose=False):
+    """This function reads your prior mergers from a file user specifies or
+    default (recipies/prior_mergers_population.dat), and returns the chosen variables for 
+    manipulation by main.    
+
+    Required input formats and units are given in IOdocumentation.txt file.
+
+    See below for full output list, including units & formats
+
+    Example
+    -------
+    To run, ensure a prior_mergers_population.dat is in the same directory and type:
+
+        $ python ReadInputs_prior_mergers.py
+
+    Notes
+    -----
+    Function will tell you what it is doing via print statements along the way.
+
+    Attributes
+    ----------
+    Output variables:
+    radius_bh : float
+        Location of BH in disk
+    mass_bh : float
+        Mass of BH (M_sun)
+    spin_bh : float    
+        Magnitude of BH spin (dimensionless)
+    spin_angle_bh : float
+        Angle of BH spin wrt L_disk (radians). 0(pi) radians = aligned (anti-aligned) with L_disk
+    gen_bh: float
+        Generation of BH (integer). 1.0 =1st gen (wasn't involved in merger in previous episode; but accretion=mass/spin changed)        
+    )                
+    """
+
+    
+    with open('recipes/postagn_bh_pop1.dat') as filedata:
+        prior_mergers_file = np.genfromtxt('recipes/postagn_bh_pop1.dat', unpack = True)
+    
+    
+    #Clean the file of iteration lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
+    cleaned_prior_mergers_file = prior_mergers_file
+    
+    radius_list = []
+    masses_list = []
+    spins_list = []
+    spin_angles_list = []
+    gens_list = []
+    len_columns = prior_mergers_file.shape[1]
+    rows_to_be_removed = []
+
+    for i in range(0,len_columns):
+        # If 1st and 2nd entries in row i are same, it's an iteration marker, delete row.
+        if prior_mergers_file[0,i] == prior_mergers_file[1,i]:
+            rows_to_be_removed = np.append(rows_to_be_removed,int(i))
+            
+    rows_to_be_removed=rows_to_be_removed.astype('int32')
+    cleaned_prior_mergers_file = np.delete(cleaned_prior_mergers_file,rows_to_be_removed,axis=1)
+    
+    radius_list = cleaned_prior_mergers_file[0,:]
+    masses_list = cleaned_prior_mergers_file[1,:]
+    spins_list = cleaned_prior_mergers_file[2,:]
+    spin_angles_list = cleaned_prior_mergers_file[3,:]
+    gens_list = cleaned_prior_mergers_file[4,:]
+
+    return radius_list,masses_list,spins_list,spin_angles_list,gens_list
