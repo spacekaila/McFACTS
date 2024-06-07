@@ -7,6 +7,12 @@ def setup_disk_blackholes_location(rng, n_bh, disk_outer_radius):
     bh_initial_locations = disk_outer_radius*rng.random(integer_nbh)
     return bh_initial_locations
 
+def setup_prior_blackholes_indices(rng, prograde_n_bh, prior_bh_locations):
+    #Return an array of indices which allow us to read prior BH properties & replace prograde BH with these.
+    integer_nbh = int(prograde_n_bh)
+    len_prior_locations = (prior_bh_locations.size)-1
+    bh_indices = np.rint(len_prior_locations*rng.random(integer_nbh))
+    return bh_indices
 
 def setup_disk_blackholes_masses(rng, n_bh,mode_mbh_init,max_initial_bh_mass,mbh_powerlaw_index):
     #Return an array of BH initial masses for a given powerlaw index and max mass
