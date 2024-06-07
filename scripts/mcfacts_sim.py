@@ -150,11 +150,15 @@ def arg():
                 F.write(line)
     return opts
 
-# Multiple AGN phases:
+# Multiple AGN episodes:
 # If you want to use the output of a previous AGN simulation as an input to another AGN phase
-# Read in prior mergers population as possible admixture input
-prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
-        = ReadInputs.ReadInputs_prior_mergers()
+# Make sure you have a file 'recipes/postagn_bh_pop1.dat' so that ReadInputs can take it in.
+# Then un-comment this line 
+# 1 of 2. Search for Multiple AGN episodes below for 2 of 2.
+#Start un-commenting out here!
+#prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
+#        = ReadInputs.ReadInputs_prior_mergers()
+#End un-commenting out here!
 
 #Now can use these in place of prograde_bh_locations,prograde_bh_masses,prograde_bh_spins,prograde_bh_spin_angles
 
@@ -351,25 +355,27 @@ def main():
         integer_nprop_merge=int(nprop_mergers)
         merged_bh_array = np.zeros((integer_nprop_merge,integer_test_bin_number))
         
-        # If you want to replace all the prograde BH with prior BH from a previous AGN episode uncomment out this:
-        num_of_progrades = prograde_bh_locations.size
-        prior_indices = setupdiskblackholes.setup_prior_blackholes_indices(rng,num_of_progrades,prior_radii)
-        prior_indices = prior_indices.astype('int32')
-        print("old bh locs",prograde_bh_locations)
-        print("prior indices",prior_indices)
-        test_prograde_bh_locations = prior_radii[prior_indices]
-        test_prograde_bh_masses = prior_masses[prior_indices]
-        test_prograde_bh_spins = prior_spins[prior_indices]
-        test_prograde_bh_spin_angles = prior_spin_angles[prior_indices]
-        test_prograde_bh_gens = prior_gens[prior_indices]
-        print("test_output",test_prograde_bh_gens)
-
-        # Remove comment out if you want to use a prior AGN output as input to these runs
-        prograde_bh_locations = test_prograde_bh_locations
-        prograde_bh_masses = test_prograde_bh_masses
-        prograde_bh_spins = test_prograde_bh_spins
-        prograde_bh_spin_angles = test_prograde_bh_spin_angles
-        prograde_bh_generations = test_prograde_bh_gens
+        # Multiple AGN episodes:
+        # If you want to replace all the prograde BH with prior BH from a previous AGN episode uncomment out the lines below:
+        # 2 of 2
+        #Start un-commenting out here!
+        #num_of_progrades = prograde_bh_locations.size
+        #prior_indices = setupdiskblackholes.setup_prior_blackholes_indices(rng,num_of_progrades,prior_radii)
+        #prior_indices = prior_indices.astype('int32')
+        #print("old bh locs",prograde_bh_locations)
+        #print("prior indices",prior_indices)
+        #test_prograde_bh_locations = prior_radii[prior_indices]
+        #test_prograde_bh_masses = prior_masses[prior_indices]
+        #test_prograde_bh_spins = prior_spins[prior_indices]
+        #test_prograde_bh_spin_angles = prior_spin_angles[prior_indices]
+        #test_prograde_bh_gens = prior_gens[prior_indices]
+        #print("test_output",test_prograde_bh_gens)
+        #prograde_bh_locations = test_prograde_bh_locations
+        #prograde_bh_masses = test_prograde_bh_masses
+        #prograde_bh_spins = test_prograde_bh_spins
+        #prograde_bh_spin_angles = test_prograde_bh_spin_angles
+        #prograde_bh_generations = test_prograde_bh_gens
+        # Finish un-commenting out here!
 
         # Start Loop of Timesteps
         print("Start Loop!")
