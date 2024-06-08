@@ -251,9 +251,7 @@ def main():
             bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,opts.crit_ecc)
 
         bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng,n_bh)
-        #print("orb ecc",bh_initial_orb_ecc)
-        #bh_initial_generations = np.ones((integer_nbh,),dtype=int)  
-
+         
         bh_initial_generations = np.ones((n_bh,),dtype=int)
 
         # assign functions to variable names (continuity issue)
@@ -271,45 +269,11 @@ def main():
         #retrograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == -1)
         prograde_bh_locations = bh_initial_locations[prograde_orb_ang_mom_indices]
         sorted_prograde_bh_locations = np.sort(prograde_bh_locations)
-        #print("Sorted prograde BH locations:",len(sorted_prograde_bh_locations), len(prograde_bh_locations))
-        #print(sorted_prograde_bh_locations)
-        #print(prograde_bh_locations)
-        #print("Aspect ratio",aspect_ratio_func(prograde_bh_locations))
         #Use masses of prograde BH only
         prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
-        #print("Prograde BH initial masses", len(prograde_bh_masses))
-        #print("Prograde BH initital spins",bh_initial_spins[prograde_orb_ang_mom_indices])
-        #print("Prograde BH initial spin angles",bh_initial_spin_angles[prograde_orb_ang_mom_indices])
         # Orbital eccentricities
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
-        #print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
-        # Find which orbital eccentricities are <=h the disk aspect ratio and set up a mask
-        #prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
-        # Orb eccentricities <2h (simple exponential damping): mask entries > 2*aspect_ratio
-        #prograde_bh_modest_ecc = np.ma.masked_where(prograde_bh_orb_ecc > 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
-        #Orb eccentricities >2h (modified exponential damping): mask entries < 2*aspect_ratio
-        #prograde_bh_large_ecc = np.ma.masked_where(prograde_bh_orb_ecc < 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
-        # Apply ecc damping to this masked array (where true)
-        #prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc)
-
-        #print('modest ecc ',prograde_bh_modest_ecc)
-        #print('damped ecc',prograde_bh_orb_ecc_damp) 
         
-        # Test dynamics
-        #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc, de)
-    
-        
-
-        # Migrate
-        # First if feedback present, find ratio of feedback heating torque to migration torque
-        #if feedback > 0:
-        #        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
-        #else:
-        #        ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
-        # then migrate as usual
-        #prograde_bh_locations_new = type1.type1_migration(opts.mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, opts.timestep, ratio_heat_mig_torques, opts.trap_radius, prograde_bh_orb_ecc,opts.crit_ecc)
-        
-
         #Orbital inclinations
         prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
         #print("Prograde orbital inclinations")
@@ -358,23 +322,17 @@ def main():
         # Multiple AGN episodes:
         # If you want to replace all the prograde BH with prior BH from a previous AGN episode uncomment out the lines below:
         # 2 of 2
-        #Start un-commenting out here!
+        #Start un-commenting out here! Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
         #num_of_progrades = prograde_bh_locations.size
         #prior_indices = setupdiskblackholes.setup_prior_blackholes_indices(rng,num_of_progrades,prior_radii)
-        #prior_indices = prior_indices.astype('int32')
-        #print("old bh locs",prograde_bh_locations)
-        #print("prior indices",prior_indices)
-        #test_prograde_bh_locations = prior_radii[prior_indices]
-        #test_prograde_bh_masses = prior_masses[prior_indices]
-        #test_prograde_bh_spins = prior_spins[prior_indices]
-        #test_prograde_bh_spin_angles = prior_spin_angles[prior_indices]
-        #test_prograde_bh_gens = prior_gens[prior_indices]
-        #print("test_output",test_prograde_bh_gens)
-        #prograde_bh_locations = test_prograde_bh_locations
-        #prograde_bh_masses = test_prograde_bh_masses
-        #prograde_bh_spins = test_prograde_bh_spins
-        #prograde_bh_spin_angles = test_prograde_bh_spin_angles
-        #prograde_bh_generations = test_prograde_bh_gens
+        #prior_indices = prior_indices.astype('int32') 
+        #prograde_bh_locations = prior_radii[prior_indices]
+        #prograde_bh_masses = prior_masses[prior_indices]
+        #prograde_bh_spins = prior_spins[prior_indices]
+        #prograde_bh_spin_angles = prior_spin_angles[prior_indices]
+        #prograde_bh_generations = prior_gens[prior_indices] 
+        #prior_ecc_factor = 0.3
+        #prograde_bh_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(rng,prior_ecc_factor,num_of_progrades)
         # Finish un-commenting out here!
 
         # Start Loop of Timesteps
@@ -410,7 +368,7 @@ def main():
                 n_timestep_index +=1
 
             #Order of operations: 
-            # No migration until orbital eccentricity damped to e_crit (To do: actually should be h)
+            # No migration until orbital eccentricity damped to e_crit 
             # 1. check orb. eccentricity to see if any prograde_bh_location BH have orb. ecc. <e_crit.
             #    Create array prograde_bh_location_ecrit for those (mask prograde_bh_locations?)
             #       If yes, migrate those BH.
@@ -425,7 +383,7 @@ def main():
             else:
                 ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
             # then migrate as usual
-            #print("TIME=", time_passed, prograde_bh_locations)
+            
             prograde_bh_locations = type1.type1_migration(
                 opts.mass_smbh,
                 prograde_bh_locations,
@@ -438,7 +396,7 @@ def main():
                 prograde_bh_orb_ecc,
                 opts.crit_ecc
             )
-            #print("NEW locations",prograde_bh_locations)
+            
             # Accrete
             prograde_bh_masses = changebhmass.change_mass(
                 prograde_bh_masses,
@@ -455,8 +413,7 @@ def main():
                 prograde_bh_orb_ecc,
                 opts.crit_ecc,
             )
-            #if time_passed < 1.e5:
-            #    print("SPINS",prograde_bh_spins)
+            
             
             # Torque spin angle
             prograde_bh_spin_angles = changebh.change_spin_angles(
