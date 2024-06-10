@@ -106,6 +106,8 @@ def nal_cdf(fname_nal,n=1000):
             eta =       np.append(eta, _eta).flatten()
             chi_eff =   np.append(chi_eff, _chi_eff).flatten()
             M =         np.append(M, _M).flatten()
+    chi_eff[chi_eff > 1.] = 1.
+    chi_eff[chi_eff < -1.] = -1.
     mc, mc_cdf = simple_cdf(mc)
     eta, eta_cdf = simple_cdf(eta)
     chi_eff, chi_eff_cdf = simple_cdf(chi_eff)
@@ -130,6 +132,8 @@ def plot_cdf(merger_dict, label, fname):
     plt.style.use('bmh')
     fig, ax = plt.subplots()
     ax.plot(x, y)
+    ax.set_xlabel(label)
+    ax.set_ylabel("CDF")
     plt.savefig(fname)
     plt.close()
 
@@ -142,6 +146,8 @@ def plot_nal_cdf(merger_dict, label, fname, nal_dict):
     fig.suptitle(label)
     ax.plot(x, y, label="mcfacts")
     ax.plot(nal_dict[label], nal_dict["%s_cdf"%(label)], label="GWTC-2")
+    ax.set_xlabel(label)
+    ax.set_ylabel("CDF")
     fig.legend()
     plt.savefig(fname)
     plt.close()
