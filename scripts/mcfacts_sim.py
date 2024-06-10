@@ -153,18 +153,6 @@ def arg():
                 F.write(line)
     return opts
 
-# Multiple AGN episodes:
-# If you want to use the output of a previous AGN simulation as an input to another AGN phase
-# Make sure you have a file 'recipes/postagn_bh_pop1.dat' so that ReadInputs can take it in.
-# Then un-comment this line 
-# 1 of 2. Search for Multiple AGN episodes below for 2 of 2.
-#Start un-commenting out here!
-#prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
-#        = ReadInputs.ReadInputs_prior_mergers()
-#End un-commenting out here!
-
-#Now can use these in place of prograde_bh_locations,prograde_bh_masses,prograde_bh_spins,prograde_bh_spin_angles
-
 
 def main():
     """
@@ -323,20 +311,24 @@ def main():
         merged_bh_array = np.zeros((integer_nprop_merge,integer_test_bin_number))
         
         # Multiple AGN episodes:
-        # If you want to replace all the prograde BH with prior BH from a previous AGN episode uncomment out the lines below:
-        # 2 of 2
-        #Start un-commenting out here! Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
-        #num_of_progrades = prograde_bh_locations.size
-        #prior_indices = setupdiskblackholes.setup_prior_blackholes_indices(rng,num_of_progrades,prior_radii)
-        #prior_indices = prior_indices.astype('int32') 
-        #prograde_bh_locations = prior_radii[prior_indices]
-        #prograde_bh_masses = prior_masses[prior_indices]
-        #prograde_bh_spins = prior_spins[prior_indices]
-        #prograde_bh_spin_angles = prior_spin_angles[prior_indices]
-        #prograde_bh_generations = prior_gens[prior_indices] 
-        #prior_ecc_factor = 0.3
-        #prograde_bh_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(rng,prior_ecc_factor,num_of_progrades)
-        # Finish un-commenting out here!
+        # If you want to use the output of a previous AGN simulation as an input to another AGN phase
+        # Make sure you have a file 'recipes/postagn_bh_pop1.dat' so that ReadInputs can take it in
+        # and in your .ini file set switch prior_agn = 1.0.
+        # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
+        if opts.prior_agn == 1.0:
+            
+            prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
+                = ReadInputs.ReadInputs_prior_mergers()
+            num_of_progrades = prograde_bh_locations.size
+            prior_indices = setupdiskblackholes.setup_prior_blackholes_indices(rng,num_of_progrades,prior_radii)
+            prior_indices = prior_indices.astype('int32') 
+            prograde_bh_locations = prior_radii[prior_indices]
+            prograde_bh_masses = prior_masses[prior_indices]
+            prograde_bh_spins = prior_spins[prior_indices]
+            prograde_bh_spin_angles = prior_spin_angles[prior_indices]
+            prograde_bh_generations = prior_gens[prior_indices] 
+            prior_ecc_factor = 0.3
+            prograde_bh_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(rng,prior_ecc_factor,num_of_progrades)
 
         # Start Loop of Timesteps
         print("Start Loop!")

@@ -144,6 +144,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         Switch (1) turns dynamical encounters between embedded BH on.
     de : float
         Average energy change per strong interaction. de can be 20% in cluster interactions. May be 10% on average (with gas)                
+    prior_agn : int
+        Switch (1) uses BH from a prior AGN episode (in file /recipes/postagn_bh_pop1.dat)
     """
 
     config = ConfigParser.ConfigParser()
@@ -158,6 +160,44 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     # convert to dict
     input_variables = dict(config.items('top'))
 
+
+    # Dictionary of types
+    input_types = {
+        'disk_model_name' : str,
+        'mass_smbh' : float,
+        'trap_radius' : float,
+        'disk_outer_radius' : float,
+        'alpha' : float,
+        'n_iterations' : int,
+        'mode_mbh_init' : float,
+        'max_initial_bh_mass' : float,
+        'mbh_powerlaw_index' : float,
+        'mu_spin_distribution' : float,
+        'sigma_spin_distribution' : float,
+        'spin_torque_condition' : float,
+        'frac_Eddington_ratio' : float,
+        'max_initial_eccentricity' : float,
+        'timestep' : float,
+        'number_of_timesteps' : int,
+        'retro' : int,
+        'feedback' : int,
+        'capture_time' : float,
+        'outer_capture_radius' : float,
+        'crit_ecc' : float,
+        'r_nsc_out' : float,
+        'M_nsc' : float,
+        'r_nsc_crit' : float,
+        'nbh_nstar_ratio' : float,
+        'mbh_mstar_ratio' : float,
+        'nsc_index_inner' : float,
+        'nsc_index_outer' : float,
+        'h_disk_average' : float,
+        'dynamic_enc' : int,
+        'de' : float,
+        'orb_ecc_damping' : int,
+        'prior_agn' : int,
+    }
+ main
 
     # try to pretty-convert these to quantites
     for name in input_variables:
@@ -322,8 +362,8 @@ def ReadInputs_prior_mergers(fname='recipes/postagn_bh_pop1.dat', verbose=False)
     """
 
     
-    with open('recipes/postagn_bh_pop1.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('recipes/postagn_bh_pop1.dat', unpack = True)
+    with open('../recipes/postagn_bh_pop1.dat') as filedata:
+        prior_mergers_file = np.genfromtxt('../recipes/postagn_bh_pop1.dat', unpack = True)
     
     
     #Clean the file of iteration lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
