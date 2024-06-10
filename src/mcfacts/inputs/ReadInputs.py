@@ -106,6 +106,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         Switch (1) turns dynamical encounters between embedded BH on.
     de : float
         Average energy change per strong interaction. de can be 20% in cluster interactions. May be 10% on average (with gas)                
+    prior_agn : int
+        Switch (1) uses BH from a prior AGN episode (in file /recipes/postagn_bh_pop1.dat)
     """
 
     config = ConfigParser.ConfigParser()
@@ -154,6 +156,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         'dynamic_enc' : int,
         'de' : float,
         'orb_ecc_damping' : int,
+        'prior_agn' : int,
     }
 
     # try to pretty-convert these to quantites
@@ -297,8 +300,8 @@ def ReadInputs_prior_mergers(fname='recipes/postagn_bh_pop1.dat', verbose=False)
     """
 
     
-    with open('recipes/postagn_bh_pop1.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('recipes/postagn_bh_pop1.dat', unpack = True)
+    with open('../recipes/postagn_bh_pop1.dat') as filedata:
+        prior_mergers_file = np.genfromtxt('../recipes/postagn_bh_pop1.dat', unpack = True)
     
     
     #Clean the file of iteration lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
