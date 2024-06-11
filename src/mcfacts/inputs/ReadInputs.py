@@ -197,7 +197,6 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         'orb_ecc_damping' : int,
         'prior_agn' : int,
     }
- main
 
     # try to pretty-convert these to quantites
     for name in input_variables:
