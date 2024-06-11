@@ -143,7 +143,7 @@ class AGNObject(object):
         for attr in vars(self).keys():
             setattr(self,attr,getattr(self,attr)[idx_change])
 
-    def locate(self,idx=None):
+    def locate(self, idx=None):
         """
         Returns objects at specified indices
         """
@@ -157,16 +157,14 @@ class AGNObject(object):
         idx_full = np.zeros(len(self.mass),dtype=bool)
         idx_full[idx] = True
 
-    def sort(self,sort_attr=None):
+    def sort(self, sort_attr=None):
         #Takes in one attribute array and sorts the whole class by that array
         #Sorted array indices
         sort_idx = np.argsort(sort_attr)
 
         #Now apply these to each of the attributes
         for attr in vars(self).keys():
-            setattr(self,attr,getattr(self,attr)[sort_idx])
-
-
+            setattr(self, attr, getattr(self, attr)[sort_idx])
 
     def return_params(self):
         """
