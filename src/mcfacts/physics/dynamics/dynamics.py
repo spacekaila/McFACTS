@@ -1014,3 +1014,64 @@ def bin_recapture(bindex,bin_array,timestep):
         bin_array[17,j] = bin_orbital_inclinations[j]
 
     return bin_array
+
+def bh_near_smbh(mass_smbh,prograde_bh_locations,prograde_bh_masses,prograde_bh_orb_ecc,timestep):
+    """Test whether there are any BH near SMBH. Flag if anything within min_safe_distance( default=50r_g) of SMBH.
+    Time to decay into SMBH can be parameterized from Peters(1964) as:
+    t_gw =38Myr (1-e^2)(7/2) (a/50r_{g})^4 (M_smbh/10^8Msun)^3 (m_bh/10Msun)^{-1}
+
+    Args:
+        mass_smbh (float): Mass of SMBH in units Msun
+        prograde_bh_locations (array): 1-d array of singleton BH locations in disk (in units of r_g)
+        prograde_bh_masses (array): 1-d array of singleton BH masses (in units of Msun)
+        prograde_bh_orb_ecc (array): 1-d array of single BH orbital eccentricities. 
+    """
+    num_bh = prograde_bh_locations.shape[0]
+
+    #Distance that we are interested in (units of r_g), default is 50r_g.
+    min_safe_distance = 50.0
+
+    for i in range(0,num_bh):
+        if prograde_bh_locations[i] < min_safe_distance:
+            #print("EMRI alert!", prograde_bh_locations[i])
+            ecc_factor = (1.0 - (prograde_bh_orb_ecc[i])**(2.0))**(7/2)
+            dist_factor = (prograde_bh_locations[i]/50.0)**(4)
+            mass_factor = (10.0/prograde_bh_masses[i])
+            smbh_factor = (mass_smbh/1.e8)**(3)
+            #Decay time in units Myrs
+            decay_time = 38.0*ecc_factor*dist_factor*mass_factor*smbh_factor
+            #timestep is in units of yrs, so ratio decay_time*1.e6 (yrs)/timestep(yrs) = no. of timesteps to decay into SMBH
+            decay_time_factor = decay_time*1.e6/timestep
+            decrement = (1.0-(1/decay_time_factor))
+            #if decrement < 0.9:
+            #    print("EMRI DECREMENT!!", decrement)
+            # So drop prograde_bh_location[i] by value (1/decay_time_factor) on this timestep
+            new_location = decrement*prograde_bh_locations[i]
+            #print(new_location)
+            if new_location <1.0:
+                new_location =1.0
+
+            prograde_bh_locations[i] = new_location
+    
+    return prograde_bh_locations
+
+def bbh_near_smbh(mass_smbh,bindex, binary_bh_array):
+    """Test whether there are any BH near SMBH. Flag if anything within min_safe_distance( default=50r_g) of SMBH.
+
+    Args:
+        mass_smbh (float): Mass of SMBH in units Msun
+        bindex (int): Number of binaries
+        binary_bh_array (array): n x m array of binary BH properies (including BBH c.o.m [8,:]) 
+    """
+    num_bbh = bindex
+
+    #Distance that we are interested in (units of r_g), default is 50r_g.
+    min_safe_distance = 50.0
+    
+    for j in range(0,num_bbh):
+        if binary_bh_array[9,j] < min_safe_distance:
+            print("BBH EMRI alert!", binary_bh_array[9,j])
+
+    #Maybe do something to the binary array (depending on how close the BBH is to SMBH)
+
+    return binary_bh_array    
