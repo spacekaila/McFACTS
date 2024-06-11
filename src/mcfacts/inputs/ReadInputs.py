@@ -7,6 +7,42 @@ from io import StringIO
 from importlib import resources as impresources
 from mcfacts.inputs import data
 
+# Dictionary of types
+INPUT_TYPES = {
+    'disk_model_name' : str,
+    'mass_smbh' : float,
+    'trap_radius' : float,
+    'disk_outer_radius' : float,
+    'max_disk_radius_pc' : float,
+    'alpha' : float,
+    'n_iterations' : int,
+    'mode_mbh_init' : float,
+    'max_initial_bh_mass' : float,
+    'mbh_powerlaw_index' : float,
+    'mu_spin_distribution' : float,
+    'sigma_spin_distribution' : float,
+    'spin_torque_condition' : float,
+    'frac_Eddington_ratio' : float,
+    'max_initial_eccentricity' : float,
+    'timestep' : float,
+    'number_of_timesteps' : int,
+    'retro' : int,
+    'feedback' : int,
+    'capture_time' : float,
+    'outer_capture_radius' : float,
+    'crit_ecc' : float,
+    'r_nsc_out' : float,
+    'M_nsc' : float,
+    'r_nsc_crit' : float,
+    'nbh_nstar_ratio' : float,
+    'mbh_mstar_ratio' : float,
+    'nsc_index_inner' : float,
+    'nsc_index_outer' : float,
+    'h_disk_average' : float,
+    'dynamic_enc' : int,
+    'de' : float,
+    'orb_ecc_damping' : int,
+}
 
 def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     """This function reads your input choices from a file user specifies or
@@ -73,6 +109,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         0th element of disk_model_radius_array (units of r_g)
     disk_outer_radius : float
         final element of disk_model_radius_array (units of r_g)
+    max_disk_radius_pc: float
+        Maximum disk size in parsecs (0. for off)
     surface_density_array : float array
         Surface density corresponding to radii in disk_model_radius_array (units of kg/m^2)
         Yes, it's in SI not cgs. Get over it. Kisses.
@@ -122,6 +160,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     # convert to dict
     input_variables = dict(config.items('top'))
 
+
     # Dictionary of types
     input_types = {
         'disk_model_name' : str,
@@ -158,11 +197,12 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         'orb_ecc_damping' : int,
         'prior_agn' : int,
     }
+ main
 
     # try to pretty-convert these to quantites
     for name in input_variables:
-        if name in input_types:
-            input_variables[name] = input_types[name](input_variables[name])
+        if name in INPUT_TYPES:
+            input_variables[name] = INPUT_TYPES[name](input_variables[name])
         elif '.' in input_variables[name]:
             input_variables[name]=float(input_variables[name])
         elif input_variables[name].isdigit():
@@ -175,9 +215,9 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
             input_variables[name] = input_variables[name].strip("'")
 
     # Make sure you got all of the ones you were expecting
-    for name in input_types:
+    for name in INPUT_TYPES:
         assert name in input_variables
-        assert type(input_variables[name]) == input_types[name]
+        assert type(input_variables[name]) == INPUT_TYPES[name]
 
     if verbose:
         print("input_variables:")
@@ -185,6 +225,28 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
             print(key, input_variables[key], type(input_variables[key]))
         print("I put your variables where they belong")
 
+    ## Check outer disk radius in parsecs
+    # Scale factor for parsec distance in r_g
+    pc_dist = 2.e5*((input_variables['mass_smbh']/1.e8)**(-1.0))
+    # Calculate outer disk radius in pc
+    disk_outer_radius_pc = input_variables['disk_outer_radius']/pc_dist
+    # Check max_disk_radius_pc argument
+    if input_variables['max_disk_radius_pc'] == 0.:
+        # Case 1: max_disk_radius_pc is disabled
+        pass
+    elif input_variables['max_disk_radius_pc'] < 0.:
+        # Case 2: max_disk_radius_pc is negative
+        # Always assign disk_outer_radius to given distance in parsecs
+        input_variables['disk_outer_radius'] = -1. * input_variables['max_disk_radius_pc'] * pc_dist
+    else:
+        # Case 3: max_disk_radius_pc is positive
+        # Cap disk_outer_radius at given value
+        if disk_outer_radius_pc > input_variables['max_disk_radius_pc']:
+            # calculate scale factor
+            disk_radius_scale = input_variables['max_disk_radius_pc'] / disk_outer_radius_pc
+            # Adjust disk_outer_radius as needed
+            input_variables['disk_outer_radius'] = input_variables['disk_outer_radius'] * disk_radius_scale
+        
     # open the disk model surface density file and read it in
     # Note format is assumed to be comments with #
     #   density in SI in first column

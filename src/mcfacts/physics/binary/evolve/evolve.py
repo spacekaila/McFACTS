@@ -33,7 +33,7 @@ def change_bin_mass(bin_array, frac_Eddington_ratio, mass_growth_Edd_rate, times
     for j in range(0, bindex): 
             if bin_array[11,j] < 0:
                 #do nothing -merger happened!
-                print()
+                pass
             else:            
                 #for i in range(0, integer_nbinprop):
                 temp_bh_mass_1 = bin_array[2,j] 
@@ -63,7 +63,7 @@ def change_bin_spin_magnitudes(bin_array, frac_Eddington_ratio, spin_torque_cond
     for j in range(0, bindex):
             if bin_array[11,j] < 0:
                 #do nothing -merger happened!
-                print()
+                pass
             else:
                 #for i in range(0, integer_nbinprop):
                 temp_bh_spin_1 = bin_array[4,j] 
@@ -97,7 +97,7 @@ def change_bin_spin_angles(bin_array, frac_Eddington_ratio, spin_torque_conditio
     for j in range(0, bindex):
             if bin_array[11,j] < 0:
                 #do nothing -merger happened!
-                print()
+                pass
             else:
             #for i in range(0, integer_nbinprop):
                 temp_bh_spin_angle_1 = bin_array[6,j] 
@@ -249,7 +249,7 @@ def com_migration(bin_array, disk_surf_model, disk_aspect_ratio_model, timestep,
     for j in range(0,bindex):
             if bin_array[11,j] < 0:
                 #do nothing -merger happened!
-                print()
+                pass
             else:
             #for i in range(0, integer_nbinprop):
                 temp_bh_loc_1 = bin_array[0,j]
@@ -445,7 +445,7 @@ def bin_migration(mass_smbh, bin_array, disk_surf_model, disk_aspect_ratio_model
             bin_array[9,i] = bh_new_locations[i]
         #If bin orb ecc not circularized, no migration    
         if bin_array[18,i] > crit_ecc:
-            print()
+            pass
 
     #Update location of BH 1 and BH 2
     #bin_array[0,:] = bin_array[0,:] - dist_travelled
