@@ -508,6 +508,64 @@ def evolve_gw(bin_array,bin_index,mass_smbh):
         #print("mbin(kg),sep(m),m_chirp(kg),rg_chirp,d_obs,nu,strain",temp_bin_mass_kg,temp_bin_separation_meters,m_chirp,rg_chirp,d_obs,nu_gw,strain)
     return bin_array
 
+def evolve_emri_gw(inner_disk_locations,inner_disk_masses,mass_smbh):
+    """This function evaluates the EMRI gravitational wave frequency and strain at the end of each timestep
+    Assume binary is located at z=0.1=422Mpc for now.
+    """
+    # Set up binary GW frequency
+    # nu_gw = 1/pi *sqrt(GM_bin/a_bin^3)
+    num_emris = np.size(inner_disk_locations)
+
+    char_strain=np.zeros(num_emris)
+    nu_gw=np.zeros(num_emris)
+
+    m1 = mass_smbh
+    for i in range(0,num_emris):
+        m2 = inner_disk_masses[i]
+        temp_bin_mass = m1 + m2
+        temp_bin_separation = inner_disk_locations[i]
+        #1rg =1AU=1.5e11m for 1e8Msun
+        rg = 1.5e11*(mass_smbh/1.e8)
+        m_sun = 2.0e30
+        temp_mass_1_kg = m_sun*m1
+        temp_mass_2_kg = m_sun*m2
+        temp_bin_mass_kg = m_sun*temp_bin_mass
+        temp_bin_separation_meters = temp_bin_separation*rg
+        
+        # Set up binary strain of GW
+        # h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
+        # where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
+        
+        m_chirp = ((temp_mass_1_kg*temp_mass_2_kg)**(3/5))/(temp_bin_mass_kg**(1/5))
+        rg_chirp = (scipy.constants.G * m_chirp)/(scipy.constants.c**(2.0))
+        # If separation is less than rg_chirp then cap separation at rg_chirp.
+        if temp_bin_separation_meters < rg_chirp:
+            temp_bin_separation_meters = rg_chirp
+
+        nu_gw[i] = (1.0/scipy.constants.pi)*np.sqrt(temp_bin_mass_kg*scipy.constants.G/(temp_bin_separation_meters**(3.0)))
+
+        # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc 
+        # 1Mpc = 3.1e22m. 
+        Mpc = 3.1e22
+        # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
+        # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
+        d_obs = 421*Mpc
+        strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw[i]*rg_chirp/scipy.constants.c)**(2/3)
+        # But power builds up in band over multiple cycles! 
+        # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
+        strain_factor = 1
+        if nu_gw[i] < 10**(-6):
+            strain_factor = np.sqrt(nu_gw*np.pi*(10**7)/8)
+
+        if nu_gw[i] > 10**(-6):
+            strain_factor = 4.e3    
+        # char amplitude = sqrt(N/8)h_0 and N=freq*1yr for approx const. freq. sources over ~~yr.
+        # So in LISA band
+        #For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt)
+        char_strain[i] = strain_factor*strain
+        #print("mbin(kg),sep(m),m_chirp(kg),rg_chirp,d_obs,nu,strain",temp_bin_mass_kg,temp_bin_separation_meters,m_chirp,rg_chirp,d_obs,nu_gw,strain)
+    return char_strain,nu_gw
+
 def ionization_check(bin_array, bin_index, mass_smbh):
     """This function tests whether a binary has been softened beyond some limit.
         Returns index of binary to be ionized. Otherwise returns -1.

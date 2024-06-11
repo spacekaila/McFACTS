@@ -19,11 +19,15 @@ from mcfacts.vis import data
 def arg():
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument("--fname-emris",
+        default="output_mergers_emris.dat",
+        type=str, help="output_emris file")
     parser.add_argument("--fname-mergers",
         default="output_mergers_population.dat",
         type=str, help="output_mergers file")
     opts = parser.parse_args()
     assert os.path.isfile(opts.fname_mergers)
+    assert os.path.isfile(opts.fname_emris)
     return opts
 
 ######## Main ########
@@ -33,6 +37,7 @@ def main():
     # need section for loading data
     opts = arg()
     mergers = np.loadtxt(opts.fname_mergers, skiprows=2)
+    emris = np.loadtxt(opts.fname_emris, skiprows=2)
 
     mask = np.isfinite(mergers[:,2])
     mergers = mergers[mask]
@@ -228,13 +233,6 @@ def main():
     # Access columns as df[0], df[1], ...
     f_H1 = dfh1[0]
     h_H1 = dfh1[1]
-    #f_L1 = dfl1[0]
-    #h_L1 = dfl1[1]
-
-    #f_H1 = dfh1[0].to_numpy()
-    #h_H1 = dfh1[1].to_numpy()
-    #f_L1 = dfl1[0].to_numpy()
-    #h_L1 = dfl1[1].to_numpy()
 
     # create LISA object
     lisa = li.LISA() 
@@ -251,16 +249,21 @@ def main():
     ax.set_ylabel(r'h', fontsize=20, labelpad=10)
     ax.tick_params(axis='both', which='major', labelsize=20)
 
-    ax.set_xlim(1.0e-5, 1e4)
+    ax.set_xlim(1.0e-7, 1e4)
     ax.set_ylim(1.0e-24, 1.0e-15)
 
     ax.loglog(f, np.sqrt(f*Sn),label = 'LISA Sensitivity') # plot the characteristic strain
     ax.loglog(f_H1, h_H1,label = 'LIGO O3, H1 Sensitivity') # plot the characteristic strain
+    ax.scatter(emris[:,6],emris[:,5])
+    ax.set_yscale('log')
+    ax.set_xscale('log')
     #ax.loglog(f_L1, h_L1,label = 'LIGO O3, L1 Sensitivity') # plot the characteristic strain
 
     #ax.loglog(f_gw,h,color ='black', label='GW150914')
 
     ax.legend()
+    ax.set_xlabel(r'f [Hz]', fontsize=20, labelpad=10)
+    ax.set_ylabel(r'h', fontsize=20, labelpad=10)
     plt.savefig('./gw_strain.png', format='png')
     plt.close()
 
