@@ -31,7 +31,7 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
             [7,j]: float
             spin angle of obj 2 wrt disk gas in radians at time t
             [8,j]: float
-            binary semi-major axis in units of r_g of SMBH
+            binary semi-major axis around c.o.m. in units of r_g of SMBH
             [9,j]: float
             binary center of mass location wrt SMBH in r_g
             [10,j]: float
