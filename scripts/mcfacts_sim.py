@@ -176,9 +176,15 @@ def main():
     
     emris_array_pop = []
 
+    gw_array_pop = []
+
     temp_emri_array = np.zeros(7)
 
     emri_array = np.zeros(7)
+
+    temp_bbh_gw_array = np.zeros(7)
+
+    bbh_gw_array = np.zeros(7)
 
     for iteration in range(opts.n_iterations):
         print("Iteration", iteration)
@@ -312,7 +318,12 @@ def main():
         
         num_of_emri_properties = 7
         nemri = 0
-        
+
+        #Set up BBH gw array with properties we want to record (iteration, time, sep, Mb, eb(around c.o.m.),h_char,f_gw)
+        #Set up empty list of indices of BBH to track
+        bbh_gw_indices = []
+        num_of_bbh_gw_properties = 7
+        nbbhgw = 0
 
         # Set up empty initial Binary array
         # Initially all zeros, then add binaries plus details as appropriate
@@ -611,7 +622,73 @@ def main():
                         opts.trap_radius,
                         opts.crit_ecc
                     )
-            
+
+                    # Test to see if any binaries separation is O(1r_g)
+                    # If so, track them for GW freq, strain.
+                    #Minimum BBH separation (in units of r_g)
+                    min_bbh_gw_separation = 2.0
+                    # If there are binaries AND if any separations are < min_bbh_gw_separation
+                    bbh_gw_indices = np.where( (binary_bh_array[8,:] < min_bbh_gw_separation) & (binary_bh_array[8,:]>0))
+                    #print("bbh_gw_indices",bbh_gw_indices)
+                    # If bbh_indices exists (ie is not empty)
+                    if bbh_gw_indices:
+                        #print("gw indices",bbh_gw_indices,binary_bh_array[8,bbh_gw_indices])
+                        bbh_gw_strain,bbh_gw_freq = evolve.bbh_gw_params(
+                            binary_bh_array, 
+                            bbh_gw_indices,
+                            opts.mass_smbh
+                        )
+                        #print("BBH strain, freq",bbh_gw_strain,bbh_gw_freq)
+                        num_bbh_gw_tracked = np.size(bbh_gw_indices,1)
+                        #print("N_tracked",num_bbh_gw_tracked)
+                        nbbhgw = nbbhgw + num_bbh_gw_tracked
+                        #if num_bbh_gw_tracked:
+                        #    print("num_bbh_gw_tracked",num_bbh_gw_tracked)
+                        if num_bbh_gw_tracked == 0:        
+                            index = bbh_gw_indices[0]
+                            #print("index",index)
+                            # If index is empty (=[]) then assume we're tracking 1 BBH only, i.e. the 0th element.
+                            if not index:
+                               index = 0
+                               #print("actual index used",index)
+
+                            temp_bbh_gw_array[0] = iteration
+                            temp_bbh_gw_array[1] = time_passed
+                            temp_bbh_gw_array[2] = binary_bh_array[8,index]
+                            temp_bbh_gw_array[3] = binary_bh_array[2,index] + binary_bh_array[3,index]
+                            temp_bbh_gw_array[4] = binary_bh_array[13,index]
+                            temp_bbh_gw_array[5] = bbh_gw_strain
+                            temp_bbh_gw_array[6] = bbh_gw_freq
+                            #temp_bbh_gw_array[2] = binary_bh_array[8,index][0]
+                            #temp_bbh_gw_array[3] = binary_bh_array[2,index][0] + binary_bh_array[3,index][0]
+                            #temp_bbh_gw_array[4] = binary_bh_array[13,index][0]
+                            #temp_bbh_gw_array[5] = bbh_gw_strain[0]
+                            #temp_bbh_gw_array[6] = bbh_gw_freq[0]
+                            #print("temp_bbh_gw_array",temp_bbh_gw_array)
+                            bbh_gw_array = np.vstack((bbh_gw_array,temp_bbh_gw_array))
+                            
+                        if num_bbh_gw_tracked > 0:
+                            for i in range(0,num_bbh_gw_tracked-1):
+                                print("num_gw_tracked",num_bbh_gw_tracked)
+                                print("i,bbh_gw_indices",i,bbh_gw_indices[i])
+                                index = bbh_gw_indices[i][0]
+                                if (i>0) and num_bbh_gw_tracked >1:
+                                    index = bbh_gw_indices[i][1]
+                                
+                                print("index",index)
+                                #Record: iteration, time_passed, bin sep, bin_mass, bin_ecc(around c.o.m.),bin strain, bin freq       
+                                temp_bbh_gw_array[0] = iteration
+                                temp_bbh_gw_array[1] = time_passed
+                                temp_bbh_gw_array[2] = binary_bh_array[8,index]
+                                temp_bbh_gw_array[3] = binary_bh_array[2,index] + binary_bh_array[3,index]
+                                temp_bbh_gw_array[4] = binary_bh_array[13,index]
+                                temp_bbh_gw_array[5] = bbh_gw_strain[i]
+                                temp_bbh_gw_array[6] = bbh_gw_freq[i]
+                                #print("temp_bbh_gw_array",temp_bbh_gw_array)
+                                bbh_gw_array = np.vstack((bbh_gw_array,temp_bbh_gw_array))
+                                #print("bbh_gw_array",bbh_gw_array)
+                            
+                    
                     #Evolve GW frequency and strain
                     binary_bh_array = evolve.evolve_gw(
                         binary_bh_array,
@@ -619,43 +696,6 @@ def main():
                         opts.mass_smbh
                     )
                     
-                    #Commented out for now
-                    #for k in range(0, bin_index):
-                    #    print("Time passed, BBH GW: sep., freq, strain", time_passed, binary_bh_array[8,k], binary_bh_array[19,k],binary_bh_array[20,k])
-                    
-                    # 1st entry each row of gw_data_array is time passed. time_passed=(i,0) 
-                    # Then update (nu,h) for each binary 
-                    # Say n_its = 0 and we have 2 binaries so bin_index =2 and n_ever_made =2 
-                    # This is always true on the first opts.timestep where bin_index == n_ever_made and no losses (ionizations/mergers) yet
-                    # Every timestep thereafter, once there's been any loss, (merger or ionization)
-                    # n_ever_made > bin_index                   
-                    # So output should look like
-                    # (n_its,0)=time_passed
-                    # (n_its,1) =nu_1 (n_its,2) = h_1
-                    # (n_its,3) =nu_2 (n_its,4) = h_2   
-                    #  or : 0 nu_1 h_1 nu_2 h_2 0 0 0 0...                    
-                    #  So if bin_index == n_ever_made then loop over j=(0,bin_index-1) since no losses yet
-                    # Then: bin_index =2 so j goes from 0 to 1. So:
-                    # (n_its,2j+1) = nu_j (n_its,2j+2) = h_j gives:
-                    # (n_its,1) = nu_0, (n_its,2) = h_0, (n_its,3)=nu_1, (n_its,4) = h_1
-                    # Once losses: n_ever_made > bin_index  
-                    # On time step, n_its =i say binary 1 is ionized
-                    # Need to keep track of index of ionized binary
-                    # So bin_index is now 1 and n_ever_made =2 
-                    # Want output to be:
-                    # 1 0 0 nu_2 h_2 0 0 ....                    
-                    # (n_its,0) = time_passed
-                    # (n_its,1) = 0 (n_its,2) = 0
-                    # (n_its,3) = nu_2 (n_its,4) = h_2 
-                    #(nu_i,h_i) go to (0,2i), (0,2i+1) for i in range(1,bindex+1)
-                    
-                    #Commented out testing of gw-outputs for now
-                    #gw_data_array[n_its,0] = time_passed
-                    #for j in range(0, nbin_ever_made_index):
-                    #    for k in range(0, bin_index):
-                            # 
-                    #        gw_data_array[n_its,2*k] = binary_bh_array[19,k]
-                    #        gw_data_array[n_its,(2*k + 1)] = binary_bh_array[20,k] 
                     #Check and see if merger flagged during hardening (row 11, if negative)
                     merger_flags = binary_bh_array[11,:]
                     any_merger = np.count_nonzero(merger_flags)
@@ -1010,9 +1050,8 @@ def main():
         print("Nbh_disk",n_bh)
     
         total_emris = emri_array.shape[0]
-        #print("Total emris =",total_emris)
-        #with open('emri.dat','wb') as f:
-        #    np.savetxt(f,emri_array) 
+        total_bbh_gws = bbh_gw_array.shape[0]
+
             
         # Write out all the singletons after AGN episode, so can use this as input to another AGN phase.
         # Want to store [Radius, Mass, Spin mag., Spin. angle, gen.]
@@ -1055,6 +1094,7 @@ def main():
 
         total_emri_array = np.zeros((total_emris,num_of_emri_properties))
         surviving_bh_array = np.zeros((total_bh_survived,num_properties_stored))
+        total_bbh_gw_array = np.zeros((total_bbh_gws,num_of_bbh_gw_properties))
         #print("BH locs,bin_r1,bin_r2",prograde_bh_locations,bin_r1,bin_r2)
         prograde_bh_locations = np.append(prograde_bh_locations,bin_r1)
         prograde_bh_locations = np.append(prograde_bh_locations,bin_r2)
@@ -1076,6 +1116,7 @@ def main():
         surviving_bh_array[:,4] = prograde_bh_generations
 
         total_emri_array = emri_array
+        total_bbh_gw_array = bbh_gw_array
         if True and number_of_mergers > 0: #verbose:
                 print(merged_bh_array[:,:number_of_mergers].T)
 
@@ -1086,10 +1127,12 @@ def main():
         iteration_row = np.repeat(iteration, number_of_mergers)
         survivor_row = np.repeat(iteration,num_properties_stored)
         emri_row = np.repeat(iteration,num_of_emri_properties)
+        gw_row = np.repeat(iteration,num_of_bbh_gw_properties)
         merged_bh_array_pop.append(np.concatenate((iteration_row[np.newaxis], merged_bh_array[:,:number_of_mergers])).T)
         #surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:,:total_bh_survived])).T)
         surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived,:])))
         emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
+        gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
      # save all mergers from Monte Carlo
     merger_pop_field_names = "iter " + merger_field_names # Add "Iter" to field names
     population_header = f"Initial seed: {opts.seed}\n{merger_pop_field_names}" # Include initial seed
@@ -1097,8 +1140,10 @@ def main():
     population_save_name = f"{basename}_population{extension}"
     survivors_save_name = f"{basename}_survivors{extension}"
     emris_save_name = f"{basename}_emris{extension}"
+    gws_save_name = f"{basename}_lvk{extension}"
     np.savetxt(os.path.join(opts.work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
     np.savetxt(os.path.join(opts.work_directory, survivors_save_name), np.vstack(surviving_bh_array_pop))
     np.savetxt(os.path.join(opts.work_directory,emris_save_name),np.vstack(emris_array_pop))
+    np.savetxt(os.path.join(opts.work_directory,gws_save_name),np.vstack(gw_array_pop))
 if __name__ == "__main__":
     main()

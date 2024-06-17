@@ -25,9 +25,13 @@ def arg():
     parser.add_argument("--fname-mergers",
         default="output_mergers_population.dat",
         type=str, help="output_mergers file")
+    parser.add_argument("--fname-lvk",
+        default="output_mergers_lvk.dat",
+        type=str, help="output_lvk file")
     opts = parser.parse_args()
     assert os.path.isfile(opts.fname_mergers)
     assert os.path.isfile(opts.fname_emris)
+    assert os.path.isfile(opts.fname_lvk)
     return opts
 
 ######## Main ########
@@ -38,6 +42,7 @@ def main():
     opts = arg()
     mergers = np.loadtxt(opts.fname_mergers, skiprows=2)
     emris = np.loadtxt(opts.fname_emris, skiprows=2)
+    lvk = np.loadtxt(opts.fname_lvk,skiprows=2)
 
     mask = np.isfinite(mergers[:,2])
     mergers = mergers[mask]
@@ -250,11 +255,12 @@ def main():
     ax.tick_params(axis='both', which='major', labelsize=20)
 
     ax.set_xlim(1.0e-7, 1e4)
-    ax.set_ylim(1.0e-24, 1.0e-15)
+    ax.set_ylim(1.0e-30, 1.0e-15)
 
     ax.loglog(f, np.sqrt(f*Sn),label = 'LISA Sensitivity') # plot the characteristic strain
     ax.loglog(f_H1, h_H1,label = 'LIGO O3, H1 Sensitivity') # plot the characteristic strain
     ax.scatter(emris[:,6],emris[:,5])
+    ax.scatter(lvk[:,6],lvk[:,5])
     ax.set_yscale('log')
     ax.set_xscale('log')
     #ax.loglog(f_L1, h_L1,label = 'LIGO O3, L1 Sensitivity') # plot the characteristic strain
