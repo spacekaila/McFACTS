@@ -114,6 +114,19 @@ def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
     bh_initial_orb_ecc = crit_ecc*np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_ecc
 
+def setup_disk_blackholes_arg_periapse(rng, n_bh):
+    # Return an array of BH arguments of periapse
+    # Should be fine to do a uniform distribution between 0-2pi
+    # Someday we should probably pick all the orbital variables
+    #   to be consistent with a thermal distribution or something
+    #   otherwise physically well-motivated...
+
+    integer_nbh = int(n_bh)
+    random_uniform_number = rng.random((integer_nbh,))
+    bh_initial_orb_arg_periapse = 2.0*np.pi*random_uniform_number
+
+    return bh_initial_orb_arg_periapse
+
 def setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner):
     # Return the integer number of BH in the AGN disk as calculated from NSC inputs assuming isotropic distribution of NSC orbits
     # To do: Calculate when R_disk_outer is not equal to the r_nsc_crit

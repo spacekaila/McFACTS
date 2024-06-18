@@ -254,13 +254,18 @@ def main():
             bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,opts.crit_ecc)
 
         bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng,n_bh)
+
+        bh_initial_orb_arg_periapse = setupdiskblackholes.setup_disk_blackholes_arg_periapse(rng,n_bh)
          
         bh_initial_generations = np.ones((n_bh,),dtype=int)
 
-        #Generate initial inner disk arrays for objects that end up in the inner disk. 
-        #Assume all drawn from prograde population for now.
+        # Generate initial inner disk arrays for objects that end up in the inner disk. 
+        # This is to track possible EMRIs--we're tossing things in these arrays
+        #  that end up with semi-major axis < 50rg
+        # Assume all drawn from prograde population for now.
+        #   SF: Is this assumption important here? Where does it come up?
         inner_disk_locations = []
-        inner_disk_masses =[]
+        inner_disk_masses = []
         inner_disk_spins = []
         inner_disk_spin_angles = []
         inner_disk_orb_ecc = []
