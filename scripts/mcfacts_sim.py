@@ -296,6 +296,17 @@ def main():
         prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
         #print("Prograde orbital inclinations")
 
+        # adding arg of periapse for prograde BH
+        prograde_bh_orb_arg_periapse = bh_initial_orb_arg_periapse[prograde_orb_ang_mom_indices]
+
+        # Now do retrograde BH orbiters setup
+        retrograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == -1)
+        retrograde_bh_locations = bh_initial_locations[retrograde_orb_ang_mom_indices]
+        retrograde_bh_masses = bh_initial_masses[retrograde_orb_ang_mom_indices]
+        retrograde_bh_orb_ecc = bh_initial_orb_ecc[retrograde_orb_ang_mom_indices]
+        retrograde_bh_orb_incl = bh_initial_orb_incl[retrograde_orb_ang_mom_indices]
+        retrograde_bh_orb_arg_periapse = bh_initial_orb_arg_periapse[retrograde_orb_ang_mom_indices]
+
         # Housekeeping: Fractional rate of mass growth per year at 
         # the Eddington rate(2.3e-8/yr)
         mass_growth_Edd_rate = 2.3e-8
