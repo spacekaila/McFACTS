@@ -517,7 +517,8 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh):
 
     # If there are BBH that meet the condition (ie if bbh_gw_indices exists, is not empty)
     if bbh_gw_indices:
-        num_tracked = len(bbh_gw_indices)    
+        num_tracked = np.size(bbh_gw_indices,1)
+        #num_tracked = len(bbh_gw_indices)    
         char_strain=np.zeros(num_tracked)
         nu_gw=np.zeros(num_tracked)
 
@@ -557,10 +558,10 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh):
             # But power builds up in band over multiple cycles! 
             # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
             strain_factor = 1
-            if nu_gw < 10**(-6):
+            if nu_gw[j] < 10**(-6):
                 strain_factor = np.sqrt(nu_gw[j]*np.pi*(10**7)/8)
 
-            if nu_gw > 10**(-6):
+            if nu_gw[j] > 10**(-6):
                 strain_factor = 4.e3    
             # char amplitude = sqrt(N/8)h_0 and N=freq*1yr for approx const. freq. sources over ~~yr.
             # So in LISA band
