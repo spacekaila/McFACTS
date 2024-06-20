@@ -25,10 +25,14 @@ def arg():
     parser.add_argument("--fname-mergers",
         default="output_mergers_population.dat",
         type=str, help="output_mergers file")
+    parser.add_argument("--plots-directory",
+        default=".",
+        type=str, help="directory to save plots")
     parser.add_argument("--fname-lvk",
         default="output_mergers_lvk.dat",
         type=str, help="output_lvk file")
     opts = parser.parse_args()
+    print(opts.fname_mergers)
     assert os.path.isfile(opts.fname_mergers)
     assert os.path.isfile(opts.fname_emris)
     assert os.path.isfile(opts.fname_lvk)
@@ -66,7 +70,7 @@ def main():
     ax = plt.gca()
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
-    plt.savefig("./merger_remnant_mass.png", format='png')
+    plt.savefig(opts.plots_directory+"/merger_remnant_mass.png", format='png')
     plt.tight_layout()
     plt.close()
 
@@ -93,7 +97,7 @@ def main():
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
     plt.tight_layout()
-    plt.savefig("./merger_mass_v_radius.png", format='png')
+    plt.savefig(opts.plots_directory+"/merger_mass_v_radius.png", format='png')
     plt.close()
 
 
@@ -145,38 +149,6 @@ def main():
     plt.savefig("./q_chi_eff.png", format='png')
     plt.close()
 
-    #Figure of Disk radius vs Chi_p follows.
-    # Can break out higher mass Chi_p events as test/illustration.
-    #Set up default arrays for high mass BBH (>40Msun say) to overplot vs chi_p. 
-    all_masses = mergers[:,2]
-    all_locations = mergers[:,1]
-    mass_bound = 40.0
-    #print("All BBH merger masses:",all_masses)
-    #print("All BBH merger locations:",all_locations)
-    high_masses = np.where(all_masses > mass_bound, all_masses, np.nan)
-    #print("High masses", high_masses)
-    high_masses_locations = np.where(np.isfinite(high_masses),all_locations, np.nan )
-    #print("High masses locations",high_masses_locations)
-    
-    #chi_p plot vs disk radius
-    plt.ylim(0,1)
-    plt.xlim(0.,5.e4)
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.scatter(all_locations,chi_p, color='darkgoldenrod')
-    ax1.scatter(high_masses_locations,chi_p, color='rebeccapurple',marker='+')
-    
-    #plt.title("In-plane effective Spin vs. Merger radius")
-    plt.ylabel(r'$\chi_{\rm p}$')
-    plt.xlabel(r'Radius ($R_g$)')
-    plt.ylim(0,1)
-    plt.xlim(0.,5.e4)
-    ax = plt.gca()
-    ax.set_axisbelow(True)
-    plt.grid(True, color='gray', ls='dashed')
-    plt.tight_layout()
-    plt.savefig("./r_chi_p.png", format='png')
-    plt.close()
 
 
     # plt.figure()
@@ -203,7 +175,7 @@ def main():
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
     plt.tight_layout()
-    plt.savefig('./time_of_merger.png', format='png')
+    plt.savefig(opts.plots_directory+'/time_of_merger.png', format='png')
     plt.close()
 
 
@@ -218,7 +190,7 @@ def main():
     ax.set_axisbelow(True)
     plt.grid(True, color='gray', ls='dashed')
     plt.tight_layout()
-    plt.savefig('./m1m2.png', format='png')
+    plt.savefig(opts.plots_directory+'/m1m2.png', format='png')
 
     #GW strain figure: 
     #make sure LISA.py and PhenomA.py in /vis directory
