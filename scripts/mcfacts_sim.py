@@ -344,7 +344,7 @@ def main():
         
         # Multiple AGN episodes:
         # If you want to use the output of a previous AGN simulation as an input to another AGN phase
-        # Make sure you have a file 'recipes/postagn_bh_pop1.dat' so that ReadInputs can take it in
+        # Make sure you have a file 'recipes/prior_model_name_population.dat' so that ReadInputs can take it in
         # and in your .ini file set switch prior_agn = 1.0.
         # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
         if opts.prior_agn == 1.0:
@@ -632,6 +632,12 @@ def main():
                     #print("bbh_gw_indices",bbh_gw_indices)
                     # If bbh_indices exists (ie is not empty)
                     if bbh_gw_indices:
+                        
+                        num_bbh_gw_tracked = np.size(bbh_gw_indices,1)
+                        #print("N_tracked",num_bbh_gw_tracked)
+                        nbbhgw = nbbhgw + num_bbh_gw_tracked
+                        #if num_bbh_gw_tracked:
+                        #    print("num_bbh_gw_tracked",num_bbh_gw_tracked)
                         #print("gw indices",bbh_gw_indices,binary_bh_array[8,bbh_gw_indices])
                         bbh_gw_strain,bbh_gw_freq = evolve.bbh_gw_params(
                             binary_bh_array, 
@@ -639,17 +645,13 @@ def main():
                             opts.mass_smbh
                         )
                         #print("BBH strain, freq",bbh_gw_strain,bbh_gw_freq)
-                        num_bbh_gw_tracked = np.size(bbh_gw_indices,1)
-                        #print("N_tracked",num_bbh_gw_tracked)
-                        nbbhgw = nbbhgw + num_bbh_gw_tracked
-                        #if num_bbh_gw_tracked:
-                        #    print("num_bbh_gw_tracked",num_bbh_gw_tracked)
-                        if num_bbh_gw_tracked == 0:        
+                        #print("num tracked",num_bbh_gw_tracked)
+                        if num_bbh_gw_tracked == 1:        
                             index = bbh_gw_indices[0]
                             #print("index",index)
                             # If index is empty (=[]) then assume we're tracking 1 BBH only, i.e. the 0th element.
-                            if not index:
-                               index = 0
+                            #if not index:
+                            #   index = 0
                                #print("actual index used",index)
 
                             temp_bbh_gw_array[0] = iteration
@@ -667,15 +669,14 @@ def main():
                             #print("temp_bbh_gw_array",temp_bbh_gw_array)
                             bbh_gw_array = np.vstack((bbh_gw_array,temp_bbh_gw_array))
                             
-                        if num_bbh_gw_tracked > 0:
+                        if num_bbh_gw_tracked > 1:
+                            index = 0
                             for i in range(0,num_bbh_gw_tracked-1):
-                                print("num_gw_tracked",num_bbh_gw_tracked)
-                                print("i,bbh_gw_indices",i,bbh_gw_indices[i])
-                                index = bbh_gw_indices[i][0]
-                                if (i>0) and num_bbh_gw_tracked >1:
-                                    index = bbh_gw_indices[i][1]
+                                #print("num_gw_tracked",num_bbh_gw_tracked)
+                                #print("i,bbh_gw_indices",i,bbh_gw_indices,bbh_gw_indices[0],bbh_gw_strain,bbh_gw_strain[i])
                                 
-                                print("index",index)
+                                index = bbh_gw_indices[0][i]
+                            
                                 #Record: iteration, time_passed, bin sep, bin_mass, bin_ecc(around c.o.m.),bin strain, bin freq       
                                 temp_bbh_gw_array[0] = iteration
                                 temp_bbh_gw_array[1] = time_passed
