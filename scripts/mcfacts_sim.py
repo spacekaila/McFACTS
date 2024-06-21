@@ -29,7 +29,9 @@ from mcfacts.physics.binary.harden import baruteau11
 from mcfacts.physics.binary.merge import tichy08
 from mcfacts.physics.binary.merge import chieff
 from mcfacts.physics.binary.merge import tgw
-#from mcfacts.tests import tests
+from mcfacts.physics.migration.type1 import retro_mig
+from mcfacts.physics.eccentricity import retro_ecc
+from mcfacts.physics.disk_capture import capture_inc_damp
 from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
@@ -363,6 +365,7 @@ def main():
         # Make sure you have a file 'recipes/postagn_bh_pop1.dat' so that ReadInputs can take it in
         # and in your .ini file set switch prior_agn = 1.0.
         # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
+        # SF: No promises this handles retrograde orbiters correctly yet
         if opts.prior_agn == 1.0:
             
             prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
@@ -391,6 +394,7 @@ def main():
         while time_passed < final_time:
             # Record 
             if not(opts.no_snapshots):
+                # SF: come back here and add retrogrades to outputs!
                 n_bh_out_size = len(prograde_bh_locations)
 
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
@@ -480,6 +484,44 @@ def main():
                 opts.timestep,
                 opts.crit_ecc,
             )
+
+            # Now do retrograde singles--change semi-major axis
+            #   note this is dyn friction only, not true 'migration'
+            retrograde_bh_locations = retro_mig.retro_mig(
+                opts.mass_smbh,
+                retrograde_bh_locations,
+                retrograde_bh_masses,
+                retrograde_bh_orb_ecc,
+                retrograde_bh_orb_incl,
+                retrograde_bh_orb_arg_periapse,
+                opts.timestep,
+                surf_dens_func
+            )
+
+            # change retrograde eccentricity (some damping, some pumping)
+            retrograde_bh_orb_ecc = retro_ecc.retro_ecc(
+                opts.mass_smbh,
+                retrograde_bh_locations,
+                retrograde_bh_masses,
+                retrograde_bh_orb_ecc,
+                retrograde_bh_orb_incl,
+                retrograde_bh_orb_arg_periapse,
+                opts.timestep,
+                surf_dens_func
+            )
+
+            # damp orbital inclination
+            retrograde_bh_orb_incl = capture_inc_damp.orb_inc_damping(
+                opts.mass_smbh,
+                retrograde_bh_locations,
+                retrograde_bh_masses,
+                retrograde_bh_orb_ecc,
+                retrograde_bh_orb_incl,
+                retrograde_bh_orb_arg_periapse,
+                opts.timestep,
+                surf_dens_func
+            )
+
             # Perturb eccentricity via dynamical encounters
             if opts.dynamic_enc > 0:
                 prograde_bh_locn_orb_ecc = dynamics.circular_singles_encounters_prograde(

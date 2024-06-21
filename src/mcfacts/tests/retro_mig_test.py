@@ -3,7 +3,7 @@ import scipy
 
 from mcfacts.physics.migration.type1 import retro_mig
 from mcfacts.physics.eccentricity import retro_ecc
-from mcfacts.physics.disk_capture import capture
+from mcfacts.physics.disk_capture import capture_inc_damp
 
 if __name__ == "__main__":
     # I just want to run retro_mig.py on its own to see if it runs, so I'm
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     print("retro_ecc")
     print(thing2)
 
-    thing3 = capture.orb_inc_damping(
+    thing3 = capture_inc_damp.orb_inc_damping(
         mass_smbh,
         retrograde_bh_locations,
         retrograde_bh_masses,
