@@ -36,8 +36,8 @@ from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
-#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
 DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
+#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
 #DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 assert DEFAULT_INI.is_file()
 #assert DEFAULT_PRIOR_POP.is_file()
