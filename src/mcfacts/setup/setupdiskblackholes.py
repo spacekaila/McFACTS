@@ -99,6 +99,25 @@ def setup_disk_blackholes_inclination(rng, n_bh):
     bh_initial_orb_incl = np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_incl
 
+def setup_disk_blackholes_incl(rng, n_bh, bh_location, ang_mom_idx, aspect_ratio_func):
+    # Return an array of BH orbital inclinations
+    # initial distribution is not 0.0
+    integer_nbh = int(n_bh)
+    # what is the max height at the orbiter location that keeps it in the disk
+    max_height = bh_location * aspect_ratio_func(bh_location)
+    random_uniform_number = rng.random((integer_nbh,))
+    # pick the actual height from 0.0 to the max
+    actual_height = max_height * random_uniform_number
+    # allow it to be above or below the midplane (up or down)
+    up_or_down = (2.0*np.around(random_uniform_number)) - 1.0
+    actual_height = actual_height * up_or_down
+    # inclination is arctan of height over radius, modulo pro or retrograde
+    bh_initial_orb_incl = np.arctan(actual_height/bh_location)
+    # for retrogrades, add 180 degrees
+    bh_initial_orb_incl[ang_mom_idx < 0.0] = bh_initial_orb_incl[ang_mom_idx < 0.0] + np.pi
+
+    return bh_initial_orb_incl
+
 def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0

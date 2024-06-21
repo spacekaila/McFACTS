@@ -255,7 +255,8 @@ def main():
         else:
             bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,opts.crit_ecc)
 
-        bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng,n_bh)
+        #bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng,n_bh)
+        bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_incl(rng, n_bh, bh_initial_locations, bh_initial_orb_ang_mom, aspect_ratio_func)
 
         bh_initial_orb_arg_periapse = setupdiskblackholes.setup_disk_blackholes_arg_periapse(rng,n_bh)
          
@@ -317,10 +318,14 @@ def main():
         # (ie less than this value gets fixed to zero) 
         # e.g 0.02 rad=1deg
         spin_minimum_resolution = 0.02
-        #Torque prograde orbiting BH only
+        # Torque prograde orbiting BH only
         prograde_bh_spins = bh_initial_spins[prograde_orb_ang_mom_indices]
         prograde_bh_spin_angles = bh_initial_spin_angles[prograde_orb_ang_mom_indices]
         prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
+        # but set up retrogrades--think about physics later:
+        retrograde_bh_spins = bh_initial_spins[retrograde_orb_ang_mom_indices]
+        retrograde_bh_spin_angles = bh_initial_spin_angles[retrograde_orb_ang_mom_indices]
+        retrograde_bh_generations = bh_initial_generations[retrograde_orb_ang_mom_indices]
 
         # Housekeeping:
         # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc, nu_gw, h_bin)
@@ -394,15 +399,21 @@ def main():
         while time_passed < final_time:
             # Record 
             if not(opts.no_snapshots):
-                # SF: come back here and add retrogrades to outputs!
                 n_bh_out_size = len(prograde_bh_locations)
+                n_bh_r_out_size = len(retrograde_bh_locations)
 
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
-                # Single output:  does work
+                # Single output prograde:  does work
                 np.savetxt(
                     os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_{n_timestep_index}.dat"),
-                    np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T],
-                    header="r_bh m a theta ecc gen"
+                    np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_orb_incl.T, prograde_bh_generations[:n_bh_out_size].T],
+                    header="r_bh m a theta ecc inc gen"
+                )
+                # Single output retrograde:
+                np.savetxt(
+                    os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_retro_{n_timestep_index}.dat"),
+                    np.c_[retrograde_bh_locations.T, retrograde_bh_masses.T, retrograde_bh_spins.T, retrograde_bh_spin_angles.T, retrograde_bh_orb_ecc.T, retrograde_bh_orb_incl.T, retrograde_bh_generations[:n_bh_r_out_size].T],
+                    header="r_bh m a theta ecc inc gen"
                 )
                 # np.savetxt(os.path.join(work_directory, "output_bh_single_{}.dat".format(n_timestep_index)), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
                 # Binary output: does not work
@@ -460,7 +471,6 @@ def main():
                 prograde_bh_orb_ecc,
                 opts.crit_ecc,
             )
-            
             
             # Torque spin angle
             prograde_bh_spin_angles = changebh.change_spin_angles(

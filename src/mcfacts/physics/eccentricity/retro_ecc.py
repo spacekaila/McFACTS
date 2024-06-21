@@ -173,7 +173,7 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     #   Eqn 69 in WZL for cosine of critical inclination
     cos_inc_crit = (xi_bar - (1.0 - ecc**2) * xi)/(kappa_bar - (1.0 - ecc**2) * kappa)
     # if the cos(inc) is less than cos(inc_crit), ecc is excited, else it is damped
-    frac_change[np.cos(inc) < cos_inc_crit] = -frac_change
+    frac_change[np.abs(np.cos(inc)) < cos_inc_crit] = -frac_change[np.abs(np.cos(inc)) < cos_inc_crit]
 
     # accounting for poss increase OR decrease in ecc by flipping sign 
     #   on frac_change above (where appropriate)
