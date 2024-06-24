@@ -324,6 +324,7 @@ def main():
         bbh_gw_indices = []
         num_of_bbh_gw_properties = 7
         nbbhgw = 0
+        num_bbh_gw_tracked = 0
 
         # Set up empty initial Binary array
         # Initially all zeros, then add binaries plus details as appropriate
@@ -629,23 +630,29 @@ def main():
                     min_bbh_gw_separation = 2.0
                     # If there are binaries AND if any separations are < min_bbh_gw_separation
                     bbh_gw_indices = np.where( (binary_bh_array[8,:] < min_bbh_gw_separation) & (binary_bh_array[8,:]>0))
-                    #print("bbh_gw_indices",bbh_gw_indices)
+                    
                     # If bbh_indices exists (ie is not empty)
                     if bbh_gw_indices:
-                        
+                        #1st time around.
+                        if num_bbh_gw_tracked == 0:
+                            old_bbh_gw_freq = 9.e-7*np.ones(np.size(bbh_gw_indices,1))        
+                        if num_bbh_gw_tracked > 0:
+                            old_bbh_gw_freq = bbh_gw_freq
+
                         num_bbh_gw_tracked = np.size(bbh_gw_indices,1)
                         #print("N_tracked",num_bbh_gw_tracked)
                         nbbhgw = nbbhgw + num_bbh_gw_tracked
-                        #if num_bbh_gw_tracked:
-                        #    print("num_bbh_gw_tracked",num_bbh_gw_tracked)
-                        #print("gw indices",bbh_gw_indices,binary_bh_array[8,bbh_gw_indices])
+                        
+                        #Now update BBH & generate NEW frequency & evolve  
+                        
                         bbh_gw_strain,bbh_gw_freq = evolve.bbh_gw_params(
                             binary_bh_array, 
                             bbh_gw_indices,
-                            opts.mass_smbh
+                            opts.mass_smbh,
+                            opts.timestep,
+                            old_bbh_gw_freq
                         )
-                        #print("BBH strain, freq",bbh_gw_strain,bbh_gw_freq)
-                        #print("num tracked",num_bbh_gw_tracked)
+                        
                         if num_bbh_gw_tracked == 1:        
                             index = bbh_gw_indices[0]
                             #print("index",index)
@@ -661,19 +668,12 @@ def main():
                             temp_bbh_gw_array[4] = binary_bh_array[13,index]
                             temp_bbh_gw_array[5] = bbh_gw_strain
                             temp_bbh_gw_array[6] = bbh_gw_freq
-                            #temp_bbh_gw_array[2] = binary_bh_array[8,index][0]
-                            #temp_bbh_gw_array[3] = binary_bh_array[2,index][0] + binary_bh_array[3,index][0]
-                            #temp_bbh_gw_array[4] = binary_bh_array[13,index][0]
-                            #temp_bbh_gw_array[5] = bbh_gw_strain[0]
-                            #temp_bbh_gw_array[6] = bbh_gw_freq[0]
-                            #print("temp_bbh_gw_array",temp_bbh_gw_array)
+                            
                             bbh_gw_array = np.vstack((bbh_gw_array,temp_bbh_gw_array))
                             
                         if num_bbh_gw_tracked > 1:
                             index = 0
                             for i in range(0,num_bbh_gw_tracked-1):
-                                #print("num_gw_tracked",num_bbh_gw_tracked)
-                                #print("i,bbh_gw_indices",i,bbh_gw_indices,bbh_gw_indices[0],bbh_gw_strain,bbh_gw_strain[i])
                                 
                                 index = bbh_gw_indices[0][i]
                             
@@ -990,8 +990,24 @@ def main():
                 inner_disk_indices = np.array(empty)
 
             if np.size(inner_disk_locations) > 0:
-                inner_disk_locations = dynamics.bh_near_smbh(opts.mass_smbh,inner_disk_locations,inner_disk_masses,inner_disk_orb_ecc,opts.timestep)
-                emri_gw_strain,emri_gw_freq = evolve.evolve_emri_gw(inner_disk_locations,inner_disk_masses,opts.mass_smbh)
+                inner_disk_locations = dynamics.bh_near_smbh(opts.mass_smbh,
+                                                             inner_disk_locations,
+                                                             inner_disk_masses,
+                                                             inner_disk_orb_ecc,
+                                                             opts.timestep)
+                num_in_inner_disk = np.size(inner_disk_locations)
+                # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
+                if nemri ==0:
+                    old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
+                if nemri > 0:
+                    old_gw_freq = emri_gw_freq
+                #Now update emris & generate NEW frequency & evolve   
+                emri_gw_strain,emri_gw_freq = evolve.evolve_emri_gw(inner_disk_locations,
+                                                                    inner_disk_masses, 
+                                                                    opts.mass_smbh,
+                                                                    opts.timestep,
+                                                                    old_gw_freq)
+                
                 #print("EMRI gw strain",emri_gw_strain)
                 #print("EMRI gw freq",emri_gw_freq)
             
@@ -1007,8 +1023,8 @@ def main():
                     temp_emri_array[4] = inner_disk_orb_ecc[i]
                     temp_emri_array[5] = emri_gw_strain[i]
                     temp_emri_array[6] = emri_gw_freq[i]
-                    #print("temp_emri_array",temp_emri_array)
-                    #print("emri_array",emri_array)
+                    
+                    
                     emri_array = np.vstack((emri_array,temp_emri_array))
                 
             # if inner_disk_locations[i] <1R_g then merger!
@@ -1049,7 +1065,7 @@ def main():
         print("Total number of mergers = ",number_of_mergers)
         print("Mergers", merged_bh_array.shape)
         print("Nbh_disk",n_bh)
-    
+        #Number of rows in each array, EMRIs and BBH_GW
         total_emris = emri_array.shape[0]
         total_bbh_gws = bbh_gw_array.shape[0]
 
@@ -1124,16 +1140,38 @@ def main():
         iteration_save_name = f"run{iteration_zfilled_str}/{opts.fname_output_mergers}"
         np.savetxt(os.path.join(opts.work_directory, iteration_save_name), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
-        # Add mergers to population array including the iteration number
+        # Add mergers to population array including the iteration number 
+        # this line is linebreak between iteration outputs consisting of the repeated iteration number in each column
         iteration_row = np.repeat(iteration, number_of_mergers)
         survivor_row = np.repeat(iteration,num_properties_stored)
         emri_row = np.repeat(iteration,num_of_emri_properties)
         gw_row = np.repeat(iteration,num_of_bbh_gw_properties)
+        #Append each iteration result to output arrays
         merged_bh_array_pop.append(np.concatenate((iteration_row[np.newaxis], merged_bh_array[:,:number_of_mergers])).T)
         #surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:,:total_bh_survived])).T)
         surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived,:])))
+        
+        #print("total_emris,total_bbh_gws",total_emris,total_bbh_gws)
+        #print("gw_row",gw_row)
+        #print("gw_array_pop",gw_array_pop)
+        #print("total_bbh_gw_array",total_bbh_gw_array)
+        #if np.any(total_bbh_gw_array):
+        #    print("total_bbh_gw_array[]",total_bbh_gw_array[:,:total_bbh_gws])
+        #    print("total_bbh_gw_array[,:]",total_bbh_gw_array[:total_bbh_gws,:])
+        #print("concatenate",np.concatenate((gw_row,total_bbh_gw_array)))
+        #If there are non-zero elements in total_emri_array, concatenate to main EMRI file
+        
+        #if np.any(total_emri_array):
+        #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])))
         emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
+        #    emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])).T)
+        #If there are non-zero elements in total_bbh_gw_array
+        #if np.any(total_bbh_gw_array):
+        #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])))
         gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
+            #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])).T)
+        #if n_its == 1:
+        #    print("emris_array_pop",emris_array_pop)
      # save all mergers from Monte Carlo
     merger_pop_field_names = "iter " + merger_field_names # Add "Iter" to field names
     population_header = f"Initial seed: {opts.seed}\n{merger_pop_field_names}" # Include initial seed

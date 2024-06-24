@@ -360,6 +360,8 @@ def ReadInputs_prior_mergers(fname='recipes/prior_sg_2Myr_population.dat', verbo
     )                
     """
 
+    with open('../recipes/prior_mergers_x2_population.dat') as filedata:
+        prior_mergers_file = np.genfromtxt('../recipes/prior_mergers_x2_population.dat', unpack = True)
     
     with open('../recipes/postagn_bh_pop1.dat') as filedata:
         prior_mergers_file = np.genfromtxt('../recipes/postagn_bh_pop1.dat', unpack = True)

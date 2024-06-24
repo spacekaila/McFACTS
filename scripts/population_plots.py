@@ -255,7 +255,7 @@ def main():
     ax.tick_params(axis='both', which='major', labelsize=20)
 
     ax.set_xlim(1.0e-7, 1e4)
-    ax.set_ylim(1.0e-30, 1.0e-15)
+    ax.set_ylim(1.0e-30, 1.0e-14)
 
     ax.loglog(f, np.sqrt(f*Sn),label = 'LISA Sensitivity') # plot the characteristic strain
     ax.loglog(f_H1, h_H1,label = 'LIGO O3, H1 Sensitivity') # plot the characteristic strain
