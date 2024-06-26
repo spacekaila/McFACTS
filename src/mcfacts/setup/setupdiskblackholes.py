@@ -105,12 +105,13 @@ def setup_disk_blackholes_incl(rng, n_bh, bh_location, ang_mom_idx, aspect_ratio
     integer_nbh = int(n_bh)
     # what is the max height at the orbiter location that keeps it in the disk
     max_height = bh_location * aspect_ratio_func(bh_location)
+    # reflect that height to get the min
+    min_height = -max_height
     random_uniform_number = rng.random((integer_nbh,))
-    # pick the actual height from 0.0 to the max
-    actual_height = max_height * random_uniform_number
-    # allow it to be above or below the midplane (up or down)
-    up_or_down = (2.0*np.around(random_uniform_number)) - 1.0
-    actual_height = actual_height * up_or_down
+    # pick the actual height between the min and max, then reset zero point
+    height_range = max_height - min_height
+    actual_height_range = height_range * random_uniform_number
+    actual_height = actual_height_range + min_height
     # inclination is arctan of height over radius, modulo pro or retrograde
     bh_initial_orb_incl = np.arctan(actual_height/bh_location)
     # for retrogrades, add 180 degrees
