@@ -34,8 +34,8 @@ from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
-#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
-DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
+DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
+#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
 DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 assert DEFAULT_INI.is_file()
 assert DEFAULT_PRIOR_POP.is_file()
@@ -178,13 +178,13 @@ def main():
 
     gw_array_pop = []
 
-    temp_emri_array = np.zeros(7)
+    #temp_emri_array = np.zeros(7)
 
-    emri_array = np.zeros(7)
+    #emri_array = np.zeros(7)
 
-    temp_bbh_gw_array = np.zeros(7)
+    #temp_bbh_gw_array = np.zeros(7)
 
-    bbh_gw_array = np.zeros(7)
+    #bbh_gw_array = np.zeros(7)
 
     for iteration in range(opts.n_iterations):
         print("Iteration", iteration)
@@ -203,7 +203,14 @@ def main():
         # galaxy_type = galaxy_models[iteration] # e.g. star forming/spiral vs. elliptical
         # NSC mass
         # SMBH mass
+        #Housekeeping for array initialization
+        temp_emri_array = np.zeros(7)
 
+        emri_array = np.zeros(7)
+
+        temp_bbh_gw_array = np.zeros(7)
+
+        bbh_gw_array = np.zeros(7)    
 
         #Set up number of BH in disk
         n_bh = setupdiskblackholes.setup_disk_nbh(
@@ -1066,8 +1073,16 @@ def main():
         print("Mergers", merged_bh_array.shape)
         print("Nbh_disk",n_bh)
         #Number of rows in each array, EMRIs and BBH_GW
-        total_emris = emri_array.shape[0]
-        total_bbh_gws = bbh_gw_array.shape[0]
+        # If emri_array is 2-d then this line is ok, but if emri-array is empty then this line defaults to 7 (#elements in 1d)
+        if len(emri_array.shape) > 1:
+            total_emris = emri_array.shape[0]
+        elif len(emri_array.shape) == 1:
+            total_emris = 0
+    
+        if len(bbh_gw_array.shape) > 1:
+            total_bbh_gws = bbh_gw_array.shape[0]
+        elif len(bbh_gw_array.shape) == 1:
+            total_bbh_gws = 0
 
             
         # Write out all the singletons after AGN episode, so can use this as input to another AGN phase.
@@ -1161,14 +1176,22 @@ def main():
         #print("concatenate",np.concatenate((gw_row,total_bbh_gw_array)))
         #If there are non-zero elements in total_emri_array, concatenate to main EMRI file
         
+        print("total_emris",total_emris)
+        if total_emris > 0:
         #if np.any(total_emri_array):
         #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])))
-        emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
+        
+            #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
+            #emris_array_pop.append(total_emri_array[:,:total_emris])
+            emris_array_pop.append(total_emri_array[:total_emris,:])
+            #print("emris_array_pop",emris_array_pop)
         #    emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])).T)
         #If there are non-zero elements in total_bbh_gw_array
+        if total_bbh_gws > 0:
         #if np.any(total_bbh_gw_array):
         #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])))
-        gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
+            #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
+            gw_array_pop.append(total_bbh_gw_array[:total_bbh_gws,:])
             #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])).T)
         #if n_its == 1:
         #    print("emris_array_pop",emris_array_pop)
@@ -1180,9 +1203,11 @@ def main():
     survivors_save_name = f"{basename}_survivors{extension}"
     emris_save_name = f"{basename}_emris{extension}"
     gws_save_name = f"{basename}_lvk{extension}"
+    print("emris_array_pop",emris_array_pop)
     np.savetxt(os.path.join(opts.work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
     np.savetxt(os.path.join(opts.work_directory, survivors_save_name), np.vstack(surviving_bh_array_pop))
     np.savetxt(os.path.join(opts.work_directory,emris_save_name),np.vstack(emris_array_pop))
+    #np.savetxt(os.path.join(opts.work_directory,emris_save_name),(emris_array_pop))
     np.savetxt(os.path.join(opts.work_directory,gws_save_name),np.vstack(gw_array_pop))
 if __name__ == "__main__":
     main()

@@ -524,8 +524,11 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh, timestep, old_bbh_freq):
         char_strain=np.zeros(num_tracked)
         nu_gw=np.zeros(num_tracked)
         #If number of BBH tracked has grown since last timestep, add a new component to old_gw_freq to carry out dnu/dt calculation
-        if num_tracked > len(old_bbh_freq):
+        while num_tracked > len(old_bbh_freq):
             old_bbh_freq = np.append(old_bbh_freq,9.e-7)
+        #If number of BBH tracked has shrunk. Reduce old_bbh_freq to match size of num_tracked.
+        while num_tracked < len(old_bbh_freq):
+            old_bbh_freq = np.delete(old_bbh_freq,0)    
 
         for j in range(0,num_tracked):
             temp_mass_1 = bin_array[2,j]
@@ -573,6 +576,7 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh, timestep, old_bbh_freq):
             #For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt).
             # char amplitude = strain_factor*h0
             #                = sqrt(freq^2/(dfreq/dt)/8)
+                print("old bbh freq",old_bbh_freq,nu_gw[j])
                 dnu = np.abs(old_bbh_freq[j]-nu_gw[j])
                 dnu_dt = dnu/timestep_secs
                 nusq = nu_gw[j]*nu_gw[j]
