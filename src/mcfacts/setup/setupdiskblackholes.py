@@ -3,8 +3,11 @@ import numpy as np
 
 def setup_disk_blackholes_location(rng, n_bh, disk_outer_radius):
     #Return an array of BH locations distributed randomly uniformly in disk
+    isco_radius = 6.0
     integer_nbh = int(n_bh)
     bh_initial_locations = disk_outer_radius*rng.random(integer_nbh)
+    sma_too_small = np.where(bh_initial_locations<isco_radius)
+    bh_initial_locations[sma_too_small] = isco_radius
     return bh_initial_locations
 
 def setup_prior_blackholes_indices(rng, prograde_n_bh, prior_bh_locations):
