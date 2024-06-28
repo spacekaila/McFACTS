@@ -580,6 +580,7 @@ def main():
                     if (opts.dynamic_enc > 0):
                         #Spheroid encounters
                         binary_bh_array = dynamics.bin_spheroid_encounter(
+                            rng,
                             opts.mass_smbh,
                             opts.timestep,
                             binary_bh_array,
