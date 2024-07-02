@@ -76,11 +76,11 @@ class AGNObject(object):
         #self.orb_ang_mom = orb_ang_mom #needs to be added in!
         self.orbit_e = orbit_e #Should be array. Allows for eccentricity.
         self.generations = np.full(nsystems,1)
-        self.__mass_smbh = mass_smbh
+        #self.__mass_smbh = mass_smbh
 
-        M = mass + self.__mass_smbh
-        M_reduced = mass*self.__mass_smbh/M
-        self.orbit_ang_mom = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)')*M*self.orbit_a*(1-self.orbit_inclination**2))
+        M = mass + mass_smbh
+        M_reduced = mass*mass_smbh/M
+        self.orb_ang_mom = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*self.orbit_a*(1-self.orbit_inclination**2))
     
     def __add_objects__(self, new_mass = None,
                               new_spin = None,
@@ -113,9 +113,9 @@ class AGNObject(object):
 #        assert new_orb_ang_mom.shape == (nsystems,),"new_orb_ang_mom: all arrays must be 1d and the same length"
         assert new_e.shape == (nsystems,),"new_e: all arrays must be 1d and the same length"
 
-        new_M = new_mass + self.__mass_smbh
-        new_M_reduced = new_mass*self.__mass_smbh/new_M
-        new_orb_ang_mom = new_M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)')*new_M*new_a*(1-new_inclination**2))
+        new_M = new_mass + mass_smbh
+        new_M_reduced = new_mass*mass_smbh/new_M
+        new_orb_ang_mom = new_M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*new_M*new_a*(1-new_inclination**2))
 
         self.mass = np.concatenate([self.mass,new_mass])
         self.spin = np.concatenate([self.spin,new_spin])

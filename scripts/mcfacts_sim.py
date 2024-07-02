@@ -45,7 +45,7 @@ DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice
 #DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
 DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 assert DEFAULT_INI.is_file()
-assert DEFAULT_PRIOR_POP.is_file()
+#assert DEFAULT_PRIOR_POP.is_file()
 
 def arg():
     import argparse
@@ -294,7 +294,7 @@ def main():
         star_spin_angle = setupdiskstars.setup_disk_stars_spin_angles(rng, n_stars, star_spin)
         star_orbit_a = setupdiskstars.setup_disk_stars_location(rng, n_stars, opts.disk_outer_radius)
         star_orbit_inclination = setupdiskstars.setup_disk_stars_inclination(rng,n_stars)
-        star_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng,n_stars)
+        #star_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng,n_stars)
         if opts.orb_ecc_damping == 1:
             star_orbit_e = setupdiskstars.setup_disk_stars_eccentricity_uniform(rng,n_stars)
         else:
@@ -308,12 +308,15 @@ def main():
                         orbit_a = star_orbit_a, #this is location
                         orbit_inclination = star_orbit_inclination,
                         orbit_e = star_orbit_e,
-                        orb_ang_mom = star_orb_ang_mom,
+                        #orb_ang_mom = star_orb_ang_mom,
                         star_radius = star_radius,
                         star_Y = star_Y,
                         star_Z = star_Z,
+                        mass_smbh = opts.mass_smbh,
                         n_stars = n_stars)
-
+        
+        print(stars.orb_ang_mom)
+        #print(ff)
         #Generate initial inner disk arrays for objects that end up in the inner disk. 
         #Assume all drawn from prograde population for now.
         inner_disk_locations = []
@@ -369,7 +372,7 @@ def main():
                                  spin_angle = stars.spin_angle[prograde_stars_orb_ang_mom_indices],
                                  orbit_a = stars.orbit_a[prograde_stars_orb_ang_mom_indices],
                                  orbit_inclination = stars.orbit_inclination[prograde_stars_orb_ang_mom_indices],
-                                 orb_ang_mom = stars.orb_ang_mom[prograde_stars_orb_ang_mom_indices],
+                                 #orb_ang_mom = stars.orb_ang_mom[prograde_stars_orb_ang_mom_indices],
                                  orbit_e = stars.orbit_e[prograde_stars_orb_ang_mom_indices],
                                  star_radius=stars.star_radius[prograde_stars_orb_ang_mom_indices],
                                  star_Y=stars.star_Y[prograde_stars_orb_ang_mom_indices],
