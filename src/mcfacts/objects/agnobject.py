@@ -1,4 +1,5 @@
 import numpy as np
+from astropy.constants import G 
 from mcfacts.setup import setupdiskstars
 
 def dump_array_to_file(fname=None, samples_out=None):
@@ -42,9 +43,10 @@ class AGNObject(object):
                         spin_angle = None, #angle between J and orbit around SMBH for binary
                         orbit_a = None, #location
                         orbit_inclination= None, #of CoM for binary around SMBH
-                        orb_ang_mom = None,  # redundant, should be computed from keplerian orbit formula for L in terms of mass, a, eccentricity
+                        #orb_ang_mom = None,  # redundant, should be computed from keplerian orbit formula for L in terms of mass, a, eccentricity
                         orbit_e = None,
                         orbit_argperiapse = None,
+                        mass_smbh = None,
                         nsystems = None):
         
         #Make sure all inputs are included
@@ -71,9 +73,14 @@ class AGNObject(object):
         self.spin_angle = spin_angle #should be array
         self.orbit_a = orbit_a #Should be array. Semimajor axis
         self.orbit_inclination = orbit_inclination #Should be array. Allows for misaligned orbits.
-        self.orb_ang_mom = orb_ang_mom #needs to be added in!
+        #self.orb_ang_mom = orb_ang_mom #needs to be added in!
         self.orbit_e = orbit_e #Should be array. Allows for eccentricity.
         self.generations = np.full(nsystems,1)
+        self.__mass_smbh = mass_smbh
+
+        M = mass + self.__mass_smbh
+        M_reduced = mass*self.__mass_smbh/M
+        self.orbit_ang_mom = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)')*M*self.orbit_a*(1-self.orbit_inclination**2))
     
     def __add_objects__(self, new_mass = None,
                               new_spin = None,
@@ -106,13 +113,16 @@ class AGNObject(object):
 #        assert new_orb_ang_mom.shape == (nsystems,),"new_orb_ang_mom: all arrays must be 1d and the same length"
         assert new_e.shape == (nsystems,),"new_e: all arrays must be 1d and the same length"
 
+        new_M = new_mass + self.__mass_smbh
+        new_M_reduced = new_mass*self.__mass_smbh/new_M
+        new_orb_ang_mom = new_M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)')*new_M*new_a*(1-new_inclination**2))
 
         self.mass = np.concatenate([self.mass,new_mass])
         self.spin = np.concatenate([self.spin,new_spin])
         self.spin_angle = np.concatenate([self.spin_angle,new_spin_angle])
         self.orbit_a = np.concatenate([self.orbit_a,new_a])
         self.orbit_inclination = np.concatenate([self.orbit_inclination,new_inclination])
-#        self.orb_ang_mom = np.concatenate([self.orb_ang_mom,new_orb_ang_mom])
+        self.orb_ang_mom = np.concatenate([self.orb_ang_mom,new_orb_ang_mom])
         self.orbit_e = np.concatenate([self.orbit_e,new_e])
         self.generations = np.concatenate([self.generations,np.full(len(new_mass),1)])
 
