@@ -44,8 +44,10 @@ bh_initial_field_names = "disk_location mass spin spin_angle orb_ang_mom orb_ecc
 DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
 #DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
 DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
+#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
+#DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 assert DEFAULT_INI.is_file()
-assert DEFAULT_PRIOR_POP.is_file()
+#assert DEFAULT_PRIOR_POP.is_file()
 
 def arg():
     import argparse
@@ -196,6 +198,7 @@ def main():
     for iteration in range(opts.n_iterations):
         print("Iteration", iteration)
         # Set random number generator for this run with incremented seed
+        # ALERT: ONLY this random number generator can be used throughout the code to ensure reproducibility.
         rng = np.random.default_rng(opts.seed + iteration)
 
         # Make subdirectories for each iteration
@@ -242,7 +245,7 @@ def main():
         n_stars = np.int64(5000)
 
         print('n_bh = {}, n_stars = {}'.format(n_bh,n_stars))
-        
+
 
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
@@ -315,7 +318,7 @@ def main():
                         n_stars = n_stars)
 
 
-        #Generate initial inner disk arrays for objects that end up in the inner disk. 
+        #Generate initial inner disk arrays for objects that end up in the inner disk.
         #Assume all drawn from prograde population for now.
         inner_disk_locations = []
         inner_disk_masses =[]
@@ -355,11 +358,11 @@ def main():
         #prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc)
 
         #print('modest ecc ',prograde_bh_modest_ecc)
-        #print('damped ecc',prograde_bh_orb_ecc_damp) 
-        
+        #print('damped ecc',prograde_bh_orb_ecc_damp)
+
         # Test dynamics
         #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc, de)
-    
+
         #First sort all stars by location
         stars.sort(stars.orbit_a)
 
@@ -379,17 +382,17 @@ def main():
 
 
 
-        
+
 
         # Migrate
         # First if feedback present, find ratio of feedback heating torque to migration torque
         #if feedback > 0:
         #        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
         #else:
-        #        ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
+        #        ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))
         # then migrate as usual
         #prograde_bh_locations_new = type1.type1_migration(opts.mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, opts.timestep, ratio_heat_mig_torques, opts.trap_radius, prograde_bh_orb_ecc,opts.crit_ecc)
-        
+
 
         #Orbital inclinations
         prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
@@ -423,12 +426,12 @@ def main():
         # Writing initial parameters to file
         np.savetxt(
                 os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_bh.dat"),
-                np.c_[bh_initial_locations.T, 
-                      bh_initial_masses.T, 
-                      bh_initial_spins.T, 
-                      bh_initial_spin_angles.T, 
-                      bh_initial_orb_ang_mom.T, 
-                      bh_initial_orb_ecc.T, 
+                np.c_[bh_initial_locations.T,
+                      bh_initial_masses.T,
+                      bh_initial_spins.T,
+                      bh_initial_spin_angles.T,
+                      bh_initial_orb_ang_mom.T,
+                      bh_initial_orb_ecc.T,
                       bh_initial_orb_incl.T],
                 header = bh_initial_field_names
         )
@@ -478,7 +481,7 @@ def main():
         # Set up merger array (identical to binary array)
         merger_array = np.zeros((integer_nbinprop,integer_test_bin_number))
         merger_stars_array = np.zeros((integer_stars_nbinprop,integer_test_bin_stars_number))
-    
+
         # Set up output array (mergerfile)
         nprop_mergers=len(mergerfile.names_rec)
         integer_nprop_merge=int(nprop_mergers)
@@ -487,7 +490,7 @@ def main():
         nprop_stars_mergers=len(mergerfile.names_rec)
         integer_nprop_stars_merge=int(nprop_stars_mergers)
         merged_stars_array = np.zeros((integer_nprop_stars_merge,integer_test_bin_stars_number))
-        
+
         # Multiple AGN episodes:
         # If you want to use the output of a previous AGN simulation as an input to another AGN phase
         # Make sure you have a file 'recipes/prior_model_name_population.dat' so that ReadInputs can take it in
@@ -567,14 +570,14 @@ def main():
                 ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(
                     prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
             else:
-                ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))  
-            
+                ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))
+
             #now for stars
             if opts.feedback > 0:
                 ratio_heat_mig_stars_torques = feedback_hankla21.feedback_hankla(
                     prograde_stars.orbit_a, surf_dens_func, opts.frac_star_Eddington_ratio, opts.alpha)
             else:
-                ratio_heat_mig_stars_torques = np.ones(len(prograde_stars.orbit_a))   
+                ratio_heat_mig_stars_torques = np.ones(len(prograde_stars.orbit_a))
             # then migrate as usual
             
             prograde_bh_locations = type1.type1_migration(
@@ -746,6 +749,7 @@ def main():
                     if (opts.dynamic_enc > 0):
                         #Spheroid encounters
                         binary_bh_array = dynamics.bin_spheroid_encounter(
+                            rng,
                             opts.mass_smbh,
                             opts.timestep,
                             binary_bh_array,
