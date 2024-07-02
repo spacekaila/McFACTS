@@ -150,7 +150,7 @@ def arg():
 
     # set the seed for random number generation and reproducibility if not user-defined
     if opts.seed == None:
-        opts.seed = np.random.randint(low=0, high=int(1e18))
+        opts.seed = np.random.randint(low=0, high=int(1e18), dtype=np.int_)
         print(f'Random number generator seed set to: {opts.seed}')
 
 
