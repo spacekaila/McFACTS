@@ -122,7 +122,7 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
                 temp_bin_mass = temp_mass_1 + temp_mass_2
                 bin_array[9,j] = temp_loc_1 + (temp_bin_separation*temp_mass_2/temp_bin_mass)
                 #Set up binary eccentricity around its own center of mass. Draw uniform value btwn [0,1]
-                bin_array[13,j] = np.random.uniform()
+                bin_array[13,j] = rng.random()
                 # Set up binary member generations
                 bin_array[i+14,j] = bh_gens[thing1]
                 # Set up bin orb. ang. mom. (randomly +1 (pro) or -1(retrograde))

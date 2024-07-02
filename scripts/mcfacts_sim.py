@@ -189,6 +189,7 @@ def main():
     for iteration in range(opts.n_iterations):
         print("Iteration", iteration)
         # Set random number generator for this run with incremented seed
+        # ALERT: ONLY this random number generator can be used throughout the code to ensure reproducibility.
         rng = np.random.default_rng(opts.seed + iteration)
 
         # Make subdirectories for each iteration
@@ -580,6 +581,7 @@ def main():
                     if (opts.dynamic_enc > 0):
                         #Spheroid encounters
                         binary_bh_array = dynamics.bin_spheroid_encounter(
+                            rng,
                             opts.mass_smbh,
                             opts.timestep,
                             binary_bh_array,
