@@ -44,6 +44,7 @@ class AGNObject(object):
                         orbit_inclination= None, #of CoM for binary around SMBH
                         orb_ang_mom = None,  # redundant, should be computed from keplerian orbit formula for L in terms of mass, a, eccentricity
                         orbit_e = None,
+                        orbit_argperiapse = None,
                         nsystems = None):
         
         #Make sure all inputs are included

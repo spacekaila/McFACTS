@@ -314,7 +314,6 @@ def main():
                         star_Z = star_Z,
                         n_stars = n_stars)
 
-
         #Generate initial inner disk arrays for objects that end up in the inner disk. 
         #Assume all drawn from prograde population for now.
         inner_disk_locations = []
@@ -404,7 +403,7 @@ def main():
         # (ie less than this value gets fixed to zero) 
         # e.g 0.02 rad=1deg
         spin_minimum_resolution = 0.02
-        #Torque prograde orbiting BH only
+        # Torque prograde orbiting BH only
         prograde_bh_spins = bh_initial_spins[prograde_orb_ang_mom_indices]
         prograde_bh_spin_angles = bh_initial_spin_angles[prograde_orb_ang_mom_indices]
         prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
