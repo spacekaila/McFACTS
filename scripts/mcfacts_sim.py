@@ -373,7 +373,7 @@ def main():
             print("prior indices",prior_indices)
             print("prior locations",prograde_bh_locations) 
             print("prior gens",prograde_bh_generations)
-            prior_ecc_factor = 0.01
+            prior_ecc_factor = 0.3
             prograde_bh_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(rng,prior_ecc_factor,num_of_progrades)
             print("prior ecc",prograde_bh_orb_ecc)
         # Start Loop of Timesteps
