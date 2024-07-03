@@ -94,7 +94,7 @@ def add_to_binary_array2(rng, bin_array, bh_locations, bh_masses, bh_spins, bh_s
         bincount = 0
         # for all the new binaries that need to be created
         for j in range(bindex, bindex + num_new_bins):
-            print("num new bins", num_new_bins)
+            #print("num new bins", num_new_bins)
             # for each member of the binary
             for i in range(0,2):
                 # pick the [N,0] or [N,1] index for member 1 and member 2 of binary N
