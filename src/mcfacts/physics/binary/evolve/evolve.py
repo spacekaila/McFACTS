@@ -576,7 +576,7 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh, timestep, old_bbh_freq):
             #For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt).
             # char amplitude = strain_factor*h0
             #                = sqrt(freq^2/(dfreq/dt)/8)
-                print("old bbh freq",old_bbh_freq,nu_gw[j])
+                #print("old bbh freq",old_bbh_freq,nu_gw[j])
                 dnu = np.abs(old_bbh_freq[j]-nu_gw[j])
                 dnu_dt = dnu/timestep_secs
                 nusq = nu_gw[j]*nu_gw[j]

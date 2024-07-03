@@ -34,9 +34,9 @@ from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
-DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
-#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
-DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
+#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
+DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
+DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "sg1Myrx2_survivors.dat"
 assert DEFAULT_INI.is_file()
 assert DEFAULT_PRIOR_POP.is_file()
 
@@ -366,10 +366,13 @@ def main():
             prograde_bh_masses = prior_masses[prior_indices]
             prograde_bh_spins = prior_spins[prior_indices]
             prograde_bh_spin_angles = prior_spin_angles[prior_indices]
-            prograde_bh_generations = prior_gens[prior_indices] 
-            prior_ecc_factor = 0.3
+            prograde_bh_generations = prior_gens[prior_indices]
+            print("prior indices",prior_indices)
+            print("prior locations",prograde_bh_locations) 
+            print("prior gens",prograde_bh_generations)
+            prior_ecc_factor = 0.01
             prograde_bh_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(rng,prior_ecc_factor,num_of_progrades)
-
+            print("prior ecc",prograde_bh_orb_ecc)
         # Start Loop of Timesteps
         print("Start Loop!")
         time_passed = initial_time
@@ -1176,7 +1179,7 @@ def main():
         #print("concatenate",np.concatenate((gw_row,total_bbh_gw_array)))
         #If there are non-zero elements in total_emri_array, concatenate to main EMRI file
         
-        print("total_emris",total_emris)
+        #print("total_emris",total_emris)
         if total_emris > 0:
         #if np.any(total_emri_array):
         #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])))
@@ -1203,7 +1206,7 @@ def main():
     survivors_save_name = f"{basename}_survivors{extension}"
     emris_save_name = f"{basename}_emris{extension}"
     gws_save_name = f"{basename}_lvk{extension}"
-    print("emris_array_pop",emris_array_pop)
+    #print("emris_array_pop",emris_array_pop)
     np.savetxt(os.path.join(opts.work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
     np.savetxt(os.path.join(opts.work_directory, survivors_save_name), np.vstack(surviving_bh_array_pop))
     np.savetxt(os.path.join(opts.work_directory,emris_save_name),np.vstack(emris_array_pop))

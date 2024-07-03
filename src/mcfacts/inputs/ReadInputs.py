@@ -325,7 +325,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
 
     return input_variables, disk_model_radius_array, surface_density_array, aspect_ratio_array
 
-def ReadInputs_prior_mergers(fname='recipes/prior_sg_2Myr_population.dat', verbose=False):
+def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or
     default (recipies/prior_mergers_population.dat), and returns the chosen variables for 
     manipulation by main.    
@@ -360,11 +360,11 @@ def ReadInputs_prior_mergers(fname='recipes/prior_sg_2Myr_population.dat', verbo
     )                
     """
 
-    with open('../recipes/prior_mergers_x2_population.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('../recipes/prior_mergers_x2_population.dat', unpack = True)
+    #with open('../recipes/prior_mergers_x2_population.dat') as filedata:
+    #    prior_mergers_file = np.genfromtxt('../recipes/prior_mergers_x2_population.dat', unpack = True)
     
-    with open('../recipes/postagn_bh_pop1.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('../recipes/postagn_bh_pop1.dat', unpack = True)
+    with open('../recipes/sg1Myrx2_survivors.dat') as filedata:
+        prior_mergers_file = np.genfromtxt('../recipes/sg1Myrx2_survivors.dat', unpack = True)
     
     
     #Clean the file of iteration lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
