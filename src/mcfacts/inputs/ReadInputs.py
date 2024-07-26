@@ -26,7 +26,7 @@ INPUT_TYPES = {
     'max_initial_eccentricity' : float,
     'timestep' : float,
     'number_of_timesteps' : int,
-    'retro' : int,
+    'retro' : float,
     'feedback' : int,
     'capture_time' : float,
     'outer_capture_radius' : float,
@@ -118,8 +118,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     aspect_ratio_array : float array
         Aspect ratio corresponding to radii in disk_model_radius_array
         drawn from modelname_aspect_ratio.txt
-    retro : int
-        Switch (0) turns retrograde BBH into prograde BBH at formation to test (q,X_eff) relation 
+    retro : float
+        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1 
     feedback : int
         Switch (1) turns feedback from embedded BH on.
     orb_ecc_damping : int
