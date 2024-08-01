@@ -255,14 +255,14 @@ def main():
 
 
     fig, ax = plt.subplots(1, figsize=(8,6))
-    plt.tight_layout()
+    #plt.tight_layout()
 
     ax.set_xlabel(r'f [Hz]', fontsize=20, labelpad=10)
-    ax.set_ylabel(r'h', fontsize=20, labelpad=10)
+    ax.set_ylabel(r'${\rm h}_{\rm char}$', fontsize=20, labelpad=10)
     ax.tick_params(axis='both', which='major', labelsize=20)
 
-    ax.set_xlim(1.0e-7, 1e4)
-    ax.set_ylim(1.0e-30, 1.0e-10)
+    ax.set_xlim(1.0e-7, 1.0e+4)
+    ax.set_ylim(1.0e-24, 1.0e-15)
 
     #----------Finding the rows in which EMRIs signals are either identical or zeroes and removing them----------
     identical_rows_emris = np.where( emris[:,5] == emris[:,6])
@@ -289,10 +289,10 @@ def main():
 
     #inv_freq_emris = 1.0/ma_freq_emris
     #inv_freq_lvk = 1.0/ma_freq_lvk
-
-    #----------Setting the strain of the EMRIs and LVK signals ----------
-    strain_per_freq_emris = emris[:,5]*inv_freq_emris
-    strain_per_freq_lvk = lvk[:,5]*inv_freq_lvk
+    # timestep =1.e4yr
+    timestep = 1.e4
+    strain_per_freq_emris = emris[:,5]*inv_freq_emris/timestep
+    strain_per_freq_lvk = lvk[:,5]*inv_freq_lvk/timestep
     ax.loglog(f, np.sqrt(f*Sn),label = 'LISA Sensitivity') # plot the characteristic strain
     ax.loglog(f_H1, h_H1,label = 'LIGO O3, H1 Sensitivity') # plot the characteristic strain
     ax.scatter(emris[:,6],strain_per_freq_emris)

@@ -192,7 +192,7 @@ def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, 
                         prob_enc_per_timestep = prob_orbit_overlap * N_circ_orbs_per_timestep[i]
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
-                        random_uniform_number = rng.random(1)
+                        random_uniform_number = rng.random()
                         if random_uniform_number < prob_enc_per_timestep:
                             #print('Encounter!!',random_uniform_number,prob_enc_per_timestep, i, j)
                             #print(circ_prograde_population, prograde_bh_orb_ecc[j], circ_prograde_population_locations)
@@ -411,7 +411,7 @@ def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locatio
 
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
-                        random_uniform_number = rng.random(1)
+                        random_uniform_number = rng.random()
                         if random_uniform_number < prob_enc_per_timestep:
                             #Perturb *this* ith binary depending on how hard it already is.
                             num_encounters = num_encounters + 1                            
@@ -662,7 +662,7 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
 
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
-                        random_uniform_number = rng.random(1)
+                        random_uniform_number = rng.random()
                         if random_uniform_number < prob_enc_per_timestep:
                             #Perturb *this* ith binary depending on how hard it already is.
                             num_encounters = num_encounters + 1                            
@@ -882,7 +882,7 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
                 enc_rate = 0.002*(sph_norm/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
 
         # Based on est encounter rate, calculate if binary actually has a spheroid encounter
-        random_uniform_number = rng.random(1)
+        random_uniform_number = rng.random()
         if random_uniform_number < enc_rate:
             #print("SPHEROID INTERACTION!")
             # print("Enc rt., Rnd #, bin_com,time_passed:",enc_rate, random_uniform_number, bin_coms[i]/1.e4, bin_separations[i], dist_in_rg_m8, time_passed)  
@@ -890,7 +890,7 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
             # Have already generated spheroid interaction, so a_3 is not far off a_bbh (unless super high ecc). 
             # Assume a_3 is similar to a_bbh (within a factor of O(3), so allowing for modest relative eccentricity)    
             # i.e. a_3=[10^-0.5,10^0.5]*a_bbh.
-            random_uniform_number2 = -0.5 + rng.random(1)
+            random_uniform_number2 = -0.5 + rng.random()
             radius_3 = bin_coms[i]*(10**(random_uniform_number2))
             # Generate random interloper mass from IMF
             # NOTE: Stars should be most common sph component. Switch to BH after some long time.

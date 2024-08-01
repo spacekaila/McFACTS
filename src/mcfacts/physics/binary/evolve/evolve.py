@@ -561,7 +561,7 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh, timestep, old_bbh_freq):
             Mpc = 3.1e22
             # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
             # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-            d_obs = 421*Mpc
+            d_obs = 1909*Mpc
             strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw[j]*rg_chirp/scipy.constants.c)**(2/3)
             # But power builds up in band over multiple cycles! 
             # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
@@ -576,7 +576,7 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh, timestep, old_bbh_freq):
             #For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt).
             # char amplitude = strain_factor*h0
             #                = sqrt(freq^2/(dfreq/dt)/8)
-                print("old bbh freq",old_bbh_freq,nu_gw[j])
+                #print("old bbh freq",old_bbh_freq,nu_gw[j])
                 dnu = np.abs(old_bbh_freq[j]-nu_gw[j])
                 dnu_dt = dnu/timestep_secs
                 nusq = nu_gw[j]*nu_gw[j]
@@ -588,7 +588,8 @@ def bbh_gw_params(bin_array, bbh_gw_indices, mass_smbh, timestep, old_bbh_freq):
 
 def evolve_emri_gw(inner_disk_locations,inner_disk_masses, mass_smbh,timestep,old_gw_freq):
     """This function evaluates the EMRI gravitational wave frequency and strain at the end of each timestep
-    Assume binary is located at z=0.1=422Mpc for now.
+    Assume binary is located at z=0.1=422Mpc for now. 
+    z=0.5=1909 Mpc, using co-moving radial distance from https://www.astro.ucla.edu/~wright/CosmoCalc.html
     temp_emri_array is the value of the emri_array from the previous timestep.
     """
     # Set up binary GW frequency
@@ -636,7 +637,7 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, mass_smbh,timestep,ol
         Mpc = 3.1e22
         # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
         # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-        d_obs = 421*Mpc
+        d_obs = 1909*Mpc
         strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw[i]*rg_chirp/scipy.constants.c)**(2/3)
         # But power builds up in band over multiple cycles! 
         # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
