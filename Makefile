@@ -46,10 +46,10 @@ install: clean version
 #### Test one thing at a time ####
 
 mcfacts_sim: clean
-	python3 ${MCFACTS_SIM_EXE} \
-		--n_iterations 10 \
-		--fname-log out.log \
-		--seed 4567890123
+		python3 ${MCFACTS_SIM_EXE} \
+			--n_iterations 10 \
+			--fname-log out.log \
+			--seed 4567890123
 
 plots:  mcfacts_sim
 	python3 ${POPULATION_PLOTS_EXE} 
@@ -88,3 +88,6 @@ clean:
 	rm -rf out.log
 	rm -rf mergers_cdf*.png
 	rm -rf mergers_nal*.png
+	rm -rf output_mergers_emris.dat
+	rm -rf output_mergers_lvk.dat
+	rm -rf output_mergers_survivors.dat
