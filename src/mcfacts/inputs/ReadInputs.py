@@ -363,7 +363,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
 
     return input_variables, disk_model_radius_array, surface_density_array, aspect_ratio_array
 
-def ReadInputs_prior_mergers(fname='recipes/postagn_bh_pop1.dat', verbose=False):
+def ReadInputs_prior_mergers(fname='recipes/prior_sg_2Myr_population.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or
     default (recipies/prior_mergers_population.dat), and returns the chosen variables for 
     manipulation by main.    
