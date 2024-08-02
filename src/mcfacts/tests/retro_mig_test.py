@@ -38,14 +38,11 @@ if __name__ == "__main__":
     surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
 
     mass_smbh = 1.0e8
-    #retrograde_bh_locations = np.array([50.0, 100.0, 500.0, 1e3, 5e3, 1e4, 5e4])
-    retrograde_bh_locations = np.array([4.99552470e+01, 9.94081834e+01, 4.95832532e+02, 9.99666290e+02, 4.72460751e+03, 8.98082208e+03, 4.99647626e+04])
-    retrograde_bh_masses = np.array([5.0, 10.0, 10.0, 10.0, 20.0, 35.0, 35.0])
-    #retrograde_bh_orb_ecc = np.array([0.5, 0.1, 0.5, 0.9, 0.5, 0.5, 0.9])
-    retrograde_bh_orb_ecc = np.array([0.50008972, 0.1013112, 0.50083546, 0.90000006, 0.50552084, 0.51021582, 0.90000014])
-    #retrograde_bh_orb_inc = (np.pi - 1e-6) * np.ones(7)
-    retrograde_bh_orb_inc = np.array([3.14159165, 3.14159165, 3.14159158, 3.14158832, 3.14159117, 3.14159076, 3.14158461])
-    retro_arg_periapse = 1.0 * np.pi * np.ones(7)
+    retrograde_bh_locations = np.array([1.e3, 1.e3, 1.e3, 1.e3, 1.e3, 1.e3, 1.e3])
+    retrograde_bh_masses = np.array([10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+    retrograde_bh_orb_ecc = np.array([0.1, 0.3, 0.5, 0.7, 0.9, 0.99, 0.999])
+    retrograde_bh_orb_inc = (np.pi - 1.e-6) * np.ones(7)
+    retro_arg_periapse = 0.3 * np.pi * np.ones(7)
     timestep = 1e4
 
     thing1 = retro_mig.retro_mig(

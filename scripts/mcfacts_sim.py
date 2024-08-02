@@ -554,6 +554,9 @@ def main():
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 #First check that binaries are real. Discard any columns where the location or the mass is 0.
+                # SF: I believe this step is handling an error checking thing that may have been
+                #     set up in the previous timeloop if e.g. a binary either merged or was ionized?
+                #     Please explain what this is and how it works right here?
                 reality_flag = evolve.reality_check(binary_bh_array, bin_index,integer_nbinprop)
                 if reality_flag >= 0:
                    #One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag

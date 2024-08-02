@@ -164,20 +164,28 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     frac_change = timestep / tau_e_dyn
 
     # Unlike in the retro_mig function I have not set up a check for when
-    #   tau_e_dyn < timestep because it appears that when that happens,
-    #   tau_a_dyn is also < timestep, so a gets sent to zero before
-    #   we even worry about eccentricity, but, uh, yeah, putting a note here
-    #   in case there are exceptions I haven't found and should worry about...
+    #   tau_e_dyn < timestep because direction matters. I have a fix for 
+    #   when the orbit should go to circular just before the return, but
+    #   if timescale is fast compared to timestep and we expect eccentricity
+    #   excitation... should probably keep an eye out for that?
 
     # need to figure out which way the eccentricity is going; use
     #   Eqn 69 in WZL for cosine of critical inclination
     cos_inc_crit = (xi_bar - (1.0 - ecc**2) * xi)/(kappa_bar - (1.0 - ecc**2) * kappa)
-    # if the cos(inc) is less than cos(inc_crit), ecc is excited, else it is damped
-    frac_change[np.cos(inc) < cos_inc_crit] = -frac_change[np.cos(inc) < cos_inc_crit]
-
+    print("cos_inc_crit")
+    print(cos_inc_crit)
+    inc_crit = np.arccos(cos_inc_crit)
+    print("inc_crit")
+    print(inc_crit)
+    # if the inc < inc_crit, ecc is excited, else it is damped
+    # WZL has a fucking typo: should be inc<inc_crit, not cos(inc)<cos(inc_crit)!!!
+    frac_change[inc > inc_crit] = -frac_change[inc > inc_crit]
+    
     # accounting for poss increase OR decrease in ecc by flipping sign 
     #   on frac_change above (where appropriate)
     retrograde_bh_new_ecc = retrograde_bh_orb_ecc * (1.0 - frac_change)
+    # if extremely strong circularization effect, set ecc to 0.0
+    retrograde_bh_new_ecc[retrograde_bh_new_ecc < 0.0] = 0.0
 
     return retrograde_bh_new_ecc
 
