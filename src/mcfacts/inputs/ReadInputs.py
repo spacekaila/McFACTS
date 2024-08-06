@@ -10,6 +10,7 @@ from mcfacts.inputs import data
 # Dictionary of types
 INPUT_TYPES = {
     'disk_model_name' : str,
+    'disk_model_use_pagn': bool,
     'mass_smbh' : float,
     'trap_radius' : float,
     'disk_outer_radius' : float,
@@ -164,6 +165,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     # Dictionary of types
     input_types = {
         'disk_model_name' : str,
+        'disk_model_use_pagn': bool,
         'mass_smbh' : float,
         'trap_radius' : float,
         'disk_outer_radius' : float,
