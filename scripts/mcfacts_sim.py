@@ -70,7 +70,7 @@ def arg():
     
     ## Add inifile arguments
     # Read default inifile
-    _variable_inputs, _disk_model_radius_array, _surface_density_array, _aspect_ratio_array \
+    _variable_inputs, _surf_density_func_log, _aspect_ratio_func_log \
         = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
     # Loop the arguments
     for name in _variable_inputs:
@@ -97,7 +97,7 @@ def arg():
 
     ## Parse inifile
     # Read inifile
-    variable_inputs, disk_model_radius_array, surface_density_array, aspect_ratio_array \
+    variable_inputs, surf_density_func_log, aspect_ratio_func_log \
         = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
@@ -117,10 +117,6 @@ def arg():
     #   and not the specified inifile,
     #   it remains unaltered.
 
-    # Update opts with variable inputs
-    opts.disk_model_radius_array = disk_model_radius_array
-    opts.surface_density_array = surface_density_array
-    opts.aspect_ratio_array = aspect_ratio_array
     if opts.verbose:
         for item in opts.__dict__:
             print(item, getattr(opts, item))
@@ -153,7 +149,7 @@ def arg():
             for item in opts.__dict__:
                 line = "%s = %s\n"%(item, str(opts.__dict__[item]))
                 F.write(line)
-    return opts
+    return opts, input_variables, surf_density_func_log, aspect_ratio_func_log
 
 
 def main():
@@ -161,17 +157,8 @@ def main():
     """
     # Setting up automated input parameters
     # see IOdocumentation.txt for documentation of variable names/types/etc.
-    opts = arg()
-
-    # create surface density & aspect ratio functions from input arrays
-    surf_dens_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.surface_density_array))
-    surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
-
-    aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.aspect_ratio_array))
-    aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
-    
+    opts, input_variables, surf_density_func_log, aspect_ratio_func_log = arg()
+        
     merged_bh_array_pop = []
 
     surviving_bh_array_pop = []

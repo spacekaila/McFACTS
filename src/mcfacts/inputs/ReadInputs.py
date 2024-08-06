@@ -219,13 +219,17 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     for name in INPUT_TYPES:
         assert name in input_variables
         assert type(input_variables[name]) == INPUT_TYPES[name]
-
+        
     if verbose:
         print("input_variables:")
         for key in input_variables:
             print(key, input_variables[key], type(input_variables[key]))
         print("I put your variables where they belong")
 
+    # Set default : not use pagn
+    if not('disk_model_use_pagn' in input_variables):
+        input_variables['disk_model_use_pagn'] = False
+        
     ## Check outer disk radius in parsecs
     # Scale factor for parsec distance in r_g
     pc_dist = 2.e5*((input_variables['mass_smbh']/1.e8)**(-1.0))
@@ -253,79 +257,67 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     #   density in SI in first column
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
-    infile_suffix = '_surface_density.txt'
-    infile = input_variables['disk_model_name']+infile_suffix
-    infile = impresources.files(data) / infile
-    surface_density_file = open(infile, 'r')
-    density_list = []
-    radius_list = []
-    for line in surface_density_file:
-        line = line.strip()
-        # If it is NOT a comment line
-        if (line.startswith('#') == 0):
-            columns = line.split()
-            #If radius is less than disk outer radius
-            #if columns[1] < disk_outer_radius:
-            density_list.append(float(columns[0]))
-            radius_list.append(float(columns[1]))
-    # close file
-    surface_density_file.close()
+    if not(input_variables['disk_model_use_pagn']):
+        infile_suffix = '_surface_density.txt'
+        infile = input_variables['disk_model_name']+infile_suffix
+        infile = impresources.files(data) / infile
+        dat = np.loadtxt(infile)
+        disk_model_radius_array = dat[:,0]
+        surface_density_array = dat[:,1]
+        #truncate disk at outer radius
+        truncated_disk = np.extract(
+            np.where(disk_model_radius_array < input_variables['disk_outer_radius']),
+            disk_model_radius_array
+        )
+        #print('truncated disk', truncated_disk)
+        truncated_surface_density_array = surface_density_array[0:len(truncated_disk)]
+        
+            
+            
 
-    # re-cast from lists to arrays
-    surface_density_array = np.array(density_list)
-    disk_model_radius_array = np.array(radius_list)
+        # open the disk model aspect ratio file and read it in
+        # Note format is assumed to be comments with #
+        #   aspect ratio in first column
+        #   radius in r_g in second column must be identical to surface density file
+        #       (radius is actually ignored in this file!)
+        #   filename = model_aspect_ratio.txt, where model is user choice
+        infile_suffix = '_aspect_ratio.txt'
+        infile = input_variables['disk_model_name']+infile_suffix
+        infile = impresources.files(data) / infile
+        dat = np.loadtxt(infile)
+        aspect_ratio_array = dat[:,1]
+        truncated_aspect_ratio_array=aspect_ratio_array[0:len(truncated_disk)]
 
-    #truncate disk at outer radius
-    truncated_disk = np.extract(
-        np.where(disk_model_radius_array < input_variables['disk_outer_radius']),
-        disk_model_radius_array
-    )
-    #print('truncated disk', truncated_disk)
-    truncated_surface_density_array = surface_density_array[0:len(truncated_disk)]
-    #print('truncated surface density', truncated_surface_density_array)
 
-    # open the disk model aspect ratio file and read it in
-    # Note format is assumed to be comments with #
-    #   aspect ratio in first column
-    #   radius in r_g in second column must be identical to surface density file
-    #       (radius is actually ignored in this file!)
-    #   filename = model_aspect_ratio.txt, where model is user choice
-    infile_suffix = '_aspect_ratio.txt'
-    infile = input_variables['disk_model_name']+infile_suffix
-    infile = impresources.files(data) / infile
-    aspect_ratio_file = open(infile, 'r')
-    aspect_ratio_list = []
-    for line in aspect_ratio_file:
-        line = line.strip()
-        # If it is NOT a comment line
-        if (line.startswith('#') == 0):
-            columns = line.split()
-            #If radius is less than disk outer radius
-            #if columns[1] < disk_outer_radius:
-            aspect_ratio_list.append(float(columns[0]))
-    # close file
-    aspect_ratio_file.close()
+        # Now redefine arrays used to generate interpolating functions in terms of truncated arrays
+        disk_model_radius_array = truncated_disk
+        surface_density_array = truncated_surface_density_array
+        aspect_ratio_array = truncated_aspect_ratio_array
 
-    # re-cast from lists to arrays
-    aspect_ratio_array = np.array(aspect_ratio_list)
-    truncated_aspect_ratio_array=aspect_ratio_array[0:len(truncated_disk)]
-    #print("truncated aspect ratio array", truncated_aspect_ratio_array)
+        # Housekeeping from input variables
+        input_variables['disk_outer_radius'] = disk_model_radius_array[-1]
+        input_variables['disk_inner_radius'] = disk_model_radius_array[0]
 
-    # Now redefine arrays read in by main() in terms of truncated arrays
-    disk_model_radius_array = truncated_disk
-    surface_density_array = truncated_surface_density_array
-    aspect_ratio_array = truncated_aspect_ratio_array
+        # Now geenerate interpolating functions
+        # create surface density & aspect ratio functions from input arrays
+        surf_dens_func_log = scipy.interpolate.UnivariateSpline(
+            disk_model_radius_array, np.log(surface_density_array))
+        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
 
-    # Housekeeping from input variables
-    input_variables['disk_outer_radius'] = disk_model_radius_array[-1]
-    input_variables['disk_inner_radius'] = disk_model_radius_array[0]
+        aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(
+            disk_model_radius_array, np.log(aspect_ratio_array))
+        aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
+    else:
+        # instead, populate with pagn
+        import mcfacts.external.DiskModelsPAGN as dm_pagn
 
+    
     #Truncate disk models at outer disk radius
     if verbose:
         print("I read and digested your disk model")
         print("Sending variables back")
 
-    return input_variables, disk_model_radius_array, surface_density_array, aspect_ratio_array
+    return input_variables, surf_density_func_log, aspect_ratio_func_log
 
 def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or
