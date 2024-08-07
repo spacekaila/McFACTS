@@ -215,8 +215,13 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         if isinstance(input_variables[name], str):
             input_variables[name] = input_variables[name].strip("'")
 
+    # Set default : not use pagn.  this allows us not to provide it
+    if not('disk_model_use_pagn' in input_variables):
+        input_variables['disk_model_use_pagn'] = False
+
     # Make sure you got all of the ones you were expecting
     for name in INPUT_TYPES:
+        print(name)
         assert name in input_variables
         assert type(input_variables[name]) == INPUT_TYPES[name]
         
@@ -226,9 +231,6 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
             print(key, input_variables[key], type(input_variables[key]))
         print("I put your variables where they belong")
 
-    # Set default : not use pagn
-    if not('disk_model_use_pagn' in input_variables):
-        input_variables['disk_model_use_pagn'] = False
         
     ## Check outer disk radius in parsecs
     # Scale factor for parsec distance in r_g
@@ -299,6 +301,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         input_variables['disk_inner_radius'] = disk_model_radius_array[0]
 
         # Now geenerate interpolating functions
+        import scipy.interpolate
         # create surface density & aspect ratio functions from input arrays
         surf_dens_func_log = scipy.interpolate.UnivariateSpline(
             disk_model_radius_array, np.log(surface_density_array))
@@ -308,6 +311,10 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
             disk_model_radius_array, np.log(aspect_ratio_array))
         aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     else:
+        import sys
+        print(input_variables)
+        print(" PAGN not implemented")
+        sys.exit(1)
         # instead, populate with pagn
         import mcfacts.external.DiskModelsPAGN as dm_pagn
 
@@ -317,7 +324,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         print("I read and digested your disk model")
         print("Sending variables back")
 
-    return input_variables, surf_density_func_log, aspect_ratio_func_log
+    return input_variables, surf_dens_func, aspect_ratio_func
 
 def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or

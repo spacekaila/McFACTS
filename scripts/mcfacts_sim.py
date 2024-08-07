@@ -70,7 +70,7 @@ def arg():
     
     ## Add inifile arguments
     # Read default inifile
-    _variable_inputs, _surf_density_func_log, _aspect_ratio_func_log \
+    _variable_inputs, _surf_dens_func, _aspect_ratio_func \
         = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
     # Loop the arguments
     for name in _variable_inputs:
@@ -97,7 +97,7 @@ def arg():
 
     ## Parse inifile
     # Read inifile
-    variable_inputs, surf_density_func_log, aspect_ratio_func_log \
+    variable_inputs, surf_dens_func, aspect_ratio_func \
         = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
@@ -149,7 +149,7 @@ def arg():
             for item in opts.__dict__:
                 line = "%s = %s\n"%(item, str(opts.__dict__[item]))
                 F.write(line)
-    return opts, input_variables, surf_density_func_log, aspect_ratio_func_log
+    return opts, variable_inputs, surf_dens_func, aspect_ratio_func
 
 
 def main():
@@ -157,7 +157,7 @@ def main():
     """
     # Setting up automated input parameters
     # see IOdocumentation.txt for documentation of variable names/types/etc.
-    opts, input_variables, surf_density_func_log, aspect_ratio_func_log = arg()
+    opts, input_variables, surf_dens_func, aspect_ratio_func = arg()
         
     merged_bh_array_pop = []
 
