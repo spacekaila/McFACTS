@@ -203,7 +203,10 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     # try to pretty-convert these to quantites
     for name in input_variables:
         if name in INPUT_TYPES:
-            input_variables[name] = INPUT_TYPES[name](input_variables[name])
+            if INPUT_TYPES[name] == bool:
+                input_variables[name] = bool(int(input_variables[name]))
+            else:
+                input_variables[name] = INPUT_TYPES[name](input_variables[name])
         elif '.' in input_variables[name]:
             input_variables[name]=float(input_variables[name])
         elif input_variables[name].isdigit():
@@ -264,8 +267,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         infile = input_variables['disk_model_name']+infile_suffix
         infile = impresources.files(data) / infile
         dat = np.loadtxt(infile)
-        disk_model_radius_array = dat[:,0]
-        surface_density_array = dat[:,1]
+        disk_model_radius_array = dat[:,1]
+        surface_density_array = dat[:,0]
         #truncate disk at outer radius
         truncated_disk = np.extract(
             np.where(disk_model_radius_array < input_variables['disk_outer_radius']),
@@ -287,7 +290,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         infile = input_variables['disk_model_name']+infile_suffix
         infile = impresources.files(data) / infile
         dat = np.loadtxt(infile)
-        aspect_ratio_array = dat[:,1]
+        aspect_ratio_array = dat[:,0]
         truncated_aspect_ratio_array=aspect_ratio_array[0:len(truncated_disk)]
 
 
