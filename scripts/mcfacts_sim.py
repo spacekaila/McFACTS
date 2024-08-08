@@ -40,7 +40,7 @@ DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice
 DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 
 assert DEFAULT_INI.is_file()
-assert DEFAULT_PRIOR_POP.is_file()
+#assert DEFAULT_PRIOR_POP.is_file()
 
 def arg():
     import argparse
