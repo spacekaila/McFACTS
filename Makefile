@@ -68,7 +68,7 @@ mstar_runs:
 		--mstar-min 1e9 \
 		--mstar-max 1e13 \
 		--nbins 9 \
-        --scrub \
+		--scrub \
 		--fname-nal ${FNAME_GWTC2_NAL} \
 		--wkdir ${MSTAR_RUNS_WKDIR}
 	python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}/early
@@ -78,7 +78,7 @@ mstar_runs:
 #### CLEAN ####
 clean:
 	rm -rf run*
-	rm -rf output_mergers_population.dat
+	rm -rf output_mergers*.dat
 	rm -rf m1m2.png
 	rm -rf merger_mass_v_radius.png
 	rm -rf q_chi_eff.png
@@ -88,3 +88,4 @@ clean:
 	rm -rf out.log
 	rm -rf mergers_cdf*.png
 	rm -rf mergers_nal*.png
+	rm -rf r_chi_p.png
