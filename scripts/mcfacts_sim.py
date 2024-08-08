@@ -37,10 +37,10 @@ merger_field_names=' '.join(mergerfile.names_rec)
 
 #DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
 DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
-DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
+#DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 
 assert DEFAULT_INI.is_file()
-assert DEFAULT_PRIOR_POP.is_file()
+#assert DEFAULT_PRIOR_POP.is_file()
 
 def arg():
     import argparse
