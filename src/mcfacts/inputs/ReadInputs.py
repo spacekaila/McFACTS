@@ -312,12 +312,24 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     else:
         import sys
-        print(input_variables)
-        print(" PAGN not implemented")
-        sys.exit(1)
+        
+
         # instead, populate with pagn
         import mcfacts.external.DiskModelsPAGN as dm_pagn
-
+        import pagn.constants as ct
+        pagn_name = "Sirko"
+        base_args = { 'Mbh': input_variables['mass_smbh']*ct.MSun,\
+                      'alpha':input_variables['alpha'], \
+                      'le':input_variables['frac_Eddington_ratio']}
+        if 'thompson' in input_variables['disk_model_name']:
+            pagn_name = 'Thompson'
+            base_args['Rout'] = input_variables['disk_outer_radius'];
+        # note Rin default is 3 Rs
+        
+        pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
+        
+        surf_dens_func, aspect_ratio_func  = pagn_model.return_disk_surf_model()
+        
     
     #Truncate disk models at outer disk radius
     if verbose:
