@@ -82,7 +82,7 @@ mstar_runs:
 #### CLEAN ####
 clean:
 	rm -rf run*
-	rm -rf output_mergers_population.dat
+	rm -rf output_mergers*.dat
 	rm -rf m1m2.png
 	rm -rf merger_mass_v_radius.png
 	rm -rf q_chi_eff.png
@@ -92,3 +92,4 @@ clean:
 	rm -rf out.log
 	rm -rf mergers_cdf*.png
 	rm -rf mergers_nal*.png
+	rm -rf r_chi_p.png
