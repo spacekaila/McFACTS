@@ -203,7 +203,10 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     # try to pretty-convert these to quantites
     for name in input_variables:
         if name in INPUT_TYPES:
-            input_variables[name] = INPUT_TYPES[name](input_variables[name])
+            if INPUT_TYPES[name] == bool:
+                input_variables[name] = bool(int(input_variables[name]))
+            else:
+                input_variables[name] = INPUT_TYPES[name](input_variables[name])
         elif '.' in input_variables[name]:
             input_variables[name]=float(input_variables[name])
         elif input_variables[name].isdigit():
@@ -259,6 +262,9 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     #   density in SI in first column
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
+    print(input_variables['disk_model_use_pagn'])
+    raise Exception
+
     if not(input_variables['disk_model_use_pagn']):
         infile_suffix = '_surface_density.txt'
         infile = input_variables['disk_model_name']+infile_suffix
