@@ -262,9 +262,6 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     #   density in SI in first column
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
-    print(input_variables['disk_model_use_pagn'])
-    raise Exception
-
     if not(input_variables['disk_model_use_pagn']):
         infile_suffix = '_surface_density.txt'
         infile = input_variables['disk_model_name']+infile_suffix
