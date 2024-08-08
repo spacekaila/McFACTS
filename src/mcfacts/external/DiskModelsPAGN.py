@@ -51,7 +51,12 @@ class AGNGasDiskModel(object):
         surf_dens_func_log = scipy.interpolate.UnivariateSpline(            R, ln_rho)
         surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
 
-        return surf_dens_func
+        ln_aspect_ratio = np.log(self.disk_model.h/self.disk_model.R)
+        aspect_func_log = scipy.interpolate.UnivariateSpline(            R, ln_aspect_ratio)
+        aspect_func = lambda x, f=aspect_func_log: np.exp(f(x))
+ 
+       
+        return surf_dens_func, aspect_func
 
 
 
