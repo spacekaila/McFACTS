@@ -73,7 +73,7 @@ def arg():
     )
     parser.add_argument("--seed", type=int, default=None,
         help="Set the random seed. Randomly sets one if not passed. Default: None")
-    parser.add_argument("--fname-log", default=None, type=str,
+    parser.add_argument("--fname-log", default="mcfacts_sim.log", type=str,
         help="Specify a file to save the arguments for mcfacts")
     
     ## Add inifile arguments
@@ -158,11 +158,10 @@ def arg():
 
 
     # Write parameters to log file
-    if not opts.fname_log is None:
-        with open(opts.work_directory / opts.fname_log, 'w') as F:
-            for item in opts.__dict__:
-                line = "%s = %s\n"%(item, str(opts.__dict__[item]))
-                F.write(line)
+    with open(opts.work_directory / opts.fname_log, 'w') as F:
+        for item in opts.__dict__:
+            line = "%s = %s\n"%(item, str(opts.__dict__[item]))
+            F.write(line)
     return opts, variable_inputs, surf_dens_func, aspect_ratio_func
 
 
