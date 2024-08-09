@@ -37,7 +37,6 @@ from mcfacts.outputs import mergerfile
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
 
-#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
 # Do not change this line EVER
 DEFAULT_INI = impresources.files(input_data) / "model_choice.ini"
 #DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
@@ -73,7 +72,7 @@ def arg():
     
     ## Add inifile arguments
     # Read default inifile
-    _variable_inputs, _disk_model_radius_array, _surface_density_array, _aspect_ratio_array \
+    _variable_inputs, _surf_dens_func, _aspect_ratio_func \
         = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
     # Loop the arguments
     for name in _variable_inputs:
@@ -100,7 +99,7 @@ def arg():
 
     ## Parse inifile
     # Read inifile
-    variable_inputs, disk_model_radius_array, surface_density_array, aspect_ratio_array \
+    variable_inputs, surf_dens_func, aspect_ratio_func \
         = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
@@ -120,10 +119,6 @@ def arg():
     #   and not the specified inifile,
     #   it remains unaltered.
 
-    # Update opts with variable inputs
-    opts.disk_model_radius_array = disk_model_radius_array
-    opts.surface_density_array = surface_density_array
-    opts.aspect_ratio_array = aspect_ratio_array
     if opts.verbose:
         for item in opts.__dict__:
             print(item, getattr(opts, item))
@@ -156,7 +151,7 @@ def arg():
             for item in opts.__dict__:
                 line = "%s = %s\n"%(item, str(opts.__dict__[item]))
                 F.write(line)
-    return opts
+    return opts, variable_inputs, surf_dens_func, aspect_ratio_func
 
 
 def main():
@@ -164,17 +159,8 @@ def main():
     """
     # Setting up automated input parameters
     # see IOdocumentation.txt for documentation of variable names/types/etc.
-    opts = arg()
-
-    # create surface density & aspect ratio functions from input arrays
-    surf_dens_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.surface_density_array))
-    surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
-
-    aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.aspect_ratio_array))
-    aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
-    
+    opts, input_variables, surf_dens_func, aspect_ratio_func = arg()
+        
     merged_bh_array_pop = []
 
     surviving_bh_array_pop = []
