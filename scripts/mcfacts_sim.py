@@ -44,6 +44,12 @@ DEFAULT_INI = impresources.files(input_data) / "model_choice.ini"
 assert DEFAULT_INI.is_file()
 #assert DEFAULT_PRIOR_POP.is_file()
 
+FORBIDDEN_ARGS = [
+    "disk_outer_radius",
+    "max_disk_radius_pc",
+    "disk_inner_radius",
+    ]
+
 def arg():
     import argparse
     # parse command line arguments
@@ -76,6 +82,9 @@ def arg():
         = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
     # Loop the arguments
     for name in _variable_inputs:
+        # Skip CL read of forbidden arguments
+        if name in FORBIDDEN_ARGS:
+            continue
         _metavar    = name
         _opt        = "--%s"%(name)
         _default    = _variable_inputs[name]
@@ -104,9 +113,12 @@ def arg():
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
     for name in variable_inputs:
-        print(name, hasattr(opts, name), getattr(opts, name), _variable_inputs[name], variable_inputs[name])
+        # Check for args not in parser. These were generated or changed in ReadInputs.py
+        if not hasattr(opts, name):
+            setattr(opts, name, variable_inputs[name])
+            continue
+        # Check for args not in the default_ini file
         if getattr(opts, name) != _variable_inputs[name]:
-            print(name)
             # This is the case where the user has set the value of an argument
             # from the command line. We don't want to argue with the user.
             pass
