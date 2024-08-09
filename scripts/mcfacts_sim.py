@@ -78,8 +78,7 @@ def arg():
     
     ## Add inifile arguments
     # Read default inifile
-    _variable_inputs, _surf_dens_func, _aspect_ratio_func \
-        = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
+    _variable_inputs = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
     # Loop the arguments
     for name in _variable_inputs:
         # Skip CL read of forbidden arguments
@@ -108,8 +107,7 @@ def arg():
 
     ## Parse inifile
     # Read inifile
-    variable_inputs, surf_dens_func, aspect_ratio_func \
-        = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
+    variable_inputs = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
     for name in variable_inputs:
@@ -162,7 +160,7 @@ def arg():
         for item in opts.__dict__:
             line = "%s = %s\n"%(item, str(opts.__dict__[item]))
             F.write(line)
-    return opts, variable_inputs, surf_dens_func, aspect_ratio_func
+    return opts
 
 
 def main():
@@ -170,7 +168,18 @@ def main():
     """
     # Setting up automated input parameters
     # see IOdocumentation.txt for documentation of variable names/types/etc.
-    opts, input_variables, surf_dens_func, aspect_ratio_func = arg()
+    opts = arg()
+    surf_dens_func, aspect_ratio_func = \
+        ReadInputs.construct_disk_interp(
+        opts.mass_smbh,
+        opts.disk_outer_radius,
+        opts.disk_model_name,
+        opts.alpha,
+        opts.frac_Eddington_ratio,
+        max_disk_radius_pc      = opts.max_disk_radius_pc,
+        disk_model_use_pagn     = opts.disk_model_use_pagn,
+        verbose                 = opts.verbose
+        )
         
     merged_bh_array_pop = []
 
