@@ -147,6 +147,8 @@ def setup_disk_blackholes_arg_periapse(rng, n_bh):
     # Hahahaha, actually, no, for now everything will be at 0.0 or pi/2
     # For now, bc crude retro evol only treats arg periapse = (0.0, pi) or pi/2
     # and intermediate values are fucking up evolution
+    # (and pi is symmetric w/0, pi/2 symmetric w/ 3pi/2 so doesn't matter)
+    # when code can handle arbitrary arg of periapse, uncomment relevant line
 
     integer_nbh = int(n_bh)
     random_uniform_number = rng.random((integer_nbh,))
