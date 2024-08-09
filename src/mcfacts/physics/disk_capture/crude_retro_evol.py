@@ -51,6 +51,9 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
     new_orbiter_inc = np.zeros(len(orbiter_inc))
     new_orbiter_semimaj = np.zeros(len(orbiter_semimaj))
 
+    # Housekeeping: if you're too close to ecc=1.0, nothing works, so
+    epsilon = 1.0e-8
+
     # hardcoded awfulness coming up:
     mass_smbh_0 = 1e8 # solar masses, for scaling
     orbiter_mass_0 = 30.0 # solar masses
@@ -123,13 +126,15 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
                 inc_scale_factor = step1_time * tau_inc_dyn(mass_smbh, orbiter_semimaj[i], orbiter_masses[i], orbiter_periapse[i], orbiter_ecc[i], orbiter_inc[i], surfdensfunc) / tau_inc_dyn(mass_smbh_0, step1_semi_maj_0, orbiter_mass_0, periapse_1, step1_ecc_0, step1_inc_0, surfdensfunc)
                 new_orbiter_ecc[i] = orbiter_ecc[i] * (1.0 + step1_delta_ecc/orbiter_ecc[i] * (timestep/ecc_scale_factor))
                 # catch overshooting ecc=1
-                if new_orbiter_ecc[i] > 1.0: new_orbiter_ecc[i] = 1.0
+                # actually eqns not appropriate for ecc=1.0
+                if new_orbiter_ecc[i] >= (1.0 - epsilon): new_orbiter_ecc[i] = (1.0 - epsilon)
                 new_orbiter_semimaj[i] = orbiter_semimaj[i] * (1.0 - step1_delta_semimaj/orbiter_semimaj[i] * (timestep/semimaj_scale_factor))
                 # catch overshooting semimaj axis, set to 0.0
                 if new_orbiter_semimaj[i] <= 0.0: new_orbiter_semimaj[i] = 0.0
                 new_orbiter_inc[i] = orbiter_inc[i] * (1.0 - step1_delta_inc/orbiter_inc[i] * (timestep/inc_scale_factor))
                 # catch overshooting inc, set to 0.0
-                if new_orbiter_inc[i] <= 0.0: new_orbiter_inc[i] = 0.0
+                if new_orbiter_inc[i] <= (0.0): new_orbiter_inc[i] = (0.0)
+                print("Step 1")
             # check if we have hit max ecc, which sends us to step 2
             elif (orbiter_ecc[i] >= step2_ecc_0):
                 # adjust our timesteps for actual values of params, vs baseline
@@ -141,12 +146,15 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
                 new_orbiter_ecc[i] = orbiter_ecc[i] * (1.0 - step2_delta_ecc/orbiter_ecc[i] * (timestep/ecc_scale_factor))
                 # catch overshooting ecc=0
                 if new_orbiter_ecc[i] < 0.0: new_orbiter_ecc[i] = 0.0
+                # and catch overshooting ecc=1.0
+                if new_orbiter_ecc[i] >= (1.0 - epsilon): new_orbiter_ecc[i] = (1.0 - epsilon)
                 new_orbiter_semimaj[i] = orbiter_semimaj[i] * (1.0 - step2_delta_semimaj/orbiter_semimaj[i] * (timestep/semimaj_scale_factor))
                 # catch overshooting semimaj axis, set to 0.0
                 if new_orbiter_semimaj[i] <= 0.0: new_orbiter_semimaj[i] = 0.0
                 new_orbiter_inc[i] = orbiter_inc[i] * (1.0 - step2_delta_inc/orbiter_inc[i] * (timestep/inc_scale_factor))
                 # catch overshooting inc, set to 0.0
-                if new_orbiter_inc[i] <= 0.0: new_orbiter_inc[i] = 0.0
+                if new_orbiter_inc[i] <= (0.0): new_orbiter_inc[i] = (0.0)
+                print("Step 2")
             # if our inc is even barely prograde... hopefully this works ok...
             # this should work as long as we're only tracking stuff originally retrograde
             elif (np.abs(orbiter_inc[i]) < (np.pi/2.0)):
@@ -164,7 +172,8 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
                 if new_orbiter_semimaj[i] <= 0.0: new_orbiter_semimaj[i] = 0.0
                 new_orbiter_inc[i] = orbiter_inc[i] * (1.0 - step3_delta_inc/orbiter_inc[i] * (timestep/inc_scale_factor))
                 # catch overshooting inc, set to 0.0
-                if new_orbiter_inc[i] <= 0.0: new_orbiter_inc[i] = 0.0
+                if new_orbiter_inc[i] <= (0.0): new_orbiter_inc[i] = (0.0)
+                print("Step 3")
             # print warning if none of the conditions are satisfied
             else:
                 print("Warning: retrograde orbital parameters out of range, behavior unreliable")
@@ -189,7 +198,7 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
             if new_orbiter_semimaj[i] <= 0.0: new_orbiter_semimaj[i] = 0.0
             new_orbiter_inc[i] = orbiter_inc[i] * (1.0 - stepw0_delta_inc/orbiter_inc[i] * (timestep/stepw0_time))
             # catch overshooting inc, set to 0.0
-            if new_orbiter_inc[i] <= 0.0: new_orbiter_inc[i] = 0.0
+            if new_orbiter_inc[i] <= (0.0): new_orbiter_inc[i] = (0.0)
         else:
             print("Warning: retrograde argument of periapse out of range, behavior unreliable")
     
@@ -327,10 +336,11 @@ def tau_semi_lat(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrogra
     # WZL Eqn 70
     #   NOTE: preserved retrograde_bh_locations in r_g to feed to disk_surf_model function
     #   tau in units of sec
-    tau_p_dyn = np.sin(inc) * (delta - np.cos(inc))**1.5 \
+    #   NOTE: had to add an abs(sin(inc)) to avoid negative timescales(!)
+    tau_p_dyn = np.abs(np.sin(inc)) * (delta - np.cos(inc))**1.5 \
                 * mass_smbh**2 * period / (retro_mass*disk_surf_model(retrograde_bh_locations)*np.pi*semi_lat_rec**2) \
                 / (np.sqrt(2)) * kappa * np.abs(np.cos(inc) - zeta)
-
+    
     return tau_p_dyn
 
 def tau_ecc_dyn(mass_smbh, orbiter_semimaj, orbiter_masses, orbiter_periapse, orbiter_ecc, orbiter_inc, surfdensfunc):

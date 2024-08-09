@@ -36,10 +36,10 @@ if __name__ == "__main__":
     surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
 
     mass_smbh = 1.0e8
-    retrograde_bh_locations = 1.e2 * np.ones(7)
-    retrograde_bh_masses = 30.0 * np.ones(7)
-    retrograde_bh_orb_ecc = np.array([0.1, 0.3, 0.5, 0.7, 0.9, 0.99, 0.999])
-    retrograde_bh_orb_inc = (179.0/180.0) * (np.pi) * np.ones(7)
+    retrograde_bh_locations = 8.002169443665509789e+03 * np.ones(7)
+    retrograde_bh_masses = 1.085329144860416584e+01 * np.ones(7)
+    retrograde_bh_orb_ecc = np.array([0.1, 0.3, 0.5, 0.7, 0.9, 0.99, 2.274490742165892199e-01])
+    retrograde_bh_orb_inc = 3.143573527032012649e+00 * np.ones(7)
     retro_arg_periapse = 0.0 * np.pi * np.ones(7)
     timestep = 1e4
 

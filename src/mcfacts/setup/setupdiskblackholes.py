@@ -143,10 +143,15 @@ def setup_disk_blackholes_arg_periapse(rng, n_bh):
     # Someday we should probably pick all the orbital variables
     #   to be consistent with a thermal distribution or something
     #   otherwise physically well-motivated...
+    #
+    # Hahahaha, actually, no, for now everything will be at 0.0 or pi/2
+    # For now, bc crude retro evol only treats arg periapse = (0.0, pi) or pi/2
+    # and intermediate values are fucking up evolution
 
     integer_nbh = int(n_bh)
     random_uniform_number = rng.random((integer_nbh,))
-    bh_initial_orb_arg_periapse = 2.0*np.pi*random_uniform_number
+    #bh_initial_orb_arg_periapse = 2.0*np.pi*random_uniform_number
+    bh_initial_orb_arg_periapse = 0.5 * np.pi * np.around(random_uniform_number)
 
     return bh_initial_orb_arg_periapse
 
