@@ -161,45 +161,6 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     # convert to dict
     input_variables = dict(config.items('top'))
 
-
-    # Dictionary of types
-    input_types = {
-        'disk_model_name' : str,
-        'disk_model_use_pagn': bool,
-        'mass_smbh' : float,
-        'trap_radius' : float,
-        'disk_outer_radius' : float,
-        'alpha' : float,
-        'n_iterations' : int,
-        'mode_mbh_init' : float,
-        'max_initial_bh_mass' : float,
-        'mbh_powerlaw_index' : float,
-        'mu_spin_distribution' : float,
-        'sigma_spin_distribution' : float,
-        'spin_torque_condition' : float,
-        'frac_Eddington_ratio' : float,
-        'max_initial_eccentricity' : float,
-        'timestep' : float,
-        'number_of_timesteps' : int,
-        'retro' : int,
-        'feedback' : int,
-        'capture_time' : float,
-        'outer_capture_radius' : float,
-        'crit_ecc' : float,
-        'r_nsc_out' : float,
-        'M_nsc' : float,
-        'r_nsc_crit' : float,
-        'nbh_nstar_ratio' : float,
-        'mbh_mstar_ratio' : float,
-        'nsc_index_inner' : float,
-        'nsc_index_outer' : float,
-        'h_disk_average' : float,
-        'dynamic_enc' : int,
-        'de' : float,
-        'orb_ecc_damping' : int,
-        'prior_agn' : int,
-    }
-
     # try to pretty-convert these to quantites
     for name in input_variables:
         if name in INPUT_TYPES:
@@ -234,51 +195,91 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
             print(key, input_variables[key], type(input_variables[key]))
         print("I put your variables where they belong")
 
+    # Return the arguments
+    return input_variables
+
+def construct_disk_interp(
+    mass_smbh,
+    disk_outer_radius,
+    disk_model_name,
+    alpha,
+    frac_Eddington_ratio,
+    max_disk_radius_pc=0.,
+    disk_model_use_pagn=False,
+    verbose=False,
+    ):
+    '''Construct the disk array interpolators
+
+    Parameters
+    ----------
+        mass_smbh : float
+            Mass of the supermassive black hole (M_sun)
+        disk_outer_radius : float
+            final element of disk_model_radius_array (units of r_g)
+        alpha : ???
+            ??? #TODO
+        frac_Eddington_ratio : float
+            assumed accretion rate onto stellar bh from disk gas, in units of Eddington
+            accretion rate
+        max_disk_radius_pc : float
+            Maximum disk size in parsecs (0. for off)
+        disk_model_use_pagn : bool
+            use pAGN?
+        verbose : bool
+            Print extra stuff?
+
+    Returns
+    ------
+        surf_dens_func : scipy.interpolate.UnivariateSpline.UnivariateSpline object
+            Surface density interpolator
+        aspect_ratio_func : scipy.interpolate.UnivariateSpline.UnivariateSpline object
+            Aspect ratio interpolator
+    '''
+    ## Check inputs ##
+    # Check mass_smbh
+    assert type(mass_smbh) == float, "mass_smbh expected float, got %s"%(type(mass_smbh))
         
     ## Check outer disk radius in parsecs
     # Scale factor for parsec distance in r_g
-    pc_dist = 2.e5*((input_variables['mass_smbh']/1.e8)**(-1.0))
+    pc_dist = 2.e5*((mass_smbh/1.e8)**(-1.0))
     # Calculate outer disk radius in pc
-    disk_outer_radius_pc = input_variables['disk_outer_radius']/pc_dist
+    disk_outer_radius_pc = disk_outer_radius/pc_dist
     # Check max_disk_radius_pc argument
-    if input_variables['max_disk_radius_pc'] == 0.:
+    if max_disk_radius_pc == 0.:
         # Case 1: max_disk_radius_pc is disabled
         pass
-    elif input_variables['max_disk_radius_pc'] < 0.:
+    elif max_disk_radius_pc < 0.:
         # Case 2: max_disk_radius_pc is negative
         # Always assign disk_outer_radius to given distance in parsecs
-        input_variables['disk_outer_radius'] = -1. * input_variables['max_disk_radius_pc'] * pc_dist
+        disk_outer_radius = -1. * max_disk_radius_pc * pc_dist
     else:
         # Case 3: max_disk_radius_pc is positive
         # Cap disk_outer_radius at given value
-        if disk_outer_radius_pc > input_variables['max_disk_radius_pc']:
+        if disk_outer_radius_pc > max_disk_radius_pc:
             # calculate scale factor
-            disk_radius_scale = input_variables['max_disk_radius_pc'] / disk_outer_radius_pc
+            disk_radius_scale = max_disk_radius_pc / disk_outer_radius_pc
             # Adjust disk_outer_radius as needed
-            input_variables['disk_outer_radius'] = input_variables['disk_outer_radius'] * disk_radius_scale
+            disk_outer_radius = disk_outer_radius * disk_radius_scale
         
     # open the disk model surface density file and read it in
     # Note format is assumed to be comments with #
     #   density in SI in first column
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
-    if not(input_variables['disk_model_use_pagn']):
+    if not(disk_model_use_pagn):
         infile_suffix = '_surface_density.txt'
-        infile = input_variables['disk_model_name']+infile_suffix
+        infile = disk_model_name+infile_suffix
         infile = impresources.files(data) / infile
         dat = np.loadtxt(infile)
         disk_model_radius_array = dat[:,1]
         surface_density_array = dat[:,0]
         #truncate disk at outer radius
         truncated_disk = np.extract(
-            np.where(disk_model_radius_array < input_variables['disk_outer_radius']),
+            np.where(disk_model_radius_array < disk_outer_radius),
             disk_model_radius_array
         )
         #print('truncated disk', truncated_disk)
         truncated_surface_density_array = surface_density_array[0:len(truncated_disk)]
-        
-            
-            
 
         # open the disk model aspect ratio file and read it in
         # Note format is assumed to be comments with #
@@ -287,7 +288,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         #       (radius is actually ignored in this file!)
         #   filename = model_aspect_ratio.txt, where model is user choice
         infile_suffix = '_aspect_ratio.txt'
-        infile = input_variables['disk_model_name']+infile_suffix
+        infile = disk_model_name+infile_suffix
         infile = impresources.files(data) / infile
         dat = np.loadtxt(infile)
         aspect_ratio_array = dat[:,0]
@@ -298,10 +299,6 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         disk_model_radius_array = truncated_disk
         surface_density_array = truncated_surface_density_array
         aspect_ratio_array = truncated_aspect_ratio_array
-
-        # Housekeeping from input variables
-        input_variables['disk_outer_radius'] = disk_model_radius_array[-1]
-        input_variables['disk_inner_radius'] = disk_model_radius_array[0]
 
         # Now geenerate interpolating functions
         import scipy.interpolate
@@ -314,19 +311,16 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
             disk_model_radius_array, np.log(aspect_ratio_array))
         aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     else:
-        import sys
-        
-
         # instead, populate with pagn
         import mcfacts.external.DiskModelsPAGN as dm_pagn
         import pagn.constants as ct
         pagn_name = "Sirko"
-        base_args = { 'Mbh': input_variables['mass_smbh']*ct.MSun,\
-                      'alpha':input_variables['alpha'], \
-                      'le':input_variables['frac_Eddington_ratio']}
-        if 'thompson' in input_variables['disk_model_name']:
+        base_args = { 'Mbh': mass_smbh*ct.MSun,\
+                      'alpha':alpha, \
+                      'le':frac_Eddington_ratio}
+        if 'thompson' in disk_model_name:
             pagn_name = 'Thompson'
-            base_args['Rout'] = input_variables['disk_outer_radius'];
+            base_args['Rout'] = disk_outer_radius;
         # note Rin default is 3 Rs
         
         pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
@@ -339,7 +333,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         print("I read and digested your disk model")
         print("Sending variables back")
 
-    return input_variables, surf_dens_func, aspect_ratio_func
+    return surf_dens_func, aspect_ratio_func
 
 def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or
