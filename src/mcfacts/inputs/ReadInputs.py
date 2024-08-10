@@ -325,7 +325,7 @@ def construct_disk_interp(
         
         pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
         
-        surf_dens_func, aspect_ratio_func  = pagn_model.return_disk_surf_model()
+        surf_dens_func, aspect_ratio_func, Ragn  = pagn_model.return_disk_surf_model()
         
     
     #Truncate disk models at outer disk radius
