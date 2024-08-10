@@ -44,19 +44,25 @@ class AGNGasDiskModel(object):
 
     def return_disk_surf_model(self):
         """
-        Returns a disk surface function model in kg/m^2 given distance from SMBH in r_g = r_s/2
+        Returns a disk surface function model in \Sigma = 2 rho H  in  kg/m^2 given distance from SMBH in r_g = r_s/2
+        Default pagn internal units are SI
         """
-        R = self.disk_model.R/(self.disk_model.Rs/2)  # convert to R_g explicitly, using internal structures
-        ln_rho = np.log(self.disk_model.rho)
-        surf_dens_func_log = scipy.interpolate.UnivariateSpline(            R, ln_rho)
+        R = self.disk_model.R/(self.disk_model.Rs/2)  # convert to R_g  (=R/( M G/c^2)  explicitly, using internal structures
+        R_agn = self.disk_model.R_AGN /(self.disk_model.Rs/2)
+        R=R[:self.disk_model.isf] # truncate to gas part of disk (no SFR)
+        Sigma = 2*self.disk_model.h*self.disk_model.rho  # SI density
+        Sigma = Sigma[:self.disk_model.isf]
+        ln_Sigma = np.log(Sigma)   # log of SI density
+        surf_dens_func_log = scipy.interpolate.UnivariateSpline(            R, ln_Sigma)
         surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
 
         ln_aspect_ratio = np.log(self.disk_model.h/self.disk_model.R)
+        ln_aspect_ratio = ln_aspect_ratio[:self.disk_model.isf] # truncate to gas part of disk (no SFR)
         aspect_func_log = scipy.interpolate.UnivariateSpline(            R, ln_aspect_ratio)
         aspect_func = lambda x, f=aspect_func_log: np.exp(f(x))
  
        
-        return surf_dens_func, aspect_func
+        return surf_dens_func, aspect_func, R_agn 
 
 
 
