@@ -54,17 +54,22 @@ class AGNGasDiskModel(object):
             R=R[:self.disk_model.isf] # truncate to gas part of disk (no SFR)
             Sigma = Sigma[:self.disk_model.isf]
         ln_Sigma = np.log(Sigma)   # log of SI density
-        surf_dens_func_log = scipy.interpolate.UnivariateSpline(            R, ln_Sigma)
-        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
+        surf_dens_func_log = scipy.interpolate.CubicSpline(            np.log(R), ln_Sigma, extrapolate=False)
+        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
 
         ln_aspect_ratio = np.log(self.disk_model.h/self.disk_model.R)
         if not(no_truncate):
             ln_aspect_ratio = ln_aspect_ratio[:self.disk_model.isf] # truncate to gas part of disk (no SFR)
-        aspect_func_log = scipy.interpolate.UnivariateSpline(            R, ln_aspect_ratio)
-        aspect_func = lambda x, f=aspect_func_log: np.exp(f(x))
- 
+        aspect_func_log = scipy.interpolate.CubicSpline(            np.log(R), ln_aspect_ratio, extrapolate=False)
+        aspect_func = lambda x, f=aspect_func_log: np.exp(f(np.log(x)))
+
+        bonus_structures = {}
+        bonus_structures['R_agn'] = R_agn
+        bonus_structures['R'] = R
+        bonus_structures['Sigma'] = Sigma
+        bonus_structures['h_over_R'] = np.exp(ln_aspect_ratio)
        
-        return surf_dens_func, aspect_func, R_agn 
+        return surf_dens_func, aspect_func, bonus_structures
 
 
 
