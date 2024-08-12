@@ -305,7 +305,7 @@ def construct_disk_interp(
         # create surface density & aspect ratio functions from input arrays
         surf_dens_func_log = scipy.interpolate.CubicSpline(
             np.log(disk_model_radius_array), np.log(surface_density_array))
-        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.exp(x)))
+        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
 
         aspect_ratio_func_log = scipy.interpolate.CubicSpline(
                 np.log(disk_model_radius_array), np.log(aspect_ratio_array))
