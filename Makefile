@@ -27,6 +27,7 @@ MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
 SEED=3456789012
+#FNAME_INI= ${HERE}/recipes/pAGN_test.ini
 FNAME_INI= ${HERE}/recipes/model_choice.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
 # NAL files might not exist unless you download them from
@@ -66,12 +67,12 @@ mstar_runs:
 	python3 ${MSTAR_RUNS_EXE} \
 		--fname-ini ${FNAME_INI} \
 		--number_of_timesteps 100 \
-		--n_iterations 10 \
+		--n_iterations 100 \
 		--dynamics \
 		--feedback \
 		--mstar-min 1e9 \
 		--mstar-max 1e13 \
-		--nbins 9 \
+		--nbins 33 \
 		--scrub \
 		--fname-nal ${FNAME_GWTC2_NAL} \
 		--wkdir ${MSTAR_RUNS_WKDIR}
