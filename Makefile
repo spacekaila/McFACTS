@@ -27,8 +27,8 @@ MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
 SEED=3456789012
-#FNAME_INI= ${HERE}/recipes/pAGN_test.ini
-FNAME_INI= ${HERE}/recipes/model_choice.ini
+FNAME_INI= ${HERE}/recipes/pAGN_test.ini
+#FNAME_INI= ${HERE}/recipes/model_choice.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
 # NAL files might not exist unless you download them from
 # https://gitlab.com/xevra/nal-data
@@ -66,7 +66,8 @@ vera_plots: mcfacts_sim
 mstar_runs:
 	python3 ${MSTAR_RUNS_EXE} \
 		--fname-ini ${FNAME_INI} \
-		--number_of_timesteps 100 \
+		--number_of_timesteps 1000 \
+        --n_bins_max 10000 \
 		--n_iterations 100 \
 		--dynamics \
 		--feedback \
@@ -76,8 +77,7 @@ mstar_runs:
 		--scrub \
 		--fname-nal ${FNAME_GWTC2_NAL} \
 		--wkdir ${MSTAR_RUNS_WKDIR}
-	python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}/early
-	python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}/late
+	python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}
 		
 
 #### CLEAN ####
