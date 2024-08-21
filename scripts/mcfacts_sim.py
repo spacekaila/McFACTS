@@ -14,6 +14,8 @@ import sys
 import argparse
 
 from mcfacts.inputs import ReadInputs
+from importlib import resources as impresources
+from mcfacts.inputs import data as input_data
 
 from mcfacts.objects.agnobject import AGNStar
 
@@ -40,14 +42,22 @@ from mcfacts.outputs import mergerfile
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 binary_stars_field_names="R1 R2 M1 M2 R1_star R2_star a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
+
+
+# Do not change this line EVER
+DEFAULT_INI = impresources.files(input_data) / "model_choice.ini"
 bh_initial_field_names = "disk_location mass spin spin_angle orb_ang_mom orb_ecc orb_incl"
-DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
-#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
-DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
-#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
+# Feature in testing do not use unless you know what you're doing.
 #DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
+
 assert DEFAULT_INI.is_file()
 #assert DEFAULT_PRIOR_POP.is_file()
+
+FORBIDDEN_ARGS = [
+    "disk_outer_radius",
+    "max_disk_radius_pc",
+    "disk_inner_radius",
+    ]
 
 def arg():
     import argparse
@@ -72,15 +82,17 @@ def arg():
     )
     parser.add_argument("--seed", type=int, default=None,
         help="Set the random seed. Randomly sets one if not passed. Default: None")
-    parser.add_argument("--fname-log", default=None, type=str,
+    parser.add_argument("--fname-log", default="mcfacts_sim.log", type=str,
         help="Specify a file to save the arguments for mcfacts")
     
     ## Add inifile arguments
     # Read default inifile
-    _variable_inputs, _disk_model_radius_array, _surface_density_array, _aspect_ratio_array \
-        = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
+    _variable_inputs = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
     # Loop the arguments
     for name in _variable_inputs:
+        # Skip CL read of forbidden arguments
+        if name in FORBIDDEN_ARGS:
+            continue
         _metavar    = name
         _opt        = "--%s"%(name)
         _default    = _variable_inputs[name]
@@ -104,14 +116,16 @@ def arg():
 
     ## Parse inifile
     # Read inifile
-    variable_inputs, disk_model_radius_array, surface_density_array, aspect_ratio_array \
-        = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
+    variable_inputs = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
     for name in variable_inputs:
-        print(name, hasattr(opts, name), getattr(opts, name), _variable_inputs[name], variable_inputs[name])
+        # Check for args not in parser. These were generated or changed in ReadInputs.py
+        if not hasattr(opts, name):
+            setattr(opts, name, variable_inputs[name])
+            continue
+        # Check for args not in the default_ini file
         if getattr(opts, name) != _variable_inputs[name]:
-            print(name)
             # This is the case where the user has set the value of an argument
             # from the command line. We don't want to argue with the user.
             pass
@@ -124,10 +138,6 @@ def arg():
     #   and not the specified inifile,
     #   it remains unaltered.
 
-    # Update opts with variable inputs
-    opts.disk_model_radius_array = disk_model_radius_array
-    opts.surface_density_array = surface_density_array
-    opts.aspect_ratio_array = aspect_ratio_array
     if opts.verbose:
         for item in opts.__dict__:
             print(item, getattr(opts, item))
@@ -155,11 +165,10 @@ def arg():
 
 
     # Write parameters to log file
-    if not opts.fname_log is None:
-        with open(opts.work_directory / opts.fname_log, 'w') as F:
-            for item in opts.__dict__:
-                line = "%s = %s\n"%(item, str(opts.__dict__[item]))
-                F.write(line)
+    with open(opts.work_directory / opts.fname_log, 'w') as F:
+        for item in opts.__dict__:
+            line = "%s = %s\n"%(item, str(opts.__dict__[item]))
+            F.write(line)
     return opts
 
 
@@ -169,16 +178,18 @@ def main():
     # Setting up automated input parameters
     # see IOdocumentation.txt for documentation of variable names/types/etc.
     opts = arg()
-
-    # create surface density & aspect ratio functions from input arrays
-    surf_dens_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.surface_density_array))
-    surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
-
-    aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.aspect_ratio_array))
-    aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
-    
+    surf_dens_func, aspect_ratio_func = \
+        ReadInputs.construct_disk_interp(
+        opts.mass_smbh,
+        opts.disk_outer_radius,
+        opts.disk_model_name,
+        opts.alpha,
+        opts.frac_Eddington_ratio,
+        max_disk_radius_pc      = opts.max_disk_radius_pc,
+        disk_model_use_pagn     = opts.disk_model_use_pagn,
+        verbose                 = opts.verbose
+        )
+        
     merged_bh_array_pop = []
 
     surviving_bh_array_pop = []
@@ -187,13 +198,13 @@ def main():
 
     gw_array_pop = []
 
-    temp_emri_array = np.zeros(7)
+    #temp_emri_array = np.zeros(7)
 
-    emri_array = np.zeros(7)
+    #emri_array = np.zeros(7)
 
-    temp_bbh_gw_array = np.zeros(7)
+    #temp_bbh_gw_array = np.zeros(7)
 
-    bbh_gw_array = np.zeros(7)
+    #bbh_gw_array = np.zeros(7)
 
     for iteration in range(opts.n_iterations):
         print("Iteration", iteration)
@@ -213,7 +224,14 @@ def main():
         # galaxy_type = galaxy_models[iteration] # e.g. star forming/spiral vs. elliptical
         # NSC mass
         # SMBH mass
+        #Housekeeping for array initialization
+        temp_emri_array = np.zeros(7)
 
+        emri_array = np.zeros(7)
+
+        temp_bbh_gw_array = np.zeros(7)
+
+        bbh_gw_array = np.zeros(7)    
 
         #Set up number of BH in disk
         n_bh = setupdiskblackholes.setup_disk_nbh(
@@ -467,6 +485,7 @@ def main():
         bbh_gw_indices = []
         num_of_bbh_gw_properties = 7
         nbbhgw = 0
+        num_bbh_gw_tracked = 0
 
         # Set up empty initial Binary array
         # Initially all zeros, then add binaries plus details as appropriate
@@ -507,10 +526,13 @@ def main():
             prograde_bh_masses = prior_masses[prior_indices]
             prograde_bh_spins = prior_spins[prior_indices]
             prograde_bh_spin_angles = prior_spin_angles[prior_indices]
-            prograde_bh_generations = prior_gens[prior_indices] 
+            prograde_bh_generations = prior_gens[prior_indices]
+            print("prior indices",prior_indices)
+            print("prior locations",prograde_bh_locations) 
+            print("prior gens",prograde_bh_generations)
             prior_ecc_factor = 0.3
             prograde_bh_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(rng,prior_ecc_factor,num_of_progrades)
-
+            print("prior ecc",prograde_bh_orb_ecc)
         # Start Loop of Timesteps
         print("Start Loop!")
         time_passed = initial_time
@@ -799,23 +821,29 @@ def main():
                     min_bbh_gw_separation = 2.0
                     # If there are binaries AND if any separations are < min_bbh_gw_separation
                     bbh_gw_indices = np.where( (binary_bh_array[8,:] < min_bbh_gw_separation) & (binary_bh_array[8,:]>0))
-                    #print("bbh_gw_indices",bbh_gw_indices)
+                    
                     # If bbh_indices exists (ie is not empty)
                     if bbh_gw_indices:
-                        
+                        #1st time around.
+                        if num_bbh_gw_tracked == 0:
+                            old_bbh_gw_freq = 9.e-7*np.ones(np.size(bbh_gw_indices,1))        
+                        if num_bbh_gw_tracked > 0:
+                            old_bbh_gw_freq = bbh_gw_freq
+
                         num_bbh_gw_tracked = np.size(bbh_gw_indices,1)
                         #print("N_tracked",num_bbh_gw_tracked)
                         nbbhgw = nbbhgw + num_bbh_gw_tracked
-                        #if num_bbh_gw_tracked:
-                        #    print("num_bbh_gw_tracked",num_bbh_gw_tracked)
-                        #print("gw indices",bbh_gw_indices,binary_bh_array[8,bbh_gw_indices])
+                        
+                        #Now update BBH & generate NEW frequency & evolve  
+                        
                         bbh_gw_strain,bbh_gw_freq = evolve.bbh_gw_params(
                             binary_bh_array, 
                             bbh_gw_indices,
-                            opts.mass_smbh
+                            opts.mass_smbh,
+                            opts.timestep,
+                            old_bbh_gw_freq
                         )
-                        #print("BBH strain, freq",bbh_gw_strain,bbh_gw_freq)
-                        #print("num tracked",num_bbh_gw_tracked)
+                        
                         if num_bbh_gw_tracked == 1:        
                             index = bbh_gw_indices[0]
                             #print("index",index)
@@ -831,19 +859,12 @@ def main():
                             temp_bbh_gw_array[4] = binary_bh_array[13,index]
                             temp_bbh_gw_array[5] = bbh_gw_strain
                             temp_bbh_gw_array[6] = bbh_gw_freq
-                            #temp_bbh_gw_array[2] = binary_bh_array[8,index][0]
-                            #temp_bbh_gw_array[3] = binary_bh_array[2,index][0] + binary_bh_array[3,index][0]
-                            #temp_bbh_gw_array[4] = binary_bh_array[13,index][0]
-                            #temp_bbh_gw_array[5] = bbh_gw_strain[0]
-                            #temp_bbh_gw_array[6] = bbh_gw_freq[0]
-                            #print("temp_bbh_gw_array",temp_bbh_gw_array)
+                            
                             bbh_gw_array = np.vstack((bbh_gw_array,temp_bbh_gw_array))
                             
                         if num_bbh_gw_tracked > 1:
                             index = 0
                             for i in range(0,num_bbh_gw_tracked-1):
-                                #print("num_gw_tracked",num_bbh_gw_tracked)
-                                #print("i,bbh_gw_indices",i,bbh_gw_indices,bbh_gw_indices[0],bbh_gw_strain,bbh_gw_strain[i])
                                 
                                 index = bbh_gw_indices[0][i]
                             
@@ -1160,8 +1181,24 @@ def main():
                 inner_disk_indices = np.array(empty)
 
             if np.size(inner_disk_locations) > 0:
-                inner_disk_locations = dynamics.bh_near_smbh(opts.mass_smbh,inner_disk_locations,inner_disk_masses,inner_disk_orb_ecc,opts.timestep)
-                emri_gw_strain,emri_gw_freq = evolve.evolve_emri_gw(inner_disk_locations,inner_disk_masses,opts.mass_smbh)
+                inner_disk_locations = dynamics.bh_near_smbh(opts.mass_smbh,
+                                                             inner_disk_locations,
+                                                             inner_disk_masses,
+                                                             inner_disk_orb_ecc,
+                                                             opts.timestep)
+                num_in_inner_disk = np.size(inner_disk_locations)
+                # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
+                if nemri ==0:
+                    old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
+                if nemri > 0:
+                    old_gw_freq = emri_gw_freq
+                #Now update emris & generate NEW frequency & evolve   
+                emri_gw_strain,emri_gw_freq = evolve.evolve_emri_gw(inner_disk_locations,
+                                                                    inner_disk_masses, 
+                                                                    opts.mass_smbh,
+                                                                    opts.timestep,
+                                                                    old_gw_freq)
+                
                 #print("EMRI gw strain",emri_gw_strain)
                 #print("EMRI gw freq",emri_gw_freq)
             
@@ -1177,8 +1214,8 @@ def main():
                     temp_emri_array[4] = inner_disk_orb_ecc[i]
                     temp_emri_array[5] = emri_gw_strain[i]
                     temp_emri_array[6] = emri_gw_freq[i]
-                    #print("temp_emri_array",temp_emri_array)
-                    #print("emri_array",emri_array)
+                    
+                    
                     emri_array = np.vstack((emri_array,temp_emri_array))
                 
             # if inner_disk_locations[i] <1R_g then merger!
@@ -1219,9 +1256,17 @@ def main():
         print("Total number of mergers = ",number_of_mergers)
         print("Mergers", merged_bh_array.shape)
         print("Nbh_disk",n_bh)
+        #Number of rows in each array, EMRIs and BBH_GW
+        # If emri_array is 2-d then this line is ok, but if emri-array is empty then this line defaults to 7 (#elements in 1d)
+        if len(emri_array.shape) > 1:
+            total_emris = emri_array.shape[0]
+        elif len(emri_array.shape) == 1:
+            total_emris = 0
     
-        total_emris = emri_array.shape[0]
-        total_bbh_gws = bbh_gw_array.shape[0]
+        if len(bbh_gw_array.shape) > 1:
+            total_bbh_gws = bbh_gw_array.shape[0]
+        elif len(bbh_gw_array.shape) == 1:
+            total_bbh_gws = 0
 
             
         # Write out all the singletons after AGN episode, so can use this as input to another AGN phase.
@@ -1294,16 +1339,46 @@ def main():
         iteration_save_name = f"run{iteration_zfilled_str}/{opts.fname_output_mergers}"
         np.savetxt(os.path.join(opts.work_directory, iteration_save_name), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
-        # Add mergers to population array including the iteration number
+        # Add mergers to population array including the iteration number 
+        # this line is linebreak between iteration outputs consisting of the repeated iteration number in each column
         iteration_row = np.repeat(iteration, number_of_mergers)
         survivor_row = np.repeat(iteration,num_properties_stored)
         emri_row = np.repeat(iteration,num_of_emri_properties)
         gw_row = np.repeat(iteration,num_of_bbh_gw_properties)
+        #Append each iteration result to output arrays
         merged_bh_array_pop.append(np.concatenate((iteration_row[np.newaxis], merged_bh_array[:,:number_of_mergers])).T)
         #surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:,:total_bh_survived])).T)
         surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived,:])))
-        emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
-        gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
+        
+        #print("total_emris,total_bbh_gws",total_emris,total_bbh_gws)
+        #print("gw_row",gw_row)
+        #print("gw_array_pop",gw_array_pop)
+        #print("total_bbh_gw_array",total_bbh_gw_array)
+        #if np.any(total_bbh_gw_array):
+        #    print("total_bbh_gw_array[]",total_bbh_gw_array[:,:total_bbh_gws])
+        #    print("total_bbh_gw_array[,:]",total_bbh_gw_array[:total_bbh_gws,:])
+        #print("concatenate",np.concatenate((gw_row,total_bbh_gw_array)))
+        #If there are non-zero elements in total_emri_array, concatenate to main EMRI file
+        
+        #print("total_emris",total_emris)
+        if total_emris > 0:
+        #if np.any(total_emri_array):
+        #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])))
+        
+            #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
+            #emris_array_pop.append(total_emri_array[:,:total_emris])
+            emris_array_pop.append(total_emri_array[:total_emris,:])
+            #print("emris_array_pop",emris_array_pop)
+        #    emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])).T)
+        #If there are non-zero elements in total_bbh_gw_array
+        if total_bbh_gws > 0:
+        #if np.any(total_bbh_gw_array):
+        #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])))
+            #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
+            gw_array_pop.append(total_bbh_gw_array[:total_bbh_gws,:])
+            #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])).T)
+        #if n_its == 1:
+        #    print("emris_array_pop",emris_array_pop)
      # save all mergers from Monte Carlo
     merger_pop_field_names = "iter " + merger_field_names # Add "Iter" to field names
     population_header = f"Initial seed: {opts.seed}\n{merger_pop_field_names}" # Include initial seed
@@ -1312,9 +1387,11 @@ def main():
     survivors_save_name = f"{basename}_survivors{extension}"
     emris_save_name = f"{basename}_emris{extension}"
     gws_save_name = f"{basename}_lvk{extension}"
+    #print("emris_array_pop",emris_array_pop)
     np.savetxt(os.path.join(opts.work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
     np.savetxt(os.path.join(opts.work_directory, survivors_save_name), np.vstack(surviving_bh_array_pop))
     np.savetxt(os.path.join(opts.work_directory,emris_save_name),np.vstack(emris_array_pop))
+    #np.savetxt(os.path.join(opts.work_directory,emris_save_name),(emris_array_pop))
     np.savetxt(os.path.join(opts.work_directory,gws_save_name),np.vstack(gw_array_pop))
 if __name__ == "__main__":
     main()
