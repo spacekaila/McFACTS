@@ -36,7 +36,7 @@ from mcfacts.physics.binary.harden import baruteau11
 from mcfacts.physics.binary.merge import tichy08
 from mcfacts.physics.binary.merge import chieff
 from mcfacts.physics.binary.merge import tgw
-from mcfacts.physics.disk_capture.orb_inc_damping import orb_inc_damping
+#from mcfacts.physics.disk_capture.orb_inc_damping import orb_inc_damping
 
 #from mcfacts.tests import tests
 from mcfacts.outputs import mergerfile
