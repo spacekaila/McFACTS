@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mypkg = ["*.txt", "*.rst"]
+
+[project]
+name = "mcfacts"
+
+authors = [
+    {name = "Barry McKernan", email = "enter@email.com"},
+    {name = "Saavik Ford"},
+    {name = "Harry Cook"},
+    {name = "Vera Delfavero"},
+    {name = "Richard O'Shaughnessy"},
+    {name = "Jake Postiglione"}
+]
+
+maintainers = [
+    {name = "Barry McKernan", email = "enter@email.com"},
+    {name = "Saavik Ford"},
+    {name = "Harry Cook"},
+    {name = "Vera Delfavero"},
+    {name = "Richard O'Shaughnessy"},
+    {name = "Jake Postiglione"}
+]
+
+classifiers = [
+"Development Status :: 3 - Alpha",
+"Programming Language :: Python :: 3",
+"Operating System :: OS Independent",
+"Intended Audience :: Science/Research",
+"Topic :: Scientific/Engineering :: Astronomy",
+"Topic :: Scientific/Engineering :: Physics",
+"Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+requires-python = ">= 3.10"
+
+dependencies = [
+    "numpy>=1.23.1",
+    "matplotlib>=3.5.2",
+    "scipy>=1.11.2",
+    "pandas",
+    "pagn",
+]
+
+dynamic = [ "version" ]
