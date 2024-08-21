@@ -1,7 +1,7 @@
 # Declarations
 .PHONY: all clean
 
-all: clean tests plots vera_plots
+all: clean tests plots #vera_plots
 tests: mcfacts_sim
 
 ######## Definitions ########
@@ -35,6 +35,8 @@ MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
 # scripts that use NAL files might not work unless you install
 # gwalk (pip3 install gwalk)
 FNAME_GWTC2_NAL = ${HOME}/Repos/nal-data/GWTC-2.nal.hdf5
+#Set this to change your working directory
+wd=${HERE}
 
 ######## Instructions ########
 #### Install ####
@@ -44,9 +46,10 @@ version: clean
 	echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 
 install: clean version
-	pip3 install -e .
+	pip install -e .
 
 #### Test one thing at a time ####
+
 
 mcfacts_sim: clean
 	python3 ${MCFACTS_SIM_EXE} \
@@ -55,8 +58,9 @@ mcfacts_sim: clean
 		--fname-log out.log \
 		--seed ${SEED}
 
+
 plots:  mcfacts_sim
-	python3 ${POPULATION_PLOTS_EXE} 
+	python ${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
 
 vera_plots: mcfacts_sim
 	python3 ${VERA_PLOTS_EXE} \
@@ -82,15 +86,15 @@ mstar_runs:
 
 #### CLEAN ####
 clean:
-	rm -rf run*
-	rm -rf output_mergers*.dat
-	rm -rf m1m2.png
-	rm -rf merger_mass_v_radius.png
-	rm -rf q_chi_eff.png
-	rm -rf time_of_merger.png
-	rm -rf merger_remnant_mass.png
-	rm -rf gw_strain.png
-	rm -rf out.log
-	rm -rf mergers_cdf*.png
-	rm -rf mergers_nal*.png
-	rm -rf r_chi_p.png
+	rm -rf ${wd}/run*
+	rm -rf ${wd}/output_mergers*.dat
+	rm -rf ${wd}/m1m2.png
+	rm -rf ${wd}/merger_mass_v_radius.png
+	rm -rf ${wd}/q_chi_eff.png
+	rm -rf ${wd}/time_of_merger.png
+	rm -rf ${wd}/merger_remnant_mass.png
+	rm -rf ${wd}/gw_strain.png
+	rm -rf ${wd}/out.log
+  rm -rf ${wd}/mergers_cdf*.png
+	rm -rf ${wd}/mergers_nal*.png
+	rm -rf ${wd}/r_chi_p.png
