@@ -303,13 +303,14 @@ def construct_disk_interp(
         # Now geenerate interpolating functions
         import scipy.interpolate
         # create surface density & aspect ratio functions from input arrays
-        surf_dens_func_log = scipy.interpolate.UnivariateSpline(
-            disk_model_radius_array, np.log(surface_density_array))
-        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
+        surf_dens_func_log = scipy.interpolate.CubicSpline(
+            np.log(disk_model_radius_array), np.log(surface_density_array))
+        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
 
-        aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(
-            disk_model_radius_array, np.log(aspect_ratio_array))
-        aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
+        aspect_ratio_func_log = scipy.interpolate.CubicSpline(
+                np.log(disk_model_radius_array), np.log(aspect_ratio_array))
+        aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(np.log(x)))
+
     else:
         # instead, populate with pagn
         import mcfacts.external.DiskModelsPAGN as dm_pagn
@@ -325,7 +326,7 @@ def construct_disk_interp(
         
         pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
         
-        surf_dens_func, aspect_ratio_func  = pagn_model.return_disk_surf_model()
+        surf_dens_func, aspect_ratio_func, Ragn  = pagn_model.return_disk_surf_model()
         
     
     #Truncate disk models at outer disk radius
