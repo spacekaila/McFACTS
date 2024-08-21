@@ -108,6 +108,7 @@ REQUIREMENTS = {
         "matplotlib>=3.5.2",
         "scipy>=1.11.2",
         "pandas",
+        "pagn",
     ],
     "setup" : [
         "pytest-runner",
