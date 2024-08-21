@@ -47,7 +47,7 @@ install: clean version
 
 mcfacts_sim: clean
 	python3 ${MCFACTS_SIM_EXE} \
-		--n_iterations 10 \
+		--n_iterations 100 \
 		--fname-log out.log \
 		--seed 4567890123
 
