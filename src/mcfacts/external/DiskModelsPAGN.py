@@ -42,21 +42,34 @@ class AGNGasDiskModel(object):
         else:
             np.savetxt(filename, np.vstack((R/ct.pc, Omega, T, rho, h, cs, tauV, Q)).T)
 
-    def return_disk_surf_model(self):
+    def return_disk_surf_model(self,no_truncate=True):
         """
-        Returns a disk surface function model in kg/m^2 given distance from SMBH in r_g = r_s/2
+        Returns a disk surface function model in \Sigma = 2 rho H  in  kg/m^2 given distance from SMBH in r_g = r_s/2
+        Default pagn internal units are SI
         """
-        R = self.disk_model.R/(self.disk_model.Rs/2)  # convert to R_g explicitly, using internal structures
-        ln_rho = np.log(self.disk_model.rho)
-        surf_dens_func_log = scipy.interpolate.UnivariateSpline(            R, ln_rho)
-        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
+        R = self.disk_model.R/(self.disk_model.Rs/2)  # convert to R_g  (=R/( M G/c^2)  explicitly, using internal structures
+        R_agn = self.disk_model.R_AGN /(self.disk_model.Rs/2)
+        Sigma = 2*self.disk_model.h*self.disk_model.rho  # SI density
+        if not(no_truncate):
+            R=R[:self.disk_model.isf] # truncate to gas part of disk (no SFR)
+            Sigma = Sigma[:self.disk_model.isf]
+        ln_Sigma = np.log(Sigma)   # log of SI density
+        surf_dens_func_log = scipy.interpolate.CubicSpline(            np.log(R), ln_Sigma, extrapolate=False)
+        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
 
         ln_aspect_ratio = np.log(self.disk_model.h/self.disk_model.R)
-        aspect_func_log = scipy.interpolate.UnivariateSpline(            R, ln_aspect_ratio)
-        aspect_func = lambda x, f=aspect_func_log: np.exp(f(x))
- 
+        if not(no_truncate):
+            ln_aspect_ratio = ln_aspect_ratio[:self.disk_model.isf] # truncate to gas part of disk (no SFR)
+        aspect_func_log = scipy.interpolate.CubicSpline(            np.log(R), ln_aspect_ratio, extrapolate=False)
+        aspect_func = lambda x, f=aspect_func_log: np.exp(f(np.log(x)))
+
+        bonus_structures = {}
+        bonus_structures['R_agn'] = R_agn
+        bonus_structures['R'] = R
+        bonus_structures['Sigma'] = Sigma
+        bonus_structures['h_over_R'] = np.exp(ln_aspect_ratio)
        
-        return surf_dens_func, aspect_func
+        return surf_dens_func, aspect_func, bonus_structures
 
 
 

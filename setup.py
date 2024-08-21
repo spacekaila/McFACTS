@@ -108,6 +108,7 @@ REQUIREMENTS = {
         "matplotlib>=3.5.2",
         "scipy>=1.11.2",
         "pandas",
+        "pagn",
     ],
     "setup" : [
         "pytest-runner",
@@ -145,8 +146,9 @@ metadata = dict(
 
     classifiers=CLASSIFIERS,
 
-    package_dir ={"": "src"},
     packages=find_packages("src"),
+    package_dir={"": "src"},
+    package_data={"": ['inputs/data/*.txt', 'vis/data/*.txt']},
 
     install_requires=REQUIREMENTS["install"],
     setup_requires=REQUIREMENTS["setup"],

@@ -16,6 +16,7 @@ def arg():
     parser.add_argument("--mstar-max", default=1e13, type=float,
         help="Maximum galactic stellar mass")
     parser.add_argument("--nbins", default=9, type=int, help="Number of stellar mass bins")
+    parser.add_argument("--n_bins_max", default=1000, help="Number of binaries allowed at once")
     parser.add_argument("--wkdir", default='./run_many', help="top level working directory")
     parser.add_argument("--mcfacts-exe", default="./scripts/mcfacts_sim.py", help="Path to mcfacts exe")
     parser.add_argument("--fname-ini", required=True, help="Path to mcfacts inifile")
@@ -137,6 +138,7 @@ def main():
                         "--n_iterations"        : opts.n_iterations,
                         "--n_bins_max"          : 10_000,
                         "--fname-log"           : "out.log",
+                        "--n_bins_max"          : opts.n_bins_max,
                        }
     mcfacts_args = ""
     for item in mcfacts_arg_dict:

@@ -83,6 +83,12 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     mbh_powerlaw_index : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--powerlaw index for Pareto dist
+    min_initial_star_mass : float
+        Initial mass distribution for stars is assumed Salpeter
+    max_initial_star_mass : float
+        Initial mass distribution for stars is assumed Salpeter
+    star_mass_powerlaw_index : float
+        Initial mass distribution for stars is assumed Salpeter, alpha = 2.35
     mu_spin_distribution : float
         Initial spin distribution for stellar bh is assumed to be Gaussian
         --mean of spin dist
@@ -99,6 +105,27 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     max_initial_eccentricity : float
         assuming initially flat eccentricity distribution among single orbiters around SMBH
         out to max_initial_eccentricity. Eventually this will become smarter.
+    mu_star_spin_distribution : float
+        Initial spin distribution for stars is assumed to be Gaussian
+    sigma_star_spin_distribution : float
+        Initial spin distribution for stars is assumed to be Gaussian
+        --standard deviation of spin dist
+    spin_star_torque_condition : float
+        fraction of initial mass required to be accreted before star spin is torqued 
+        fully into alignment with the AGN disk. We don't know for sure but 
+        Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
+    frac_star_Eddington_ratio : float
+        assumed accretion rate onto stars from disk gas, in units of Eddington
+        accretion rate
+    max_initial_star_eccentricity : float
+        assuming initially flat eccentricity distribution among single orbiters around SMBH
+        out to max_initial_eccentricity. Eventually this will become smarter.
+    stars_initial_X  : float
+        Stellar initial hydrogen mass fraction
+    stars_initial_Y : float
+        Stellar initial helium mass fraction
+    stars_initial_Z : float
+        Stellar initial metallicity mass fraction
     timestep : float
         How long is your timestep in years?
     number_of_timesteps : int
@@ -160,6 +187,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
 
     # convert to dict
     input_variables = dict(config.items('top'))
+
 
     # try to pretty-convert these to quantites
     for name in input_variables:
@@ -303,13 +331,14 @@ def construct_disk_interp(
         # Now geenerate interpolating functions
         import scipy.interpolate
         # create surface density & aspect ratio functions from input arrays
-        surf_dens_func_log = scipy.interpolate.UnivariateSpline(
-            disk_model_radius_array, np.log(surface_density_array))
-        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
+        surf_dens_func_log = scipy.interpolate.CubicSpline(
+            np.log(disk_model_radius_array), np.log(surface_density_array))
+        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
 
-        aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(
-            disk_model_radius_array, np.log(aspect_ratio_array))
-        aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
+        aspect_ratio_func_log = scipy.interpolate.CubicSpline(
+                np.log(disk_model_radius_array), np.log(aspect_ratio_array))
+        aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(np.log(x)))
+
     else:
         # instead, populate with pagn
         import mcfacts.external.DiskModelsPAGN as dm_pagn
@@ -325,7 +354,7 @@ def construct_disk_interp(
         
         pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
         
-        surf_dens_func, aspect_ratio_func  = pagn_model.return_disk_surf_model()
+        surf_dens_func, aspect_ratio_func, Ragn  = pagn_model.return_disk_surf_model()
         
     
     #Truncate disk models at outer disk radius
