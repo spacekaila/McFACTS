@@ -297,7 +297,7 @@ def main():
             n_bh
         )
         if opts.orb_ecc_damping == 1:
-            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng,n_bh)
+            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng,n_bh,opts.max_initial_eccentricity)
         else:
             bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,opts.crit_ecc)
 
