@@ -586,6 +586,8 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses,mass_smbh):
         m2 = inner_disk_masses[i]
         temp_bin_mass = m1 + m2
         temp_bin_separation = inner_disk_locations[i]
+        # Catch issues when sep is already 0.0--pretend it's just at the event horizon
+        if temp_bin_separation < 1.0: temp_bin_separation = 1.0
         #1rg =1AU=1.5e11m for 1e8Msun
         rg = 1.5e11*(mass_smbh/1.e8)
         m_sun = 2.0e30

@@ -134,7 +134,6 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
                 new_orbiter_inc[i] = orbiter_inc[i] * (1.0 - step1_delta_inc/orbiter_inc[i] * (timestep/inc_scale_factor))
                 # catch overshooting inc, set to 0.0
                 if new_orbiter_inc[i] <= (0.0): new_orbiter_inc[i] = (0.0)
-                print("Step 1")
             # check if we have hit max ecc, which sends us to step 2
             elif (orbiter_ecc[i] >= step2_ecc_0):
                 # adjust our timesteps for actual values of params, vs baseline
@@ -154,7 +153,6 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
                 new_orbiter_inc[i] = orbiter_inc[i] * (1.0 - step2_delta_inc/orbiter_inc[i] * (timestep/inc_scale_factor))
                 # catch overshooting inc, set to 0.0
                 if new_orbiter_inc[i] <= (0.0): new_orbiter_inc[i] = (0.0)
-                print("Step 2")
             # if our inc is even barely prograde... hopefully this works ok...
             # this should work as long as we're only tracking stuff originally retrograde
             elif (np.abs(orbiter_inc[i]) < (np.pi/2.0)):
@@ -173,7 +171,6 @@ def crude_retro_bh(mass_smbh, orbiter_masses, orbiter_semimaj, orbiter_ecc, orbi
                 new_orbiter_inc[i] = orbiter_inc[i] * (1.0 - step3_delta_inc/orbiter_inc[i] * (timestep/inc_scale_factor))
                 # catch overshooting inc, set to 0.0
                 if new_orbiter_inc[i] <= (0.0): new_orbiter_inc[i] = (0.0)
-                print("Step 3")
             # print warning if none of the conditions are satisfied
             else:
                 print("Warning: retrograde orbital parameters out of range, behavior unreliable")
