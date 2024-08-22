@@ -1,6 +1,7 @@
 # Declarations
 .PHONY: all clean
 
+# Windows implementation is hacky, but my desktop is Windows. So please accept my humble apology - Jake
 ifeq ($(OS),Windows_NT)
     CLEAN_CMD := clean_win
 else
@@ -48,8 +49,8 @@ wd=${HERE}
 #### Install ####
 
 ifeq ($(OS),Windows_NT)
-    VERSION_BASE_CMD := echo __version__ = '${VERSION}'> __version__.py
-    VERSION_SRC_CMD := echo __version__ = '${VERSION}'> src/mcfacts/__version__.py
+    VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
+    VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
 else
     VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
     VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
@@ -60,10 +61,9 @@ version: $(CLEAN_CMD)
 	$(VERSION_SRC_CMD)
 
 install: $(CLEAN_CMD) version
-	python -m pip install .
+	python -m pip install --editable .
 
 #### Test one thing at a time ####
-
 
 mcfacts_sim: $(CLEAN_CMD)
 	python ${MCFACTS_SIM_EXE} \
@@ -100,6 +100,10 @@ mstar_runs:
 
 #### CLEAN ####
 clean: $(CLEAN_CMD)
+
+#TODO: Create an IO class that wraps the standard IO. This wrapper will keep a persistent log of all of the
+#instantaneous files created. The wrapper would have a cleanup function, and can also report metrics :^)
+#Plus, if we use a standard python IO library, we don't have to worry about rm / del and wildcards!
 
 clean_unix:
 	rm -rf ${wd}/run*
