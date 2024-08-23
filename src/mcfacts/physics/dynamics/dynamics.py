@@ -1056,7 +1056,7 @@ def bh_near_smbh(mass_smbh,prograde_bh_locations,prograde_bh_masses,prograde_bh_
                 new_location = 1.0
 
             prograde_bh_locations[i] = new_location
-    
+
     return prograde_bh_locations
 
 def bbh_near_smbh(mass_smbh,bindex, binary_bh_array):
