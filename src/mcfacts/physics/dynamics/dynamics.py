@@ -1042,17 +1042,21 @@ def bh_near_smbh(mass_smbh,prograde_bh_locations,prograde_bh_masses,prograde_bh_
             decay_time = 38.0*ecc_factor*dist_factor*mass_factor*smbh_factor
             #timestep is in units of yrs, so ratio decay_time*1.e6 (yrs)/timestep(yrs) = no. of timesteps to decay into SMBH
             decay_time_factor = decay_time*1.e6/timestep
-            decrement = (1.0-(1/decay_time_factor))
+            # catch issues when decay_time_factor = 0 with an if statement here (if location already=0)
+            if decay_time_factor == 0.0:
+                decrement = 0.0
+            else:
+                decrement = (1.0-(1/decay_time_factor))
             #if decrement < 0.9:
             #    print("EMRI DECREMENT!!", decrement)
             # So drop prograde_bh_location[i] by value (1/decay_time_factor) on this timestep
             new_location = decrement*prograde_bh_locations[i]
             #print(new_location)
             if new_location <1.0:
-                new_location =1.0
+                new_location = 1.0
 
             prograde_bh_locations[i] = new_location
-    
+
     return prograde_bh_locations
 
 def bbh_near_smbh(mass_smbh,bindex, binary_bh_array):
