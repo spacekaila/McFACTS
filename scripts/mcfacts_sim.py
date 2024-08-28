@@ -14,11 +14,18 @@ import sys
 import argparse
 
 from mcfacts.inputs import ReadInputs
+from importlib import resources as impresources
+from mcfacts.inputs import data as input_data
+
+from mcfacts.objects.agnobject import AGNStar
 
 from mcfacts.setup import setupdiskblackholes
+from mcfacts.setup import setupdiskstars
 from mcfacts.physics.migration.type1 import type1
 from mcfacts.physics.accretion.eddington import changebhmass
+from mcfacts.physics.accretion.eddington import changestarsmass
 from mcfacts.physics.accretion.torque import changebh
+from mcfacts.physics.accretion.torque import changestars
 from mcfacts.physics.feedback.hankla21 import feedback_hankla21
 from mcfacts.physics.dynamics import dynamics
 from mcfacts.physics.eccentricity import orbital_ecc
@@ -29,19 +36,32 @@ from mcfacts.physics.binary.harden import baruteau11
 from mcfacts.physics.binary.merge import tichy08
 from mcfacts.physics.binary.merge import chieff
 from mcfacts.physics.binary.merge import tgw
-#from mcfacts.physics.migration.type1 import retro_mig
-#from mcfacts.physics.eccentricity import retro_ecc
-#from mcfacts.physics.disk_capture import capture_inc_damp
+
 from mcfacts.physics.disk_capture import crude_retro_evol
+
 from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
+binary_stars_field_names="R1 R2 M1 M2 R1_star R2_star a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 merger_field_names=' '.join(mergerfile.names_rec)
-DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice.ini"
-#DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "paper1_fig_dyn_on.ini"
+
+
+
+# Do not change this line EVER
+DEFAULT_INI = impresources.files(input_data) / "model_choice.ini"
+bh_initial_field_names = "disk_location mass spin spin_angle orb_ang_mom orb_ecc orb_incl"
+# Feature in testing do not use unless you know what you're doing.
+
 #DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
+
 assert DEFAULT_INI.is_file()
 #assert DEFAULT_PRIOR_POP.is_file()
+
+FORBIDDEN_ARGS = [
+    "disk_outer_radius",
+    "max_disk_radius_pc",
+    "disk_inner_radius",
+    ]
 
 def arg():
     import argparse
@@ -66,15 +86,17 @@ def arg():
     )
     parser.add_argument("--seed", type=int, default=None,
         help="Set the random seed. Randomly sets one if not passed. Default: None")
-    parser.add_argument("--fname-log", default=None, type=str,
+    parser.add_argument("--fname-log", default="mcfacts_sim.log", type=str,
         help="Specify a file to save the arguments for mcfacts")
     
     ## Add inifile arguments
     # Read default inifile
-    _variable_inputs, _disk_model_radius_array, _surface_density_array, _aspect_ratio_array \
-        = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
+    _variable_inputs = ReadInputs.ReadInputs_ini(DEFAULT_INI,False)
     # Loop the arguments
     for name in _variable_inputs:
+        # Skip CL read of forbidden arguments
+        if name in FORBIDDEN_ARGS:
+            continue
         _metavar    = name
         _opt        = "--%s"%(name)
         _default    = _variable_inputs[name]
@@ -98,14 +120,16 @@ def arg():
 
     ## Parse inifile
     # Read inifile
-    variable_inputs, disk_model_radius_array, surface_density_array, aspect_ratio_array \
-        = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
+    variable_inputs = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
     for name in variable_inputs:
-        print(name, hasattr(opts, name), getattr(opts, name), _variable_inputs[name], variable_inputs[name])
+        # Check for args not in parser. These were generated or changed in ReadInputs.py
+        if not hasattr(opts, name):
+            setattr(opts, name, variable_inputs[name])
+            continue
+        # Check for args not in the default_ini file
         if getattr(opts, name) != _variable_inputs[name]:
-            print(name)
             # This is the case where the user has set the value of an argument
             # from the command line. We don't want to argue with the user.
             pass
@@ -118,10 +142,6 @@ def arg():
     #   and not the specified inifile,
     #   it remains unaltered.
 
-    # Update opts with variable inputs
-    opts.disk_model_radius_array = disk_model_radius_array
-    opts.surface_density_array = surface_density_array
-    opts.aspect_ratio_array = aspect_ratio_array
     if opts.verbose:
         for item in opts.__dict__:
             print(item, getattr(opts, item))
@@ -144,16 +164,15 @@ def arg():
 
     # set the seed for random number generation and reproducibility if not user-defined
     if opts.seed == None:
-        opts.seed = np.random.randint(low=0, high=int(1e18))
+        opts.seed = np.random.randint(low=0, high=int(1e18), dtype=np.int_)
         print(f'Random number generator seed set to: {opts.seed}')
 
 
     # Write parameters to log file
-    if not opts.fname_log is None:
-        with open(opts.work_directory / opts.fname_log, 'w') as F:
-            for item in opts.__dict__:
-                line = "%s = %s\n"%(item, str(opts.__dict__[item]))
-                F.write(line)
+    with open(opts.work_directory / opts.fname_log, 'w') as F:
+        for item in opts.__dict__:
+            line = "%s = %s\n"%(item, str(opts.__dict__[item]))
+            F.write(line)
     return opts
 
 
@@ -163,16 +182,18 @@ def main():
     # Setting up automated input parameters
     # see IOdocumentation.txt for documentation of variable names/types/etc.
     opts = arg()
-
-    # create surface density & aspect ratio functions from input arrays
-    surf_dens_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.surface_density_array))
-    surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(x))
-
-    aspect_ratio_func_log = scipy.interpolate.UnivariateSpline(
-        opts.disk_model_radius_array, np.log(opts.aspect_ratio_array))
-    aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
-    
+    surf_dens_func, aspect_ratio_func = \
+        ReadInputs.construct_disk_interp(
+        opts.mass_smbh,
+        opts.disk_outer_radius,
+        opts.disk_model_name,
+        opts.alpha,
+        opts.frac_Eddington_ratio,
+        max_disk_radius_pc      = opts.max_disk_radius_pc,
+        disk_model_use_pagn     = opts.disk_model_use_pagn,
+        verbose                 = opts.verbose
+        )
+        
     merged_bh_array_pop = []
 
     surviving_bh_array_pop = []
@@ -181,17 +202,18 @@ def main():
 
     gw_array_pop = []
 
-    temp_emri_array = np.zeros(7)
+    #temp_emri_array = np.zeros(7)
 
-    emri_array = np.zeros(7)
+    #emri_array = np.zeros(7)
 
-    temp_bbh_gw_array = np.zeros(7)
+    #temp_bbh_gw_array = np.zeros(7)
 
-    bbh_gw_array = np.zeros(7)
+    #bbh_gw_array = np.zeros(7)
 
     for iteration in range(opts.n_iterations):
         print("Iteration", iteration)
         # Set random number generator for this run with incremented seed
+        # ALERT: ONLY this random number generator can be used throughout the code to ensure reproducibility.
         rng = np.random.default_rng(opts.seed + iteration)
 
         # Make subdirectories for each iteration
@@ -206,7 +228,14 @@ def main():
         # galaxy_type = galaxy_models[iteration] # e.g. star forming/spiral vs. elliptical
         # NSC mass
         # SMBH mass
+        #Housekeeping for array initialization
+        temp_emri_array = np.zeros(7)
 
+        emri_array = np.zeros(7)
+
+        temp_bbh_gw_array = np.zeros(7)
+
+        bbh_gw_array = np.zeros(7)    
 
         #Set up number of BH in disk
         n_bh = setupdiskblackholes.setup_disk_nbh(
@@ -221,6 +250,24 @@ def main():
             opts.r_nsc_crit,
             opts.nsc_index_inner,
         )
+
+        #This generates 10^6 more stars than BH so for right now I have artificially limited it to 5000 stars.
+        n_stars = setupdiskstars.setup_disk_nstars(
+            opts.M_nsc,
+            opts.nbh_nstar_ratio,
+            opts.mbh_mstar_ratio,
+            opts.r_nsc_out,
+            opts.nsc_index_outer,
+            opts.mass_smbh,
+            opts.disk_outer_radius,
+            opts.h_disk_average,
+            opts.r_nsc_crit,
+            opts.nsc_index_inner,
+        )
+        n_stars = np.int64(5000)
+
+        print('n_bh = {}, n_stars = {}'.format(n_bh,n_stars))
+
 
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
@@ -252,7 +299,7 @@ def main():
             n_bh
         )
         if opts.orb_ecc_damping == 1:
-            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng,n_bh)
+            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng,n_bh,opts.max_initial_eccentricity)
         else:
             bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,opts.crit_ecc)
 
@@ -263,11 +310,45 @@ def main():
          
         bh_initial_generations = np.ones((n_bh,),dtype=int)
 
+        #----------now stars
+        n_stars = 200 #working on making this physical
+
+        #Need to write an initialization function so we don't have to generate the arrays by hand.
+        print("Generate initial star parameter arrays")
+
+        star_mass = setupdiskstars.setup_disk_stars_masses(rng, n_stars, opts.min_initial_star_mass,opts.max_initial_star_mass,opts.star_mass_powerlaw_index)
+        star_radius = setupdiskstars.setup_disk_stars_radii(star_mass)
+        star_spin = setupdiskstars.setup_disk_stars_spins(rng, n_stars, opts.mu_star_spin_distribution, opts.sigma_star_spin_distribution)
+        star_spin_angle = setupdiskstars.setup_disk_stars_spin_angles(rng, n_stars, star_spin)
+        star_orbit_a = setupdiskstars.setup_disk_stars_location(rng, n_stars, opts.disk_outer_radius)
+        star_orbit_inclination = setupdiskstars.setup_disk_stars_inclination(rng,n_stars)
+        star_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng,n_stars)
+        if opts.orb_ecc_damping == 1:
+            star_orbit_e = setupdiskstars.setup_disk_stars_eccentricity_uniform(rng,n_stars)
+        else:
+            star_orbit_e = setupdiskstars.setup_disk_stars_circularized(rng,n_stars,opts.crit_ecc)
+        star_Y = opts.stars_initial_Y
+        star_Z = opts.stars_initial_Z
+
+        stars = AGNStar(mass = star_mass,
+                        spin = star_spin,
+                        spin_angle = star_spin_angle,
+                        orbit_a = star_orbit_a, #this is location
+                        orbit_inclination = star_orbit_inclination,
+                        orbit_e = star_orbit_e,
+                        orb_ang_mom = star_orb_ang_mom,
+                        star_radius = star_radius,
+                        star_Y = star_Y,
+                        star_Z = star_Z,
+                        n_stars = n_stars)
+
+
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
         #  that end up with semi-major axis < 50rg
         # Assume all drawn from prograde population for now.
         #   SF: Is this assumption important here? Where does it come up?
+
         inner_disk_locations = []
         inner_disk_masses = []
         inner_disk_spins = []
@@ -295,9 +376,56 @@ def main():
         prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
         # Orbital eccentricities
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
-        
+        print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
+        # Find which orbital eccentricities are <=h the disk aspect ratio and set up a mask
+        #prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+        # Orb eccentricities <2h (simple exponential damping): mask entries > 2*aspect_ratio
+        #prograde_bh_modest_ecc = np.ma.masked_where(prograde_bh_orb_ecc > 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+        #Orb eccentricities >2h (modified exponential damping): mask entries < 2*aspect_ratio
+        #prograde_bh_large_ecc = np.ma.masked_where(prograde_bh_orb_ecc < 2.0*aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
+        # Apply ecc damping to this masked array (where true)
+        #prograde_bh_orb_ecc_damp = orbital_ecc.orbital_ecc_damping(opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc)
+
+        #print('modest ecc ',prograde_bh_modest_ecc)
+        #print('damped ecc',prograde_bh_orb_ecc_damp)
+
+        # Test dynamics
+        #post_dynamics_orb_ecc = dynamics.circular_singles_encounters_prograde(rng,opts.mass_smbh, prograde_bh_locations, prograde_bh_masses, surf_dens_func, aspect_ratio_func, prograde_bh_orb_ecc, opts.timestep, opts.crit_ecc, de)
+
+        #First sort all stars by location
+        stars.sort(stars.orbit_a)
+
+        #prograde stars stuff
+        prograde_stars_orb_ang_mom_indices = np.where(stars.orb_ang_mom == 1)
+        prograde_stars = AGNStar(mass = stars.mass[prograde_stars_orb_ang_mom_indices],
+                                 spin = stars.spin[prograde_stars_orb_ang_mom_indices],
+                                 spin_angle = stars.spin_angle[prograde_stars_orb_ang_mom_indices],
+                                 orbit_a = stars.orbit_a[prograde_stars_orb_ang_mom_indices],
+                                 orbit_inclination = stars.orbit_inclination[prograde_stars_orb_ang_mom_indices],
+                                 orb_ang_mom = stars.orb_ang_mom[prograde_stars_orb_ang_mom_indices],
+                                 orbit_e = stars.orbit_e[prograde_stars_orb_ang_mom_indices],
+                                 star_radius=stars.star_radius[prograde_stars_orb_ang_mom_indices],
+                                 star_Y=stars.star_Y[prograde_stars_orb_ang_mom_indices],
+                                 star_Z=stars.star_Z[prograde_stars_orb_ang_mom_indices])
+
+
+
+
+
+
+        # Migrate
+        # First if feedback present, find ratio of feedback heating torque to migration torque
+        #if feedback > 0:
+        #        ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
+        #else:
+        #        ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))
+        # then migrate as usual
+        #prograde_bh_locations_new = type1.type1_migration(opts.mass_smbh , prograde_bh_locations, prograde_bh_masses, disk_surface_density, disk_aspect_ratio, opts.timestep, ratio_heat_mig_torques, opts.trap_radius, prograde_bh_orb_ecc,opts.crit_ecc)
+
+
         #Orbital inclinations
         prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
+        #prograde_stars_orb_incl = stars_initial_orb_incl[prograde_stars_orb_ang_mom_indices]
         #print("Prograde orbital inclinations")
 
         # adding arg of periapse for prograde BH
@@ -328,6 +456,33 @@ def main():
         retrograde_bh_spin_angles = bh_initial_spin_angles[retrograde_orb_ang_mom_indices]
         retrograde_bh_generations = bh_initial_generations[retrograde_orb_ang_mom_indices]
 
+        #Torque prograde orbiting stars only
+        """prograde_stars_spins = stars_initial_spins[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_spin_angles = stars_initial_spin_angles[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_generations = stars_initial_generations[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_radii = stars_initial_radii[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_X = stars_initial_X[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_Y = stars_initial_Y[prograde_stars_orb_ang_mom_indices]
+        prograde_stars_Z = stars_initial_Z[prograde_stars_orb_ang_mom_indices] """
+
+
+
+        # Writing initial parameters to file
+        np.savetxt(
+                os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_bh.dat"),
+                np.c_[bh_initial_locations.T,
+                      bh_initial_masses.T,
+                      bh_initial_spins.T,
+                      bh_initial_spin_angles.T,
+                      bh_initial_orb_ang_mom.T,
+                      bh_initial_orb_ecc.T,
+                      bh_initial_orb_incl.T],
+                header = bh_initial_field_names
+        )
+
+        stars.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_stars2.dat"))
+
+
         # Housekeeping:
         # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc, nu_gw, h_bin)
         number_of_bin_properties = len(binary_field_names.split())+1
@@ -338,6 +493,14 @@ def main():
         integer_test_bin_number = int(test_bin_number)
         number_of_mergers = 0
         int_n_timesteps = int(opts.number_of_timesteps)
+
+        number_of_stars_bin_properties = len(binary_stars_field_names.split())+1
+        integer_stars_nbinprop = int(number_of_stars_bin_properties)
+        bin_stars_index = 0
+        nbin_stars_ever_made_index = 0
+        test_bin_stars_number = opts.n_bins_max
+        integer_test_bin_stars_number = int(test_bin_stars_number)
+        number_of_stars_mergers = 0
         # Set up EMRI output array with properties we want to record (iteration, time, R,M,e,h_char,f_gw)
         
         num_of_emri_properties = 7
@@ -348,10 +511,12 @@ def main():
         bbh_gw_indices = []
         num_of_bbh_gw_properties = 7
         nbbhgw = 0
+        num_bbh_gw_tracked = 0
 
         # Set up empty initial Binary array
         # Initially all zeros, then add binaries plus details as appropriate
         binary_bh_array = np.zeros((integer_nbinprop,integer_test_bin_number))
+        binary_stars_array = np.zeros((integer_stars_nbinprop,integer_test_bin_stars_number))
         # Set up empty initial Binary gw array. Initially all zeros, but records gw freq and strain for all binaries ever made at each timestep, including ones that don't merge or are ionized
         gw_data_array =np.zeros((int_n_timesteps,integer_test_bin_number))
         # Set up normalization for t_gw (SF: I do not like this way of handling, flag for update)
@@ -360,12 +525,17 @@ def main():
     
         # Set up merger array (identical to binary array)
         merger_array = np.zeros((integer_nbinprop,integer_test_bin_number))
-    
+        merger_stars_array = np.zeros((integer_stars_nbinprop,integer_test_bin_stars_number))
+
         # Set up output array (mergerfile)
         nprop_mergers=len(mergerfile.names_rec)
         integer_nprop_merge=int(nprop_mergers)
         merged_bh_array = np.zeros((integer_nprop_merge,integer_test_bin_number))
-        
+
+        nprop_stars_mergers=len(mergerfile.names_rec)
+        integer_nprop_stars_merge=int(nprop_stars_mergers)
+        merged_stars_array = np.zeros((integer_nprop_stars_merge,integer_test_bin_stars_number))
+
         # Multiple AGN episodes:
         # If you want to use the output of a previous AGN simulation as an input to another AGN phase
         # Make sure you have a file 'recipes/prior_model_name_population.dat' so that ReadInputs can take it in
@@ -383,10 +553,13 @@ def main():
             prograde_bh_masses = prior_masses[prior_indices]
             prograde_bh_spins = prior_spins[prior_indices]
             prograde_bh_spin_angles = prior_spin_angles[prior_indices]
-            prograde_bh_generations = prior_gens[prior_indices] 
+            prograde_bh_generations = prior_gens[prior_indices]
+            print("prior indices",prior_indices)
+            print("prior locations",prograde_bh_locations) 
+            print("prior gens",prograde_bh_generations)
             prior_ecc_factor = 0.3
             prograde_bh_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(rng,prior_ecc_factor,num_of_progrades)
-
+            print("prior ecc",prograde_bh_orb_ecc)
         # Start Loop of Timesteps
         print("Start Loop!")
         time_passed = initial_time
@@ -394,14 +567,19 @@ def main():
 
         n_its = 0
         n_mergers_so_far = 0
+        n_stars_mergers_so_far = 0
         n_timestep_index = 0
-        n_merger_limit =1e4
+        n_merger_limit = 1e4
 
         while time_passed < final_time:
             # Record 
             if not(opts.no_snapshots):
                 n_bh_out_size = len(prograde_bh_locations)
+
+                n_stars_out_size = len(prograde_stars.orbit_a)
+
                 n_bh_r_out_size = len(retrograde_bh_locations)
+
 
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
                 # Single output prograde:  does work
@@ -423,6 +601,17 @@ def main():
                     binary_bh_array[:,:n_mergers_so_far+1].T,
                     header=binary_field_names
                 )
+
+                #Save star params
+                prograde_stars.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_{n_timestep_index}.dat"))
+
+                # np.savetxt(os.path.join(work_directory, "output_bh_single_{}.dat".format(n_timestep_index)), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
+                # Binary output: does not work
+                np.savetxt(
+                    os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_binary_{n_timestep_index}.dat"),
+                    binary_stars_array[:,:n_stars_mergers_so_far+1].T,
+                    header=binary_stars_field_names
+                )
                 # np.savetxt(os.path.join(work_directory, "output_bh_binary_{}.dat".format(n_timestep_index)), binary_bh_array[:,:n_mergers_so_far+1].T, header=binary_field_names)
                 n_timestep_index +=1
 
@@ -440,7 +629,14 @@ def main():
                 ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(
                     prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
             else:
-                ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))   
+                ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))
+
+            #now for stars
+            if opts.feedback > 0:
+                ratio_heat_mig_stars_torques = feedback_hankla21.feedback_hankla(
+                    prograde_stars.orbit_a, surf_dens_func, opts.frac_star_Eddington_ratio, opts.alpha)
+            else:
+                ratio_heat_mig_stars_torques = np.ones(len(prograde_stars.orbit_a))
             # then migrate as usual
             
             prograde_bh_locations = type1.type1_migration(
@@ -630,6 +826,7 @@ def main():
                     if (opts.dynamic_enc > 0):
                         #Spheroid encounters
                         binary_bh_array = dynamics.bin_spheroid_encounter(
+                            rng,
                             opts.mass_smbh,
                             opts.timestep,
                             binary_bh_array,
@@ -647,7 +844,17 @@ def main():
                             bin_index,
                             binary_bh_array,
                             opts.timestep
-                        )    
+                        )
+                        #binary_bh_array = disk_capture.orb_inc_damping.orb_inc_damping(
+                        #    opts.mass_smbh,
+                        #    retrograde_bh_locations,
+                        #    retrograde_bh_masses,
+                        #    retrograde_bh_orb_ecc,
+                        #    retrograde_bh_orb_inc,
+                        #    retro_arg_periapse,
+                        #    timestep,disk_surf_model
+                        #)    
+                    
                     #Migrate binaries
                     # First if feedback present, find ratio of feedback heating torque to migration torque
                     #print("feedback",feedback)
@@ -679,23 +886,29 @@ def main():
                     min_bbh_gw_separation = 2.0
                     # If there are binaries AND if any separations are < min_bbh_gw_separation
                     bbh_gw_indices = np.where( (binary_bh_array[8,:] < min_bbh_gw_separation) & (binary_bh_array[8,:]>0))
-                    #print("bbh_gw_indices",bbh_gw_indices)
+                    
                     # If bbh_indices exists (ie is not empty)
                     if bbh_gw_indices:
-                        
+                        #1st time around.
+                        if num_bbh_gw_tracked == 0:
+                            old_bbh_gw_freq = 9.e-7*np.ones(np.size(bbh_gw_indices,1))        
+                        if num_bbh_gw_tracked > 0:
+                            old_bbh_gw_freq = bbh_gw_freq
+
                         num_bbh_gw_tracked = np.size(bbh_gw_indices,1)
                         #print("N_tracked",num_bbh_gw_tracked)
                         nbbhgw = nbbhgw + num_bbh_gw_tracked
-                        #if num_bbh_gw_tracked:
-                        #    print("num_bbh_gw_tracked",num_bbh_gw_tracked)
-                        #print("gw indices",bbh_gw_indices,binary_bh_array[8,bbh_gw_indices])
+                        
+                        #Now update BBH & generate NEW frequency & evolve  
+                        
                         bbh_gw_strain,bbh_gw_freq = evolve.bbh_gw_params(
                             binary_bh_array, 
                             bbh_gw_indices,
-                            opts.mass_smbh
+                            opts.mass_smbh,
+                            opts.timestep,
+                            old_bbh_gw_freq
                         )
-                        #print("BBH strain, freq",bbh_gw_strain,bbh_gw_freq)
-                        #print("num tracked",num_bbh_gw_tracked)
+                        
                         if num_bbh_gw_tracked == 1:        
                             index = bbh_gw_indices[0]
                             #print("index",index)
@@ -711,19 +924,12 @@ def main():
                             temp_bbh_gw_array[4] = binary_bh_array[13,index]
                             temp_bbh_gw_array[5] = bbh_gw_strain
                             temp_bbh_gw_array[6] = bbh_gw_freq
-                            #temp_bbh_gw_array[2] = binary_bh_array[8,index][0]
-                            #temp_bbh_gw_array[3] = binary_bh_array[2,index][0] + binary_bh_array[3,index][0]
-                            #temp_bbh_gw_array[4] = binary_bh_array[13,index][0]
-                            #temp_bbh_gw_array[5] = bbh_gw_strain[0]
-                            #temp_bbh_gw_array[6] = bbh_gw_freq[0]
-                            #print("temp_bbh_gw_array",temp_bbh_gw_array)
+                            
                             bbh_gw_array = np.vstack((bbh_gw_array,temp_bbh_gw_array))
                             
                         if num_bbh_gw_tracked > 1:
                             index = 0
                             for i in range(0,num_bbh_gw_tracked-1):
-                                #print("num_gw_tracked",num_bbh_gw_tracked)
-                                #print("i,bbh_gw_indices",i,bbh_gw_indices,bbh_gw_indices[0],bbh_gw_strain,bbh_gw_strain[i])
                                 
                                 index = bbh_gw_indices[0][i]
                             
@@ -1064,8 +1270,24 @@ def main():
                 retro_inner_disk_indices = np.array(empty)
             
             if np.size(inner_disk_locations) > 0:
-                inner_disk_locations = dynamics.bh_near_smbh(opts.mass_smbh,inner_disk_locations,inner_disk_masses,inner_disk_orb_ecc,opts.timestep)
-                emri_gw_strain,emri_gw_freq = evolve.evolve_emri_gw(inner_disk_locations,inner_disk_masses,opts.mass_smbh)
+                inner_disk_locations = dynamics.bh_near_smbh(opts.mass_smbh,
+                                                             inner_disk_locations,
+                                                             inner_disk_masses,
+                                                             inner_disk_orb_ecc,
+                                                             opts.timestep)
+                num_in_inner_disk = np.size(inner_disk_locations)
+                # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
+                if nemri ==0:
+                    old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
+                if nemri > 0:
+                    old_gw_freq = emri_gw_freq
+                #Now update emris & generate NEW frequency & evolve   
+                emri_gw_strain,emri_gw_freq = evolve.evolve_emri_gw(inner_disk_locations,
+                                                                    inner_disk_masses, 
+                                                                    opts.mass_smbh,
+                                                                    opts.timestep,
+                                                                    old_gw_freq)
+                
                 #print("EMRI gw strain",emri_gw_strain)
                 #print("EMRI gw freq",emri_gw_freq)
 
@@ -1081,8 +1303,8 @@ def main():
                     temp_emri_array[4] = inner_disk_orb_ecc[i]
                     temp_emri_array[5] = emri_gw_strain[i]
                     temp_emri_array[6] = emri_gw_freq[i]
-                    #print("temp_emri_array",temp_emri_array)
-                    #print("emri_array",emri_array)
+                    
+                    
                     emri_array = np.vstack((emri_array,temp_emri_array))
                 
             # if inner_disk_locations[i] <1R_g then merger!
@@ -1153,9 +1375,17 @@ def main():
         print("Total number of mergers = ",number_of_mergers)
         print("Mergers", merged_bh_array.shape)
         print("Nbh_disk",n_bh)
+        #Number of rows in each array, EMRIs and BBH_GW
+        # If emri_array is 2-d then this line is ok, but if emri-array is empty then this line defaults to 7 (#elements in 1d)
+        if len(emri_array.shape) > 1:
+            total_emris = emri_array.shape[0]
+        elif len(emri_array.shape) == 1:
+            total_emris = 0
     
-        total_emris = emri_array.shape[0]
-        total_bbh_gws = bbh_gw_array.shape[0]
+        if len(bbh_gw_array.shape) > 1:
+            total_bbh_gws = bbh_gw_array.shape[0]
+        elif len(bbh_gw_array.shape) == 1:
+            total_bbh_gws = 0
 
             
         # Write out all the singletons after AGN episode, so can use this as input to another AGN phase.
@@ -1228,16 +1458,46 @@ def main():
         iteration_save_name = f"run{iteration_zfilled_str}/{opts.fname_output_mergers}"
         np.savetxt(os.path.join(opts.work_directory, iteration_save_name), merged_bh_array[:,:number_of_mergers].T, header=merger_field_names)
 
-        # Add mergers to population array including the iteration number
+        # Add mergers to population array including the iteration number 
+        # this line is linebreak between iteration outputs consisting of the repeated iteration number in each column
         iteration_row = np.repeat(iteration, number_of_mergers)
         survivor_row = np.repeat(iteration,num_properties_stored)
         emri_row = np.repeat(iteration,num_of_emri_properties)
         gw_row = np.repeat(iteration,num_of_bbh_gw_properties)
+        #Append each iteration result to output arrays
         merged_bh_array_pop.append(np.concatenate((iteration_row[np.newaxis], merged_bh_array[:,:number_of_mergers])).T)
         #surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:,:total_bh_survived])).T)
         surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived,:])))
-        emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
-        gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
+        
+        #print("total_emris,total_bbh_gws",total_emris,total_bbh_gws)
+        #print("gw_row",gw_row)
+        #print("gw_array_pop",gw_array_pop)
+        #print("total_bbh_gw_array",total_bbh_gw_array)
+        #if np.any(total_bbh_gw_array):
+        #    print("total_bbh_gw_array[]",total_bbh_gw_array[:,:total_bbh_gws])
+        #    print("total_bbh_gw_array[,:]",total_bbh_gw_array[:total_bbh_gws,:])
+        #print("concatenate",np.concatenate((gw_row,total_bbh_gw_array)))
+        #If there are non-zero elements in total_emri_array, concatenate to main EMRI file
+        
+        #print("total_emris",total_emris)
+        if total_emris > 0:
+        #if np.any(total_emri_array):
+        #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])))
+        
+            #emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:,:total_emris])))
+            #emris_array_pop.append(total_emri_array[:,:total_emris])
+            emris_array_pop.append(total_emri_array[:total_emris,:])
+            #print("emris_array_pop",emris_array_pop)
+        #    emris_array_pop.append(np.concatenate((emri_row[np.newaxis],total_emri_array[:total_emris,:])).T)
+        #If there are non-zero elements in total_bbh_gw_array
+        if total_bbh_gws > 0:
+        #if np.any(total_bbh_gw_array):
+        #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])))
+            #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:,:total_bbh_gws])))
+            gw_array_pop.append(total_bbh_gw_array[:total_bbh_gws,:])
+            #gw_array_pop.append(np.concatenate((gw_row[np.newaxis],total_bbh_gw_array[:total_bbh_gws,:])).T)
+        #if n_its == 1:
+        #    print("emris_array_pop",emris_array_pop)
      # save all mergers from Monte Carlo
     merger_pop_field_names = "iter " + merger_field_names # Add "Iter" to field names
     population_header = f"Initial seed: {opts.seed}\n{merger_pop_field_names}" # Include initial seed
@@ -1246,9 +1506,11 @@ def main():
     survivors_save_name = f"{basename}_survivors{extension}"
     emris_save_name = f"{basename}_emris{extension}"
     gws_save_name = f"{basename}_lvk{extension}"
+    #print("emris_array_pop",emris_array_pop)
     np.savetxt(os.path.join(opts.work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
     np.savetxt(os.path.join(opts.work_directory, survivors_save_name), np.vstack(surviving_bh_array_pop))
     np.savetxt(os.path.join(opts.work_directory,emris_save_name),np.vstack(emris_array_pop))
+    #np.savetxt(os.path.join(opts.work_directory,emris_save_name),(emris_array_pop))
     np.savetxt(os.path.join(opts.work_directory,gws_save_name),np.vstack(gw_array_pop))
 if __name__ == "__main__":
     main()
