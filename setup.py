@@ -104,7 +104,7 @@ CLASSIFIERS = [
 # If you have a beter solution please open an issue or pull request
 REQUIREMENTS = {
     "install" : [
-        "numpy>=1.23.1",
+        "numpy>=1.23.1,<2.0.0",
         "matplotlib>=3.5.2",
         "scipy>=1.11.2",
         "pandas",
