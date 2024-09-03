@@ -346,9 +346,9 @@ def construct_disk_interp(
         pagn_name = "Sirko"
         base_args = { 'Mbh': mass_smbh*ct.MSun,\
                       'alpha':alpha, \
-                      'le':frac_Eddington_ratio}
+                      'le':frac_Eddington_ratio}                    
         if 'thompson' in disk_model_name:
-            pagn_name = 'Thompson'
+            pagn_name = 'ThompsonAGN'
             base_args['Rout'] = disk_outer_radius;
         # note Rin default is 3 Rs
         
