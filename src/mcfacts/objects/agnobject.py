@@ -47,7 +47,8 @@ class AGNObject(object):
                         orbit_e = None,
                         orbit_argperiapse = None,
                         mass_smbh = None,
-                        nsystems = None):
+                        nsystems = None,
+                        rng = None):
         
         #Make sure all inputs are included
         if mass is None: raise AttributeError("mass is not included in inputs")
@@ -80,8 +81,14 @@ class AGNObject(object):
 
         M = mass + mass_smbh
         M_reduced = mass*mass_smbh/M
-        self.orb_ang_mom = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*self.orbit_a*(1-self.orbit_inclination**2))
-    
+        #self.orb_ang_mom = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*self.orbit_a*(1-self.orbit_inclination**2))
+        self.orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng = rng,
+                                                                       n_stars=nsystems,
+                                                                       M_reduced=M_reduced,
+                                                                       M=M,
+                                                                       orbit_a = self.orbit_a,
+                                                                       orbit_inclination=self.orbit_inclination)
+
     def __add_objects__(self, new_mass = None,
                               new_spin = None,
                               new_spin_angle = None,
@@ -89,7 +96,8 @@ class AGNObject(object):
                               new_inclination = None,
 #                              new_orb_ang_mom = None,
                               new_e = None,
-                              nsystems = None):
+                              nsystems = None,
+                              rng = None):
         """
         Adds new values to the end of existing arrays
         """
@@ -115,7 +123,14 @@ class AGNObject(object):
 
         new_M = new_mass + mass_smbh
         new_M_reduced = new_mass*mass_smbh/new_M
-        new_orb_ang_mom = new_M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*new_M*new_a*(1-new_inclination**2))
+        #new_orb_ang_mom = new_M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*new_M*new_a*(1-new_inclination**2))
+        self.new_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng = rng,
+                                                                       n_stars=nsystems,
+                                                                       M_reduced=new_M_reduced,
+                                                                       M=new_M,
+                                                                       orbit_a = new_a,
+                                                                       orbit_inclination=new_inclination)
+
 
         self.mass = np.concatenate([self.mass,new_mass])
         self.spin = np.concatenate([self.spin,new_spin])
@@ -201,7 +216,7 @@ class AGNObject(object):
         dtype = np.dtype([(attr,'float') for attr in vars(self).keys()])
         dat_out = np.empty(len(self.mass),dtype=dtype)
         for attr in vars(self).keys():
-            dat_out[attr] = getattr(self,attr)
+            dat_out[attr] = getattr(self, attr)
         return(dat_out)
     
     def to_file(self,fname=None):
@@ -544,9 +559,132 @@ class AGNBinaryStar(AGNObject):
 
 
         
+class AGNBinaryBlackHole(AGNObject):
+    """
+    An array of binary black holes. Should include all objects of this type. No other objects should contain objects of this type.
+    """
+    def __init__(self,**kwargs):
+        super(AGNBlackHole,self).__init__(**kwargs) #Calls top level functions
+    
+    def __repr__(self):
+        return('AGNBlackHole(): {} binary black holes'.format(len(self.mass)))
+
+
+    def add_blackholes(self, nsystems = None, **kwargs):
+        super(AGNBlackHole,self).__add_objects__(nsystems = nsystems, **kwargs)
         
 
 
+class AGNBinaryBlackHole(AGNObject):
+    """
+    An array of binary black holes. Should include all objects of this type. No other objects should contain objects of this type.
+    """
+
+    def __init__(self, bh_mass1 = None,
+                       bh_mass2 = None,
+                       bh_orb_a1 = None,
+                       bh_orb_a2 = None,
+                       bh_spin1 = None,
+                       bh_spin2 = None,
+                       bh_spin_angle1 = None,
+                       bh_spin_angle2 = None,
+                       binary_e = None,
+                       binary_a = None,
+                       binary_inclination=None,
+                       cm_orbit_a=None,
+                       cm_orbit_inclination=None,
+                       cm_orbit_e=None,
+                       nsystems = None,
+                     **kwargs):
+        
+
+        if nsystems is None: nsystems = bh_mass1.size
+
+
+        #Now assign attributes
+        self.bh_mass1 = bh_mass1
+        self.bh_mass2 = bh_mass2
+        self.bh_orb_a1 = bh_orb_a1
+        self.bh_orb_a2 = bh_orb_a2
+        self.bh_spin1 = bh_spin1
+        self.bh_spin2 = bh_spin2
+        self.bh_spin_angle1 = bh_spin_angle1
+        self.bh_spin_angle2 = bh_spin_angle2
+        self.binary_e = binary_e
+        self.binary_a = binary_a
+        self.binary_inclination = binary_inclination
+        self.cm_orbit_a = cm_orbit_a
+        self.cm_orbit_e = cm_orbit_e
+        self.cm_orbit_inclination = cm_orbit_inclination
+
+        #Now calculate properties for the AGNObject class aka the totals
+        total_mass = bh_mass1 + bh_mass2
+        total_spin = None # we will pass None for now, until we decide how to treat angular momentum
+        total_spin_angle = None  # we will pass None for now, until we decide how to treat angular momentum
+
+
+        super(AGNBinaryBlackHole,self).__init__(mass = total_mass,
+                                                spin = total_spin,
+                                                spin_angle = total_spin_angle,
+                                                orbit_a = self.cm_orbit_a,
+                                                orbit_inclination=self.cm_orbit_inclination,
+                                                orbit_e = self.cm_orbit_e,
+                                                orbit_argperiapse=None,# TODO ISSUE
+                                                mass_smbh = None, # TODO ISSUE
+                                                nsystems=nsystems,
+                                                rng = rng) # TODO ISSUE
+
+
+    def __repr__(self):
+        return('AGNBinaryStar(): {} black hole binaries'.format(len(self.mass)))
+    
+    def add_binaries(self, new_bh_mass1 = None,
+                       new_bh_mass2 = None,
+                       new_bh_orb_a1 = None,
+                       new_bh_orb_a2 = None,
+                       new_bh_spin1 = None,
+                       new_bh_spin2 = None,
+                       new_bh_spin_angle1 = None,
+                       new_bh_spin_angle2 = None,
+                       new_binary_e = None,
+                       new_binary_a = None,
+                       new_binary_inclination=None,
+                       new_cm_orbit_a=None,
+                       new_cm_orbit_inclination=None,
+                       new_cm_orbit_e=None,
+                       nsystems = None,
+                    **kwargs):
+        
+
+
+        if nsystems is None: nsystems = new_bh_mass1.size
+
+        self.bh_mass1 = np.concatenate([self.bh_mass1, new_bh_mass1])
+        self.bh_mass2 = np.concatenate([self.bh_mass2, new_bh_mass2])
+        self.bh_orb_a1 = np.concatenate([self.bh_orb_a1, new_bh_orb_a1])
+        self.bh_orb_a2 = np.concatenate([self.bh_orb_a2, new_bh_orb_a2])
+        self.bh_spin1 = np.concatenate([self.bh_spin1, new_bh_spin1])
+        self.bh_spin2 = np.concatenate([self.bh_spin2, new_bh_spin2])
+        self.bh_spin_angle1 = np.concatenate([self.bh_spin_angle1, new_bh_spin_angle1])
+        self.bh_spin_angle2 = np.concatenate([self.bh_spin_angle2, new_bh_spin_angle2])
+        self.binary_e = np.concatenate([self.bh_binary_e, new_bh_binary_e])
+        self.binary_a = np.concatenate([self.bh_binary_a, new_bh_binary_a])
+        self.binary_inclination = np.concatenate([self.binary_inclination, new_binary_inclination])
+        self.cm_orbit_a = np.concatenate([self.cm_orbit_a, new_cm_orbit_a])
+        self.cm_orbit_inclination = np.concatenate([self.cm_orbit_inclination, new_cm_orbit_inclination])
+        self.cm_orbit_e = np.concatenate([self.cm_orbit_e, new_cm_orbit_e])
+
+        new_total_mass = new_bh_mass1 + new_bh_mass2
+        new_spin = new_bh_spin1 + new_bh_spin2
+        new_spin_angle = new_bh_spin_angle1 + new_bh_spin_angle2
+
+        super(AGNBinaryBlackHole,self).__add_objects__(new_mass = new_total_mass,
+                                                   new_spin=None,
+                                                   new_spin_angle=None,
+                                                   new_a = new_cm_orbit_a,
+                                                   new_inclination=new_cm_orbit_inclination,
+                                                   new_e=new_cm_orbit_e,
+                                                   nsystems=nsystems)
 
 
 

@@ -25,6 +25,7 @@ from mcfacts.physics.accretion.eddington import changestarsmass
 from mcfacts.physics.accretion.torque import changebh
 from mcfacts.physics.accretion.torque import changestars
 from mcfacts.physics.feedback.hankla21 import feedback_hankla21
+from mcfacts.physics.feedback.hankla21 import feedback_hankla21_stars
 from mcfacts.physics.dynamics import dynamics
 from mcfacts.physics.eccentricity import orbital_ecc
 from mcfacts.physics.binary.formation import hillsphere
@@ -36,6 +37,8 @@ from mcfacts.physics.binary.merge import chieff
 from mcfacts.physics.binary.merge import tgw
 #from mcfacts.tests import tests
 from mcfacts.outputs import mergerfile
+#testing
+from mcfacts.setup import initializediskstars
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
 binary_stars_field_names="R1 R2 M1 M2 R1_star R2_star a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
@@ -230,7 +233,7 @@ def main():
         )
 
         #This generates 10^6 more stars than BH so for right now I have artificially limited it to 5000 stars.
-        n_stars = setupdiskstars.setup_disk_nstars(
+        """ n_stars = setupdiskstars.setup_disk_nstars(
             opts.M_nsc,
             opts.nbh_nstar_ratio,
             opts.mbh_mstar_ratio,
@@ -242,10 +245,7 @@ def main():
             opts.r_nsc_crit,
             opts.nsc_index_inner,
         )
-        n_stars = np.int64(5000)
-
-        print('n_bh = {}, n_stars = {}'.format(n_bh,n_stars))
-
+        n_stars = np.int64(5000) """
 
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
@@ -286,7 +286,7 @@ def main():
         bh_initial_generations = np.ones((n_bh,),dtype=int)
 
         #----------now stars
-        n_stars = 200 #working on making this physical
+        """ n_stars = 200 #working on making this physical
 
         #Need to write an initialization function so we don't have to generate the arrays by hand.
         print("Generate initial star parameter arrays")
@@ -297,25 +297,35 @@ def main():
         star_spin_angle = setupdiskstars.setup_disk_stars_spin_angles(rng, n_stars, star_spin)
         star_orbit_a = setupdiskstars.setup_disk_stars_location(rng, n_stars, opts.disk_outer_radius)
         star_orbit_inclination = setupdiskstars.setup_disk_stars_inclination(rng,n_stars)
-        star_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng,n_stars)
+        #star_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng,n_stars)
         if opts.orb_ecc_damping == 1:
             star_orbit_e = setupdiskstars.setup_disk_stars_eccentricity_uniform(rng,n_stars)
         else:
             star_orbit_e = setupdiskstars.setup_disk_stars_circularized(rng,n_stars,opts.crit_ecc)
         star_Y = opts.stars_initial_Y
         star_Z = opts.stars_initial_Z
-
         stars = AGNStar(mass = star_mass,
                         spin = star_spin,
                         spin_angle = star_spin_angle,
                         orbit_a = star_orbit_a, #this is location
                         orbit_inclination = star_orbit_inclination,
                         orbit_e = star_orbit_e,
-                        orb_ang_mom = star_orb_ang_mom,
+                        #orb_ang_mom = star_orb_ang_mom,
                         star_radius = star_radius,
                         star_Y = star_Y,
                         star_Z = star_Z,
-                        n_stars = n_stars)
+                        mass_smbh = opts.mass_smbh,
+                        n_stars = n_stars,
+                        rng = rng) """
+
+
+        ###### INITIALIZEDISKSTARS.py PLAYSPACE #####
+        print(initializediskstars.init_single_stars(opts,rng))
+        stars, n_stars = initializediskstars.init_single_stars(opts, rng)
+        print('n_bh = {}, n_stars = {}'.format(n_bh,n_stars))
+
+        print('all done!')
+        print(fff)
 
 
         #Generate initial inner disk arrays for objects that end up in the inner disk.
@@ -367,17 +377,18 @@ def main():
         stars.sort(stars.orbit_a)
 
         #prograde stars stuff
-        prograde_stars_orb_ang_mom_indices = np.where(stars.orb_ang_mom == 1)
+        prograde_stars_orb_ang_mom_indices = np.where(stars.orb_ang_mom >= 1)
         prograde_stars = AGNStar(mass = stars.mass[prograde_stars_orb_ang_mom_indices],
                                  spin = stars.spin[prograde_stars_orb_ang_mom_indices],
                                  spin_angle = stars.spin_angle[prograde_stars_orb_ang_mom_indices],
                                  orbit_a = stars.orbit_a[prograde_stars_orb_ang_mom_indices],
                                  orbit_inclination = stars.orbit_inclination[prograde_stars_orb_ang_mom_indices],
-                                 orb_ang_mom = stars.orb_ang_mom[prograde_stars_orb_ang_mom_indices],
                                  orbit_e = stars.orbit_e[prograde_stars_orb_ang_mom_indices],
                                  star_radius=stars.star_radius[prograde_stars_orb_ang_mom_indices],
                                  star_Y=stars.star_Y[prograde_stars_orb_ang_mom_indices],
-                                 star_Z=stars.star_Z[prograde_stars_orb_ang_mom_indices])
+                                 star_Z=stars.star_Z[prograde_stars_orb_ang_mom_indices],
+                                 mass_smbh = opts.mass_smbh,
+                                 rng = rng)
 
 
 
@@ -573,11 +584,14 @@ def main():
                 ratio_heat_mig_torques = np.ones(len(prograde_bh_locations))
 
             #now for stars
-            if opts.feedback > 0:
-                ratio_heat_mig_stars_torques = feedback_hankla21.feedback_hankla(
-                    prograde_stars.orbit_a, surf_dens_func, opts.frac_star_Eddington_ratio, opts.alpha)
-            else:
-                ratio_heat_mig_stars_torques = np.ones(len(prograde_stars.orbit_a))
+            #if opts.feedback > 0:
+            #    ratio_heat_mig_stars_torques = feedback_hankla21.feedback_hankla(
+            #        prograde_stars.orbit_a, surf_dens_func, opts.frac_star_Eddington_ratio, opts.alpha)
+            #else:
+            #    ratio_heat_mig_stars_torques = np.ones(len(prograde_stars.orbit_a))
+            ratio_heat_mig_stars_torques = feedback_hankla21_stars.feedback_hankla_stars(
+                prograde_stars.orbit_a, surf_dens_func, opts.frac_star_Eddington_ratio, opts.alpha
+            )
             # then migrate as usual
             
             prograde_bh_locations = type1.type1_migration(
@@ -633,6 +647,64 @@ def main():
                 opts.timestep,
                 opts.crit_ecc,
             )
+
+            # and now stars
+
+            # Locations
+            prograde_stars.orbit_a = type1.type1_migration(
+                opts.mass_smbh,
+                prograde_stars.orbit_a,
+                prograde_stars.mass,
+                disk_surface_density,
+                disk_aspect_ratio,
+                opts.timestep,
+                ratio_heat_mig_stars_torques,
+                opts.trap_radius,
+                prograde_stars.orbit_e,
+                opts.crit_ecc
+            )
+            
+            # Accrete
+            prograde_stars.mass = changestarsmass.change_mass(
+                prograde_stars.mass,
+                opts.frac_star_Eddington_ratio,
+                mass_growth_Edd_rate, #do we need to alter this for stars?
+                opts.timestep
+            )
+            # Spin up
+            prograde_stars.spin = changestars.change_spin_magnitudes(
+                prograde_stars.spin,
+                opts.frac_star_Eddington_ratio,
+                opts.spin_torque_condition,
+                opts.timestep,
+                prograde_stars.orbit_e,
+                opts.crit_ecc,
+            )
+            
+            
+            # Torque spin angle
+            prograde_stars.spin_angle = changestars.change_spin_angles(
+                prograde_stars.spin_angle,
+                opts.frac_star_Eddington_ratio,
+                opts.spin_torque_condition,
+                spin_minimum_resolution,
+                opts.timestep,
+                prograde_stars.orbit_e,
+                opts.crit_ecc
+            )
+
+            # Damp stars orbital eccentricity
+            prograde_stars.orbit_e = orbital_ecc.orbital_ecc_damping(
+                opts.mass_smbh,
+                prograde_stars.orbit_a,
+                prograde_stars.mass,
+                surf_dens_func,
+                aspect_ratio_func,
+                prograde_stars.orbit_e,
+                opts.timestep,
+                opts.crit_ecc,
+            )
+
             # Perturb eccentricity via dynamical encounters
             if opts.dynamic_enc > 0:
                 prograde_bh_locn_orb_ecc = dynamics.circular_singles_encounters_prograde(
@@ -647,10 +719,10 @@ def main():
                     opts.crit_ecc,
                     opts.de,
                 )
-                prograde_bh_locations = prograde_bh_locn_orb_ecc[0]
-                prograde_bh_orb_ecc = prograde_bh_locn_orb_ecc[1]
-                prograde_bh_locations = prograde_bh_locations[0]
-                prograde_bh_orb_ecc = prograde_bh_orb_ecc[0]
+                prograde_bh_locations = prograde_bh_locn_orb_ecc[0][0]
+                prograde_bh_orb_ecc = prograde_bh_locn_orb_ecc[1][0]
+                #prograde_bh_locations = prograde_bh_locations[0]
+                #prograde_bh_orb_ecc = prograde_bh_orb_ecc[0]
             
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:

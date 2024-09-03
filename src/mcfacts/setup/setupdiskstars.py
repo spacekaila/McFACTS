@@ -1,4 +1,6 @@
 import numpy as np
+from astropy.constants import G 
+
 
 
 def setup_disk_stars_location(rng, n_stars, disk_outer_radius):
@@ -9,31 +11,23 @@ def setup_disk_stars_location(rng, n_stars, disk_outer_radius):
 
 
 def setup_disk_stars_masses(rng,n_star,min_initial_star_mass,max_initial_star_mass,mstar_powerlaw_index):
-    #Return an array of star initial masses for a given alpha and min/max mass with the Salpeter IMF.
-    #Taken from here: https://python4mpia.github.io/fitting_data/MC-sampling-from-Salpeter.html
+    # Return array of star initial masses for a given alpha and min/max mass with the Salpeter IMF
 
-    #Convert limits from M to logM
-    log_M_min = np.log(min_initial_star_mass)
-    log_M_max = np.log(max_initial_star_mass)
+    # Convert min and max mass to x = m ^ {-p + 1} format
+    x_min = np.power(min_initial_star_mass, -mstar_powerlaw_index+1.)
+    x_max = np.power(max_initial_star_mass, -mstar_powerlaw_index+1.)
 
-    #Max likelihood is at M_min
-    maxlik = np.power(min_initial_star_mass, 1.0 - mstar_powerlaw_index)
+    # Get array of uniform random numbers
+    p_vals = rng.uniform(low = 0.0, high = 1.0, size = n_star)
 
-    #Make array for output
-    masses = []
-    while(len(masses) < n_star):
-        #draw candidate from logM interval
-        logM = rng.uniform(low=log_M_min, high=log_M_max)
-        M = np.exp(logM)
-        #Compute likelihood of candidate from Salpeter SMF
-        likelihood = np.power(M,1.0-mstar_powerlaw_index)
-        #Accept randomly
-        u = rng.uniform(low=0.0, high=maxlik)
-        if(u < likelihood):
-            masses.append(M)
-    masses = np.array(masses)
+    # Calculate x values
+    x_vals = x_min - p_vals * (x_min - x_max)
+
+    # Convert back to mass
+    masses = np.power(x_vals, 1./(-mstar_powerlaw_index+1))
+
     return(masses)
-
+    
 def setup_disk_stars_radii(masses):
     #For now the radius is just set to the ZAMS radius via the mass-radius relation and does not change
     radii = np.power(masses,0.8)
@@ -66,12 +60,14 @@ def setup_disk_stars_spin_angles(rng, n_stars, stars_initial_spins):
     return stars_initial_spin_angles
 
 
-def setup_disk_stars_orb_ang_mom(rng, n_stars):
+def setup_disk_stars_orb_ang_mom(rng, n_stars, M_reduced, M, orbit_a, orbit_inclination,):
     #Return an array of BH initial orbital angular momentum.
     #Assume either fully prograde (+1) or retrograde (-1)
     integer_nstars = int(n_stars)
     random_uniform_number = rng.random((integer_nstars,))
-    stars_initial_orb_ang_mom = (2.0*np.around(random_uniform_number)) - 1.0
+    stars_initial_orb_ang_mom_sign = (2.0*np.around(random_uniform_number)) - 1.0
+    stars_initial_orb_ang_mom_value = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*orbit_a*(1-orbit_inclination**2))
+    stars_initial_orb_ang_mom = stars_initial_orb_ang_mom_sign*stars_initial_orb_ang_mom_value
     return stars_initial_orb_ang_mom
 
 def setup_disk_stars_eccentricity_thermal(rng, n_stars):
