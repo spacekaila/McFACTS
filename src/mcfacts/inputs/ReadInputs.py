@@ -321,7 +321,8 @@ def construct_disk_interp(
                       'le':frac_Eddington_ratio}
         if 'thompson' in disk_model_name:
             pagn_name = 'Thompson'
-            base_args['Rout'] = disk_outer_radius;
+            base_args = { 'Mbh': mass_smbh*ct.MSun}
+#            base_args['Rout'] = disk_outer_radius;
         # note Rin default is 3 Rs
         
         pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
