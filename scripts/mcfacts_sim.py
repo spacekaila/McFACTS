@@ -36,9 +36,9 @@ from mcfacts.physics.binary.harden import baruteau11
 from mcfacts.physics.binary.merge import tichy08
 from mcfacts.physics.binary.merge import chieff
 from mcfacts.physics.binary.merge import tgw
-#from mcfacts.physics.disk_capture.orb_inc_damping import orb_inc_damping
 
-#from mcfacts.tests import tests
+from mcfacts.physics.disk_capture import crude_retro_evol
+
 from mcfacts.outputs import mergerfile
 
 binary_field_names="R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
@@ -46,10 +46,12 @@ binary_stars_field_names="R1 R2 M1 M2 R1_star R2_star a1 a2 theta1 theta2 sep co
 merger_field_names=' '.join(mergerfile.names_rec)
 
 
+
 # Do not change this line EVER
 DEFAULT_INI = impresources.files(input_data) / "model_choice.ini"
 bh_initial_field_names = "disk_location mass spin spin_angle orb_ang_mom orb_ecc orb_incl"
 # Feature in testing do not use unless you know what you're doing.
+
 #DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 
 assert DEFAULT_INI.is_file()
@@ -301,7 +303,10 @@ def main():
         else:
             bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,opts.crit_ecc)
 
-        bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng,n_bh)
+        #bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng,n_bh)
+        bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_incl(rng, n_bh, bh_initial_locations, bh_initial_orb_ang_mom, aspect_ratio_func)
+
+        bh_initial_orb_arg_periapse = setupdiskblackholes.setup_disk_blackholes_arg_periapse(rng,n_bh)
          
         bh_initial_generations = np.ones((n_bh,),dtype=int)
 
@@ -338,10 +343,14 @@ def main():
                         n_stars = n_stars)
 
 
-        #Generate initial inner disk arrays for objects that end up in the inner disk.
-        #Assume all drawn from prograde population for now.
+        # Generate initial inner disk arrays for objects that end up in the inner disk. 
+        # This is to track possible EMRIs--we're tossing things in these arrays
+        #  that end up with semi-major axis < 50rg
+        # Assume all drawn from prograde population for now.
+        #   SF: Is this assumption important here? Where does it come up?
+
         inner_disk_locations = []
-        inner_disk_masses =[]
+        inner_disk_masses = []
         inner_disk_spins = []
         inner_disk_spin_angles = []
         inner_disk_orb_ecc = []
@@ -419,6 +428,17 @@ def main():
         #prograde_stars_orb_incl = stars_initial_orb_incl[prograde_stars_orb_ang_mom_indices]
         #print("Prograde orbital inclinations")
 
+        # adding arg of periapse for prograde BH
+        prograde_bh_orb_arg_periapse = bh_initial_orb_arg_periapse[prograde_orb_ang_mom_indices]
+
+        # Now do retrograde BH orbiters setup
+        retrograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == -1)
+        retrograde_bh_locations = bh_initial_locations[retrograde_orb_ang_mom_indices]
+        retrograde_bh_masses = bh_initial_masses[retrograde_orb_ang_mom_indices]
+        retrograde_bh_orb_ecc = bh_initial_orb_ecc[retrograde_orb_ang_mom_indices]
+        retrograde_bh_orb_incl = bh_initial_orb_incl[retrograde_orb_ang_mom_indices]
+        retrograde_bh_orb_arg_periapse = bh_initial_orb_arg_periapse[retrograde_orb_ang_mom_indices]
+
         # Housekeeping: Fractional rate of mass growth per year at 
         # the Eddington rate(2.3e-8/yr)
         mass_growth_Edd_rate = 2.3e-8
@@ -427,10 +447,14 @@ def main():
         # (ie less than this value gets fixed to zero) 
         # e.g 0.02 rad=1deg
         spin_minimum_resolution = 0.02
-        #Torque prograde orbiting BH only
+        # Torque prograde orbiting BH only
         prograde_bh_spins = bh_initial_spins[prograde_orb_ang_mom_indices]
         prograde_bh_spin_angles = bh_initial_spin_angles[prograde_orb_ang_mom_indices]
         prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
+        # but set up retrogrades--think about physics later:
+        retrograde_bh_spins = bh_initial_spins[retrograde_orb_ang_mom_indices]
+        retrograde_bh_spin_angles = bh_initial_spin_angles[retrograde_orb_ang_mom_indices]
+        retrograde_bh_generations = bh_initial_generations[retrograde_orb_ang_mom_indices]
 
         #Torque prograde orbiting stars only
         """prograde_stars_spins = stars_initial_spins[prograde_stars_orb_ang_mom_indices]
@@ -517,6 +541,7 @@ def main():
         # Make sure you have a file 'recipes/prior_model_name_population.dat' so that ReadInputs can take it in
         # and in your .ini file set switch prior_agn = 1.0.
         # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
+        # SF: No promises this handles retrograde orbiters correctly yet
         if opts.prior_agn == 1.0:
             
             prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
@@ -550,14 +575,24 @@ def main():
             # Record 
             if not(opts.no_snapshots):
                 n_bh_out_size = len(prograde_bh_locations)
+
                 n_stars_out_size = len(prograde_stars.orbit_a)
 
+                n_bh_r_out_size = len(retrograde_bh_locations)
+
+
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
-                # Single output:  does work
+                # Single output prograde:  does work
                 np.savetxt(
                     os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_{n_timestep_index}.dat"),
-                    np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T],
-                    header="r_bh m a theta ecc gen"
+                    np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_orb_incl.T, prograde_bh_generations[:n_bh_out_size].T],
+                    header="r_bh m a theta ecc inc gen"
+                )
+                # Single output retrograde:
+                np.savetxt(
+                    os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_retro_{n_timestep_index}.dat"),
+                    np.c_[retrograde_bh_locations.T, retrograde_bh_masses.T, retrograde_bh_spins.T, retrograde_bh_spin_angles.T, retrograde_bh_orb_ecc.T, retrograde_bh_orb_incl.T, retrograde_bh_generations[:n_bh_r_out_size].T],
+                    header="r_bh m a theta ecc inc gen"
                 )
                 # np.savetxt(os.path.join(work_directory, "output_bh_single_{}.dat".format(n_timestep_index)), np.c_[prograde_bh_locations.T, prograde_bh_masses.T, prograde_bh_spins.T, prograde_bh_spin_angles.T, prograde_bh_orb_ecc.T, prograde_bh_generations[:n_bh_out_size].T], header="r_bh m a theta ecc gen")
                 # Binary output: does not work
@@ -634,7 +669,6 @@ def main():
                 opts.crit_ecc,
             )
             
-            
             # Torque spin angle
             prograde_bh_spin_angles = changebh.change_spin_angles(
                 prograde_bh_spin_angles,
@@ -657,6 +691,22 @@ def main():
                 opts.timestep,
                 opts.crit_ecc,
             )
+
+            # Now do retrograde singles--change semi-major axis
+            #   note this is dyn friction only, not true 'migration'
+            # change retrograde eccentricity (some damping, some pumping)
+            # damp orbital inclination
+            retrograde_bh_orb_ecc, retrograde_bh_locations, retrograde_bh_orb_incl = crude_retro_evol.crude_retro_bh(
+                opts.mass_smbh,
+                retrograde_bh_masses,
+                retrograde_bh_locations,
+                retrograde_bh_orb_ecc,
+                retrograde_bh_orb_incl,
+                retrograde_bh_orb_arg_periapse,
+                surf_dens_func,
+                opts.timestep
+            )
+
             # Perturb eccentricity via dynamical encounters
             if opts.dynamic_enc > 0:
                 prograde_bh_locn_orb_ecc = dynamics.circular_singles_encounters_prograde(
@@ -679,6 +729,9 @@ def main():
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
                 #First check that binaries are real. Discard any columns where the location or the mass is 0.
+                # SF: I believe this step is handling an error checking thing that may have been
+                #     set up in the previous timeloop if e.g. a binary either merged or was ionized?
+                #     Please explain what this is and how it works right here?
                 reality_flag = evolve.reality_check(binary_bh_array, bin_index,integer_nbinprop)
                 if reality_flag >= 0:
                    #One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
@@ -1167,7 +1220,9 @@ def main():
             # Since a 10Msun BH will decay into a 10^8Msun SMBH at 50R_g in ~38Myr and decay time propto a^4. 
             # e.g at 25R_g, decay time is only 2.3Myr.
             min_safe_distance = 50.0
-            inner_disk_indices = np.where( prograde_bh_locations < min_safe_distance)
+            inner_disk_indices = np.where(prograde_bh_locations < min_safe_distance)
+            # adding retros too
+            retro_inner_disk_indices = np.where(retrograde_bh_locations < min_safe_distance)
             #retrograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == -1)
             #print("inner disk indices",inner_disk_indices)
             #print(prograde_bh_locations[inner_disk_indices],np.size(inner_disk_indices))
@@ -1192,6 +1247,28 @@ def main():
                 empty=[]
                 inner_disk_indices = np.array(empty)
 
+            if np.size(retro_inner_disk_indices) > 0:
+                # Add BH to inner_disk_arrays
+                inner_disk_locations = np.append(inner_disk_locations,retrograde_bh_locations[retro_inner_disk_indices])
+                inner_disk_masses = np.append(inner_disk_masses,retrograde_bh_masses[retro_inner_disk_indices])
+                inner_disk_spins = np.append(inner_disk_spins,retrograde_bh_spins[retro_inner_disk_indices])
+                inner_disk_spin_angles = np.append(inner_disk_spin_angles,retrograde_bh_spin_angles[retro_inner_disk_indices])
+                inner_disk_orb_ecc = np.append(inner_disk_orb_ecc,retrograde_bh_orb_ecc[retro_inner_disk_indices])
+                inner_disk_orb_inc = np.append(inner_disk_orb_inc,retrograde_bh_orb_incl[retro_inner_disk_indices])
+                inner_disk_gens = np.append(inner_disk_gens,retrograde_bh_generations[retro_inner_disk_indices])
+                #Remove BH from retrograde_disk_arrays (don't forget arg periapse!)
+                retrograde_bh_locations = np.delete(retrograde_bh_locations,retro_inner_disk_indices)
+                retrograde_bh_masses = np.delete(retrograde_bh_masses, retro_inner_disk_indices)
+                retrograde_bh_spins = np.delete(retrograde_bh_spins, retro_inner_disk_indices)
+                retrograde_bh_spin_angles = np.delete(retrograde_bh_spin_angles, retro_inner_disk_indices)
+                retrograde_bh_orb_ecc = np.delete(retrograde_bh_orb_ecc, retro_inner_disk_indices)
+                retrograde_bh_orb_incl = np.delete(retrograde_bh_orb_incl, retro_inner_disk_indices)
+                retrograde_bh_orb_arg_periapse = np.delete(retrograde_bh_orb_arg_periapse, retro_inner_disk_indices)
+                retrograde_bh_generations = np.delete(retrograde_bh_generations, retro_inner_disk_indices)
+                # Empty disk_indices array
+                empty=[]
+                retro_inner_disk_indices = np.array(empty)
+            
             if np.size(inner_disk_locations) > 0:
                 inner_disk_locations = dynamics.bh_near_smbh(opts.mass_smbh,
                                                              inner_disk_locations,
@@ -1213,7 +1290,7 @@ def main():
                 
                 #print("EMRI gw strain",emri_gw_strain)
                 #print("EMRI gw freq",emri_gw_freq)
-            
+
             num_in_inner_disk = np.size(inner_disk_locations)
             nemri = nemri + num_in_inner_disk
             if num_in_inner_disk > 0:
@@ -1231,23 +1308,53 @@ def main():
                     emri_array = np.vstack((emri_array,temp_emri_array))
                 
             # if inner_disk_locations[i] <1R_g then merger!
-            inner_disk_index = -2
-            num_in_inner_disk = np.size(inner_disk_locations)
-            for j in range(0,num_in_inner_disk):
-                if inner_disk_locations[j] <= 1.0:
-                #    print("EMRI merger!!")
-                    inner_disk_index = j
+            merger_dist = 1.0
+            emri_merger_indices = np.where(inner_disk_locations <= merger_dist)
             
-            if inner_disk_index > -2:                
-                inner_disk_locations = np.delete(inner_disk_locations,inner_disk_index)
-                inner_disk_masses = np.delete(inner_disk_masses,inner_disk_index)
-                inner_disk_spins = np.delete(inner_disk_spins,inner_disk_index)
-                inner_disk_spin_angles = np.delete(inner_disk_spin_angles,inner_disk_index)
-                inner_disk_orb_ecc = np.delete(inner_disk_orb_ecc,inner_disk_index)
-                inner_disk_orb_inc = np.delete(inner_disk_orb_inc,inner_disk_index)
-                inner_disk_gens = np.delete(inner_disk_gens,inner_disk_index)
-
-
+            # if mergers occurs, remove from inner_disk arrays and stop evolving
+            # still getting some nans, but I think that's bc there's retros that should have been
+            #  moved to prograde arrays
+            if np.size(emri_merger_indices) > 0:      
+                inner_disk_locations = np.delete(inner_disk_locations, emri_merger_indices)
+                inner_disk_masses = np.delete(inner_disk_masses, emri_merger_indices)
+                inner_disk_spins = np.delete(inner_disk_spins, emri_merger_indices)
+                inner_disk_spin_angles = np.delete(inner_disk_spin_angles, emri_merger_indices)
+                inner_disk_orb_ecc = np.delete(inner_disk_orb_ecc, emri_merger_indices)
+                inner_disk_orb_inc = np.delete(inner_disk_orb_inc, emri_merger_indices)
+                inner_disk_gens = np.delete(inner_disk_gens, emri_merger_indices)
+            # Empty emri_merger_indices array
+            empty=[]
+            emri_merger_indices = np.array(empty)
+            
+            # Here is where we need to move retro to prograde if they've flipped in this timestep
+            # If they're IN the disk prograde, OR if they've circularized:
+            # stop treating them with crude retro evolution--it will be sad
+            # SF: fix the inc threshhold later!!!
+            inc_threshhold = 5.0 * np.pi/180.0
+            flip_to_prograde_indices = np.where((np.abs(retrograde_bh_orb_incl) <= inc_threshhold) | (retrograde_bh_orb_ecc == 0.0))
+            if np.size(flip_to_prograde_indices) > 0:
+                # add to prograde arrays
+                prograde_bh_locations = np.append(prograde_bh_locations,retrograde_bh_locations[flip_to_prograde_indices])
+                prograde_bh_masses = np.append(prograde_bh_masses, retrograde_bh_masses[flip_to_prograde_indices])
+                prograde_bh_spins = np.append(prograde_bh_spins, retrograde_bh_spins[flip_to_prograde_indices])
+                prograde_bh_spin_angles = np.append(prograde_bh_spin_angles, retrograde_bh_spin_angles[flip_to_prograde_indices])
+                prograde_bh_orb_ecc = np.append(prograde_bh_orb_ecc, retrograde_bh_orb_ecc[flip_to_prograde_indices])
+                prograde_bh_orb_incl = np.append(prograde_bh_orb_incl, retrograde_bh_orb_incl[flip_to_prograde_indices])
+                prograde_bh_orb_arg_periapse = np.append(prograde_bh_orb_arg_periapse, retrograde_bh_orb_arg_periapse[flip_to_prograde_indices])
+                prograde_bh_generations = np.append(prograde_bh_generations, retrograde_bh_generations[flip_to_prograde_indices])
+                # delete from retro arrays
+                retrograde_bh_locations = np.delete(retrograde_bh_locations,flip_to_prograde_indices)
+                retrograde_bh_masses = np.delete(retrograde_bh_masses,flip_to_prograde_indices)
+                retrograde_bh_spins = np.delete(retrograde_bh_spins,flip_to_prograde_indices)
+                retrograde_bh_spin_angles = np.delete(retrograde_bh_spin_angles,flip_to_prograde_indices)
+                retrograde_bh_orb_ecc = np.delete(retrograde_bh_orb_ecc,flip_to_prograde_indices)
+                retrograde_bh_orb_incl = np.delete(retrograde_bh_orb_incl,flip_to_prograde_indices)
+                retrograde_bh_orb_arg_periapse = np.delete(retrograde_bh_orb_arg_periapse,flip_to_prograde_indices)
+                retrograde_bh_generations = np.delete(retrograde_bh_generations,flip_to_prograde_indices)
+            # empty array for flipping to prograde
+            empty=[]
+            flip_to_prograde_indices = np.array(empty)
+            
             #binary_bh_array = dynamics.bbh_near_smbh(opts.mass_smbh,bin_index,binary_bh_array)
             
             #Iterate the time step

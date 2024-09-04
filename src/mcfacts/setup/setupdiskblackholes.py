@@ -3,8 +3,11 @@ import numpy as np
 
 def setup_disk_blackholes_location(rng, n_bh, disk_outer_radius):
     #Return an array of BH locations distributed randomly uniformly in disk
+    isco_radius = 6.0
     integer_nbh = int(n_bh)
     bh_initial_locations = disk_outer_radius*rng.random(integer_nbh)
+    sma_too_small = np.where(bh_initial_locations<isco_radius)
+    bh_initial_locations[sma_too_small] = isco_radius
     return bh_initial_locations
 
 def setup_prior_blackholes_indices(rng, prograde_n_bh, prior_bh_locations):
@@ -103,6 +106,26 @@ def setup_disk_blackholes_inclination(rng, n_bh):
     bh_initial_orb_incl = np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_incl
 
+def setup_disk_blackholes_incl(rng, n_bh, bh_location, ang_mom_idx, aspect_ratio_func):
+    # Return an array of BH orbital inclinations
+    # initial distribution is not 0.0
+    integer_nbh = int(n_bh)
+    # what is the max height at the orbiter location that keeps it in the disk
+    max_height = bh_location * aspect_ratio_func(bh_location)
+    # reflect that height to get the min
+    min_height = -max_height
+    random_uniform_number = rng.random((integer_nbh,))
+    # pick the actual height between the min and max, then reset zero point
+    height_range = max_height - min_height
+    actual_height_range = height_range * random_uniform_number
+    actual_height = actual_height_range + min_height
+    # inclination is arctan of height over radius, modulo pro or retrograde
+    bh_initial_orb_incl = np.arctan(actual_height/bh_location)
+    # for retrogrades, add 180 degrees
+    bh_initial_orb_incl[ang_mom_idx < 0.0] = bh_initial_orb_incl[ang_mom_idx < 0.0] + np.pi
+
+    return bh_initial_orb_incl
+
 def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0
@@ -117,6 +140,26 @@ def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
     #Try zero eccentricities
     bh_initial_orb_ecc = crit_ecc*np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_ecc
+
+def setup_disk_blackholes_arg_periapse(rng, n_bh):
+    # Return an array of BH arguments of periapse
+    # Should be fine to do a uniform distribution between 0-2pi
+    # Someday we should probably pick all the orbital variables
+    #   to be consistent with a thermal distribution or something
+    #   otherwise physically well-motivated...
+    #
+    # Hahahaha, actually, no, for now everything will be at 0.0 or pi/2
+    # For now, bc crude retro evol only treats arg periapse = (0.0, pi) or pi/2
+    # and intermediate values are fucking up evolution
+    # (and pi is symmetric w/0, pi/2 symmetric w/ 3pi/2 so doesn't matter)
+    # when code can handle arbitrary arg of periapse, uncomment relevant line
+
+    integer_nbh = int(n_bh)
+    random_uniform_number = rng.random((integer_nbh,))
+    #bh_initial_orb_arg_periapse = 2.0*np.pi*random_uniform_number
+    bh_initial_orb_arg_periapse = 0.5 * np.pi * np.around(random_uniform_number)
+
+    return bh_initial_orb_arg_periapse
 
 def setup_disk_nbh(M_nsc,nbh_nstar_ratio,mbh_mstar_ratio,r_nsc_out,nsc_index_outer,mass_smbh,disk_outer_radius,h_disk_average,r_nsc_crit,nsc_index_inner):
     # Return the integer number of BH in the AGN disk as calculated from NSC inputs assuming isotropic distribution of NSC orbits
