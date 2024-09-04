@@ -26,8 +26,8 @@ MSTAR_RUNS_EXE = ${HERE}/scripts/vera_mstar_bins.py
 MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
-SEED=3456789012
-FNAME_INI= ${HERE}/recipes/p1_fig2.ini
+SEED=1234567890
+FNAME_INI= ${HERE}/recipes/p1_thompson.ini
 #FNAME_INI= ${HERE}/recipes/model_choice_old.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
 # NAL files might not exist unless you download them from
