@@ -21,8 +21,11 @@ def setup_disk_blackholes_masses(rng, n_bh,mode_mbh_init,max_initial_bh_mass,mbh
     #Return an array of BH initial masses for a given powerlaw index and max mass
     integer_nbh = int(n_bh)
     bh_initial_masses = (rng.pareto(mbh_powerlaw_index,integer_nbh)+1)*mode_mbh_init
-    #impose maximum mass condition
-    bh_initial_masses[bh_initial_masses > max_initial_bh_mass] = max_initial_bh_mass
+    #impose maximum mass condition (default upper bound is 40Msun)
+    #Set a critical mass limit (say 35Msun) (in units of Msun)
+    critical_bh_mass = 35.0
+    mass_diff = max_initial_bh_mass - critical_bh_mass
+    bh_initial_masses[bh_initial_masses > max_initial_bh_mass] = critical_bh_mass + np.rint(mass_diff*rng.random())
     return bh_initial_masses
 
 
