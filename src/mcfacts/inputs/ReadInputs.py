@@ -350,7 +350,8 @@ def construct_disk_interp(
         if 'thompson' in disk_model_name:
             pagn_name = 'Thompson'
             base_args = { 'Mbh': mass_smbh*ct.MSun}
-#            base_args['Rout'] = disk_outer_radius;
+            Rg = mass_smbh*ct.MSun * ct.G / (ct.c ** 2)
+            base_args['Rout'] = disk_outer_radius*Rg;  # remember pagn uses SI units, but we provide r/rg
         # note Rin default is 3 Rs
         
         pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
