@@ -34,7 +34,7 @@ MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
 SEED=3456789012
-FNAME_INI= ${HERE}/recipes/p1_fig2.ini
+FNAME_INI= ${HERE}/recipes/p1_thompson.ini
 #FNAME_INI= ${HERE}/recipes/model_choice_old.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
 # NAL files might not exist unless you download them from
@@ -65,13 +65,11 @@ install: $(CLEAN_CMD) version
 
 #### Test one thing at a time ####
 
-
+# do not put linebreaks between any of these lines. Your run will call a different .ini file
 mcfacts_sim: $(CLEAN_CMD)
 	python ${MCFACTS_SIM_EXE} \
-		--n_iterations 10 \
-
+		--n_iterations 100 \
 		--fname-ini ${FNAME_INI} \
-
 		--fname-log out.log \
 		--seed ${SEED}
 

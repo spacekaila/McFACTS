@@ -119,8 +119,13 @@ def arg():
     opts.fname_output_mergers = Path(opts.fname_output_mergers)
 
     ## Parse inifile
+    print("opts.fname_ini",opts.fname_ini)
     # Read inifile
     variable_inputs = ReadInputs.ReadInputs_ini(opts.fname_ini, opts.verbose)
+    print("variable_inputs",variable_inputs)
+    #Hidden variable inputs
+    print("_variable_inputs",_variable_inputs)
+    #raise Exception
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
     for name in variable_inputs:
@@ -145,7 +150,8 @@ def arg():
     if opts.verbose:
         for item in opts.__dict__:
             print(item, getattr(opts, item))
-
+    print("variable_inputs",variable_inputs)
+    #raise Exception
     # Get the user-defined or default working directory / output location
     opts.work_directory = Path(opts.work_directory).resolve()
     if not isdir(opts.work_directory):
@@ -201,7 +207,9 @@ def main():
     emris_array_pop = []
 
     gw_array_pop = []
-
+    print("opts.__dict__",opts.__dict__)
+    print("opts.mass_smbh",opts.mass_smbh)
+    print("opts.frac_bin_retro",opts.frac_bin_retro)
     #temp_emri_array = np.zeros(7)
 
     #emri_array = np.zeros(7)
@@ -376,7 +384,7 @@ def main():
         prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
         # Orbital eccentricities
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
-        print("Prograde orbital eccentricities",prograde_bh_orb_ecc)
+        
         # Find which orbital eccentricities are <=h the disk aspect ratio and set up a mask
         #prograde_bh_crit_ecc = np.ma.masked_where(prograde_bh_orb_ecc >= aspect_ratio_func(prograde_bh_locations),prograde_bh_orb_ecc)
         # Orb eccentricities <2h (simple exponential damping): mask entries > 2*aspect_ratio
@@ -493,7 +501,7 @@ def main():
         integer_test_bin_number = int(test_bin_number)
         number_of_mergers = 0
         int_n_timesteps = int(opts.number_of_timesteps)
-
+        frac_bin_retro = opts.frac_bin_retro
         number_of_stars_bin_properties = len(binary_stars_field_names.split())+1
         integer_stars_nbinprop = int(number_of_stars_bin_properties)
         bin_stars_index = 0
@@ -1167,7 +1175,7 @@ def main():
                         prograde_bh_generations,
                         close_encounters2,
                         bin_index,
-                        opts.retro,
+                        frac_bin_retro,
                         opts.mass_smbh,
                     )
                     bin_index = bin_index + number_of_new_bins
