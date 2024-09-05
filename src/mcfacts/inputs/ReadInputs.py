@@ -28,6 +28,7 @@ INPUT_TYPES = {
     'timestep' : float,
     'number_of_timesteps' : int,
     'retro' : float,
+    'frac_bin_retro' : float,
     'feedback' : int,
     'capture_time' : float,
     'outer_capture_radius' : float,
@@ -147,7 +148,9 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         Aspect ratio corresponding to radii in disk_model_radius_array
         drawn from modelname_aspect_ratio.txt
     retro : float
-        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1 
+        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1. Possibly overwritten by initial retro population
+    frac_bin_retro : float
+        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1     
     feedback : int
         Switch (1) turns feedback from embedded BH on.
     orb_ecc_damping : int
