@@ -1,6 +1,10 @@
 import numpy as np
+from copy import deepcopy
 from astropy.constants import G 
 from mcfacts.setup import setupdiskstars
+from mcfacts.setup import setupdiskblackholes
+from mcfacts.mcfacts_random_state import rng
+
 
 def dump_array_to_file(fname=None, samples_out=None):
   # Write output (ascii)
@@ -47,8 +51,7 @@ class AGNObject(object):
                         orbit_e = None,
                         orbit_argperiapse = None,
                         mass_smbh = None,
-                        nsystems = None,
-                        rng = None):
+                        nsystems = None):
         
         #Make sure all inputs are included
         if mass is None: raise AttributeError("mass is not included in inputs")
@@ -79,25 +82,15 @@ class AGNObject(object):
         self.generations = np.full(nsystems,1)
         #self.__mass_smbh = mass_smbh
 
-        M = mass + mass_smbh
-        M_reduced = mass*mass_smbh/M
-        #self.orb_ang_mom = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*self.orbit_a*(1-self.orbit_inclination**2))
-        self.orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng = rng,
-                                                                       n_stars=nsystems,
-                                                                       M_reduced=M_reduced,
-                                                                       M=M,
-                                                                       orbit_a = self.orbit_a,
-                                                                       orbit_inclination=self.orbit_inclination)
 
     def __add_objects__(self, new_mass = None,
                               new_spin = None,
                               new_spin_angle = None,
                               new_a = None,
                               new_inclination = None,
-#                              new_orb_ang_mom = None,
+                              new_orb_ang_mom = None,
                               new_e = None,
-                              nsystems = None,
-                              rng = None):
+                              nsystems = None):
         """
         Adds new values to the end of existing arrays
         """
@@ -121,21 +114,22 @@ class AGNObject(object):
 #        assert new_orb_ang_mom.shape == (nsystems,),"new_orb_ang_mom: all arrays must be 1d and the same length"
         assert new_e.shape == (nsystems,),"new_e: all arrays must be 1d and the same length"
 
-        new_M = new_mass + mass_smbh
-        new_M_reduced = new_mass*mass_smbh/new_M
+        #new_M = new_mass + mass_smbh
+        #new_M_reduced = new_mass*mass_smbh/new_M
         #new_orb_ang_mom = new_M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*new_M*new_a*(1-new_inclination**2))
-        self.new_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng = rng,
-                                                                       n_stars=nsystems,
-                                                                       M_reduced=new_M_reduced,
-                                                                       M=new_M,
-                                                                       orbit_a = new_a,
-                                                                       orbit_inclination=new_inclination)
+        #self.new_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(
+        #                                                               n_stars=nsystems,
+        #                                                               M_reduced=new_M_reduced,
+        #                                                               M=new_M,
+        #                                                               orbit_a = new_a,
+        #                                                               orbit_inclination=new_inclination)
 
 
         self.mass = np.concatenate([self.mass,new_mass])
         self.spin = np.concatenate([self.spin,new_spin])
         self.spin_angle = np.concatenate([self.spin_angle,new_spin_angle])
         self.orbit_a = np.concatenate([self.orbit_a,new_a])
+        self.orb_ang_mom = np.concatenate([self.orb_ang_mom, new_orb_ang_mom])
         self.orbit_inclination = np.concatenate([self.orbit_inclination,new_inclination])
         self.orb_ang_mom = np.concatenate([self.orb_ang_mom,new_orb_ang_mom])
         self.orbit_e = np.concatenate([self.orbit_e,new_e])
@@ -159,7 +153,7 @@ class AGNObject(object):
         """
 
         #Check that the index array is a numpy array.
-        assert isinstance(idx_remove,np.ndarray),"idx_remove must be numpy array"
+        #assert isinstance(idx_remove,np.ndarray),"idx_remove must be numpy array"
 
         if idx_remove is None:
             return None
@@ -168,6 +162,10 @@ class AGNObject(object):
         idx_change[idx_remove] = False
         for attr in vars(self).keys():
             setattr(self,attr,getattr(self,attr)[idx_change])
+
+    def copy(self):
+        copied_object = deepcopy(self)
+        return(copied_object)
 
     def locate(self, idx=None):
         """
@@ -244,7 +242,7 @@ class AGNStar(AGNObject):
     An array of single stars. Should include all objects of this type. No other objects should contain objects of this type.
     Takes in initial helium and metals mass fractions, calculates hydrogen mass fraction from that to ensure it adds up to unity.
     """
-    def __init__(self, star_radius = None, star_Y = None, star_Z = None, n_stars = None, **kwargs):
+    def __init__(self, mass = None, star_radius = None, star_Y = None, star_Z = None, n_stars = None, mass_smbh = None, orbit_a = None, orbit_inclination= None, **kwargs):
         """
         Array of single star objects.
         star_radius should be a 1d numpy array
@@ -284,9 +282,19 @@ class AGNStar(AGNObject):
 
         else:
             raise TypeError("star_Y and star_Z must be either both floats or numpy arrays")
+        
+        M = mass + mass_smbh
+        M_reduced = mass*mass_smbh/M
+        #self.orb_ang_mom = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*self.orbit_a*(1-self.orbit_inclination**2))
+        self.orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(n_stars=n_stars,
+                                                                       M_reduced=M_reduced,
+                                                                       M=M,
+                                                                       orbit_a = orbit_a,
+                                                                       orbit_inclination=orbit_inclination)
 
 
-        super(AGNStar,self).__init__(nsystems = n_stars, **kwargs) #calls top level functions
+
+        super(AGNStar,self).__init__(mass = mass,orbit_a = orbit_a, orbit_inclination=orbit_inclination, nsystems = n_stars, **kwargs) #calls top level functions
     
     def __repr__(self):
         return('AGNStar(): {} single stars'.format(len(self.mass)))
@@ -324,8 +332,11 @@ class AGNBlackHole(AGNObject):
     """
     An array of single black holes. Should include all objects of this type. No other objects should contain objects of this type.
     """
-    def __init__(self,**kwargs):
-        super(AGNBlackHole,self).__init__(**kwargs) #Calls top level functions
+    def __init__(self, mass = None, **kwargs):
+
+        self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(rng=rng, n_bh = len(mass))
+        
+        super(AGNBlackHole,self).__init__(mass = mass, **kwargs) #Calls top level functions
     
     def __repr__(self):
         return('AGNBlackHole(): {} single black holes'.format(len(self.mass)))
@@ -558,22 +569,6 @@ class AGNBinaryStar(AGNObject):
                                                    nsystems=nsystems)
 
 
-        
-class AGNBinaryBlackHole(AGNObject):
-    """
-    An array of binary black holes. Should include all objects of this type. No other objects should contain objects of this type.
-    """
-    def __init__(self,**kwargs):
-        super(AGNBlackHole,self).__init__(**kwargs) #Calls top level functions
-    
-    def __repr__(self):
-        return('AGNBlackHole(): {} binary black holes'.format(len(self.mass)))
-
-
-    def add_blackholes(self, nsystems = None, **kwargs):
-        super(AGNBlackHole,self).__add_objects__(nsystems = nsystems, **kwargs)
-        
-
 
 class AGNBinaryBlackHole(AGNObject):
     """
@@ -631,8 +626,7 @@ class AGNBinaryBlackHole(AGNObject):
                                                 orbit_e = self.cm_orbit_e,
                                                 orbit_argperiapse=None,# TODO ISSUE
                                                 mass_smbh = None, # TODO ISSUE
-                                                nsystems=nsystems,
-                                                rng = rng) # TODO ISSUE
+                                                nsystems=nsystems) # TODO ISSUE
 
 
     def __repr__(self):
