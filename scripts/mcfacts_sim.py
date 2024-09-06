@@ -14,7 +14,8 @@ import sys
 import argparse
 
 from mcfacts.inputs import ReadInputs
-
+import mcfacts.mcfacts_random_state
+from mcfacts.mcfacts_random_state import reset_random, rng
 from mcfacts.objects.agnobject import AGNStar
 
 from mcfacts.setup import setupdiskblackholes
@@ -144,7 +145,7 @@ def arg():
         os.stat(opts.work_directory)
     except FileNotFoundError as e:
         raise e
-    print(f"Output will be saved to {opts.work_directory}")
+    print(f"Output will be saved trno {opts.work_directory}")
 
     # Get the parent path to this file and cd to that location for runtime
     opts.runtime_directory = Path(__file__).parent.resolve()
@@ -202,7 +203,9 @@ def main():
         print("Iteration", iteration)
         # Set random number generator for this run with incremented seed
         # ALERT: ONLY this random number generator can be used throughout the code to ensure reproducibility.
-        rng = np.random.default_rng(opts.seed + iteration)
+        #rng = np.random.default_rng(opts.seed + iteration)
+        #mcfacts.mcfacts_random_state.reset_random(opts.seed+iteration)
+        reset_random(opts.seed+iteration)
 
         # Make subdirectories for each iteration
         # Fills run number with leading zeros to stay sequential
@@ -250,82 +253,39 @@ def main():
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
         bh_initial_locations = setupdiskblackholes.setup_disk_blackholes_location(
-            rng,
             n_bh,
             opts.disk_outer_radius,
         )
         bh_initial_masses = setupdiskblackholes.setup_disk_blackholes_masses(
-            rng,
             n_bh,
             opts.mode_mbh_init,
             opts.max_initial_bh_mass,
             opts.mbh_powerlaw_index,
         )
         bh_initial_spins = setupdiskblackholes.setup_disk_blackholes_spins(
-            rng,
             n_bh,
             opts.mu_spin_distribution,
             opts.sigma_spin_distribution
         )
         bh_initial_spin_angles = setupdiskblackholes.setup_disk_blackholes_spin_angles(
-            rng,
             n_bh,
             bh_initial_spins
         )
         bh_initial_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(
-            rng,
             n_bh
         )
         if opts.orb_ecc_damping == 1:
-            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng,n_bh)
+            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(n_bh)
         else:
-            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(rng,n_bh,opts.crit_ecc)
+            bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_circularized(n_bh,opts.crit_ecc)
 
-        bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(rng,n_bh)
+        bh_initial_orb_incl = setupdiskblackholes.setup_disk_blackholes_inclination(n_bh)
          
         bh_initial_generations = np.ones((n_bh,),dtype=int)
 
         #----------now stars
-        """ n_stars = 200 #working on making this physical
-
-        #Need to write an initialization function so we don't have to generate the arrays by hand.
-        print("Generate initial star parameter arrays")
-
-        star_mass = setupdiskstars.setup_disk_stars_masses(rng, n_stars, opts.min_initial_star_mass,opts.max_initial_star_mass,opts.star_mass_powerlaw_index)
-        star_radius = setupdiskstars.setup_disk_stars_radii(star_mass)
-        star_spin = setupdiskstars.setup_disk_stars_spins(rng, n_stars, opts.mu_star_spin_distribution, opts.sigma_star_spin_distribution)
-        star_spin_angle = setupdiskstars.setup_disk_stars_spin_angles(rng, n_stars, star_spin)
-        star_orbit_a = setupdiskstars.setup_disk_stars_location(rng, n_stars, opts.disk_outer_radius)
-        star_orbit_inclination = setupdiskstars.setup_disk_stars_inclination(rng,n_stars)
-        #star_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng,n_stars)
-        if opts.orb_ecc_damping == 1:
-            star_orbit_e = setupdiskstars.setup_disk_stars_eccentricity_uniform(rng,n_stars)
-        else:
-            star_orbit_e = setupdiskstars.setup_disk_stars_circularized(rng,n_stars,opts.crit_ecc)
-        star_Y = opts.stars_initial_Y
-        star_Z = opts.stars_initial_Z
-        stars = AGNStar(mass = star_mass,
-                        spin = star_spin,
-                        spin_angle = star_spin_angle,
-                        orbit_a = star_orbit_a, #this is location
-                        orbit_inclination = star_orbit_inclination,
-                        orbit_e = star_orbit_e,
-                        #orb_ang_mom = star_orb_ang_mom,
-                        star_radius = star_radius,
-                        star_Y = star_Y,
-                        star_Z = star_Z,
-                        mass_smbh = opts.mass_smbh,
-                        n_stars = n_stars,
-                        rng = rng) """
-
-
-        ###### INITIALIZEDISKSTARS.py PLAYSPACE #####
-        print(initializediskstars.init_single_stars(opts,rng))
         stars, n_stars = initializediskstars.init_single_stars(opts, rng)
         print('n_bh = {}, n_stars = {}'.format(n_bh,n_stars))
-
-        print('all done!')
-        print(fff)
 
 
         #Generate initial inner disk arrays for objects that end up in the inner disk.
@@ -377,18 +337,11 @@ def main():
         stars.sort(stars.orbit_a)
 
         #prograde stars stuff
-        prograde_stars_orb_ang_mom_indices = np.where(stars.orb_ang_mom >= 1)
-        prograde_stars = AGNStar(mass = stars.mass[prograde_stars_orb_ang_mom_indices],
-                                 spin = stars.spin[prograde_stars_orb_ang_mom_indices],
-                                 spin_angle = stars.spin_angle[prograde_stars_orb_ang_mom_indices],
-                                 orbit_a = stars.orbit_a[prograde_stars_orb_ang_mom_indices],
-                                 orbit_inclination = stars.orbit_inclination[prograde_stars_orb_ang_mom_indices],
-                                 orbit_e = stars.orbit_e[prograde_stars_orb_ang_mom_indices],
-                                 star_radius=stars.star_radius[prograde_stars_orb_ang_mom_indices],
-                                 star_Y=stars.star_Y[prograde_stars_orb_ang_mom_indices],
-                                 star_Z=stars.star_Z[prograde_stars_orb_ang_mom_indices],
-                                 mass_smbh = opts.mass_smbh,
-                                 rng = rng)
+        #prograde_stars_orb_ang_mom_indices = np.where(stars.orb_ang_mom >= 1)
+        non_prograde_stars_indices = np.where(stars.orb_ang_mom < 1)
+        #print(prograde_stars_orb_ang_mom_indices)
+        prograde_stars = stars.copy()
+        prograde_stars.remove_objects(non_prograde_stars_indices)
 
 
 
@@ -1180,13 +1133,13 @@ def main():
             capture = time_passed % opts.capture_time
             if capture == 0:
                 bh_capture_location = setupdiskblackholes.setup_disk_blackholes_location(
-                    rng, 1, opts.outer_capture_radius)
+                    1, opts.outer_capture_radius)
                 bh_capture_mass = setupdiskblackholes.setup_disk_blackholes_masses(
-                    rng, 1, opts.mode_mbh_init, opts.max_initial_bh_mass, opts.mbh_powerlaw_index)
+                    1, opts.mode_mbh_init, opts.max_initial_bh_mass, opts.mbh_powerlaw_index)
                 bh_capture_spin = setupdiskblackholes.setup_disk_blackholes_spins(
-                    rng, 1, opts.mu_spin_distribution, opts.sigma_spin_distribution)
+                    1, opts.mu_spin_distribution, opts.sigma_spin_distribution)
                 bh_capture_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(
-                    rng, 1, bh_capture_spin)
+                    1, bh_capture_spin)
                 bh_capture_gen = 1
                 bh_capture_orb_ecc = 0.0
                 bh_capture_orb_incl = 0.0
