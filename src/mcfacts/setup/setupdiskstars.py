@@ -1,16 +1,17 @@
 import numpy as np
 from astropy.constants import G 
+from mcfacts.mcfacts_random_state import rng
 
 
 
-def setup_disk_stars_location(rng, n_stars, disk_outer_radius):
+def setup_disk_stars_location(n_stars, disk_outer_radius):
     #Return an array of BH locations distributed randomly uniformly in disk
     integer_nstars = int(n_stars)
     stars_initial_locations = disk_outer_radius*rng.random(integer_nstars)
     return stars_initial_locations
 
 
-def setup_disk_stars_masses(rng,n_star,min_initial_star_mass,max_initial_star_mass,mstar_powerlaw_index):
+def setup_disk_stars_masses(n_star,min_initial_star_mass,max_initial_star_mass,mstar_powerlaw_index):
     # Return array of star initial masses for a given alpha and min/max mass with the Salpeter IMF
 
     # Convert min and max mass to x = m ^ {-p + 1} format
@@ -41,14 +42,14 @@ def setup_disk_stars_comp(n_star,star_ZAMS_metallicity, star_ZAMS_hydrogen, star
     return(star_X, star_Y, star_Z)
 
 
-def setup_disk_stars_spins(rng, n_stars, mu_star_spin_distribution, sigma_star_spin_distribution):
+def setup_disk_stars_spins(n_stars, mu_star_spin_distribution, sigma_star_spin_distribution):
     #Return an array of BH initial spin magnitudes for a given mode and sigma of a distribution
     integer_nstars = int(n_stars)
     stars_initial_spins = rng.normal(mu_star_spin_distribution, sigma_star_spin_distribution, integer_nstars)
     return stars_initial_spins
 
 
-def setup_disk_stars_spin_angles(rng, n_stars, stars_initial_spins):
+def setup_disk_stars_spin_angles(n_stars, stars_initial_spins):
     #Return an array of BH initial spin angles (in radians).
     #Positive (negative) spin magnitudes have spin angles [0,1.57]([1.5701,3.14])rads
     #All BH spin angles drawn from [0,1.57]rads and +1.57rads to negative spin indices
@@ -60,7 +61,7 @@ def setup_disk_stars_spin_angles(rng, n_stars, stars_initial_spins):
     return stars_initial_spin_angles
 
 
-def setup_disk_stars_orb_ang_mom(rng, n_stars, M_reduced, M, orbit_a, orbit_inclination,):
+def setup_disk_stars_orb_ang_mom(n_stars, M_reduced, M, orbit_a, orbit_inclination,):
     #Return an array of BH initial orbital angular momentum.
     #Assume either fully prograde (+1) or retrograde (-1)
     integer_nstars = int(n_stars)
@@ -70,7 +71,7 @@ def setup_disk_stars_orb_ang_mom(rng, n_stars, M_reduced, M, orbit_a, orbit_incl
     stars_initial_orb_ang_mom = stars_initial_orb_ang_mom_sign*stars_initial_orb_ang_mom_value
     return stars_initial_orb_ang_mom
 
-def setup_disk_stars_eccentricity_thermal(rng, n_stars):
+def setup_disk_stars_eccentricity_thermal(n_stars):
     # Return an array of BH orbital eccentricities
     # For a thermal initial distribution of eccentricities, select from a uniform distribution in e^2.
     # Thus (e=0.7)^2 is 0.49 (half the eccentricities are <0.7). 
@@ -82,7 +83,7 @@ def setup_disk_stars_eccentricity_thermal(rng, n_stars):
     stars_initial_orb_ecc = np.sqrt(random_uniform_number)
     return stars_initial_orb_ecc
 
-def setup_disk_stars_eccentricity_uniform(rng, n_stars):
+def setup_disk_stars_eccentricity_uniform(n_stars):
     # Return an array of BH orbital eccentricities
     # For a uniform initial distribution of eccentricities, select from a uniform distribution in e.
     # Thus half the eccentricities are <0.5
@@ -94,7 +95,7 @@ def setup_disk_stars_eccentricity_uniform(rng, n_stars):
     stars_initial_orb_ecc = random_uniform_number
     return stars_initial_orb_ecc
 
-def setup_disk_stars_inclination(rng, n_stars):
+def setup_disk_stars_inclination(n_stars):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0
     #
@@ -107,7 +108,7 @@ def setup_disk_stars_inclination(rng, n_stars):
     stars_initial_orb_incl = np.zeros((integer_nstars,),dtype = float)
     return stars_initial_orb_incl
 
-def setup_disk_stars_circularized(rng, n_stars,crit_ecc):
+def setup_disk_stars_circularized(n_stars,crit_ecc):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0
     #
