@@ -1,38 +1,27 @@
 import numpy as np
 import scipy
 
-def secunda20():
-    """ Generate disk capture BH
-    Should return one additional BH to be appended to disk location inside 1000r_g every 0.1Myr.
-    Draw parameters from initial mass,spin distribution. Assume prograde (Retrograde capture is separate problem).
-"""
-    return
 
-def orb_inc_damping(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_bh_orb_ecc,retrograde_bh_orb_inc,retro_arg_periapse,timestep,disk_surf_model):
-    """This function calculates how fast the inclination angle of an arbitrary single orbiter
+def retro_mig(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_bh_orb_ecc,retrograde_bh_orb_inc,retro_arg_periapse,timestep,disk_surf_model):
+    """This function calculates how fast the semi-major axis of a retrograde single orbiter
     changes due to dynamical friction (appropriate for BH, NS, maaaybe WD?--check) using
     Wang, Zhu & Lin 2024, MNRAS, 528, 4958 (WZL). It returns the new locations of the retrograde
     orbiters after 1 timestep. Note we have assumed the masses of the orbiters are
     negligible compared to the SMBH (<1% should be fine).
 
-    Unlike all the other orbital variables (semi-major axis, ecc, semi-latus rectum)
-    the timescale won't necessarily do anything super horrible for inc = pi, since it only
-    depends on the inclination angle itself, sin(inc)... however, it could do something 
-    horrible at inc=pi for some values of omega; and it WILL go to zero at inc=0, which 
-    could easily cause problems...
-
-    Also, I think this function will still work fine if you feed it prograde bh
-    just change the variable name in the function call... (this is not true for migration)
-    Testing implies that inc=0 or pi is actually ok, at least for omega=0 or pi
-
-
+    Funny story: if inc = pi exactly, the semi-major axis decay is stupid fast--in fact
+    at modest initial a, the decay speed (a_0/tau_a_dyn) is > c, so that's wrong.
+    I think this is due to the sin(inc) in tau_a_dyn. However, if you're just a bit
+    away from inc = pi (say, pi - 1e-6--but haven't done thorough param search) 
+    you get something like sensible answers.
+    So we gotta watch out for this
+    
     Parameters
     ----------
     mass_smbh : float
         mass of supermassive black hole in units of solar masses
     retrograde_bh_locations : float array
         locations of retrograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
-        (actually we assume this is the same as the semi-major axis)
     retrograde_bh_masses : float array
         mass of retrograde singleton BH at start of timestep in units of solar masses
     retrograde_bh_orb_ecc : float array
@@ -48,9 +37,11 @@ def orb_inc_damping(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retro
 
     Returns
     -------
-    new_orb_inc : float array
-        orbital inclinations of retrograde singletons BH at end of timestep
+    retrograde_bh_new_locations : float array
+        locations of retrograde singleton BH at end of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
+
     """
+
     # This should probably be set somewhere for the whole code? But...
     KgPerMsun = 1.99e30
 
@@ -75,25 +66,33 @@ def orb_inc_damping(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retro
     # WZL Eqn 8 (eta+/-)
     eta_plus = np.sqrt(1.0 + ecc*np.cos(omega))
     eta_minus = np.sqrt(1.0 - ecc*np.cos(omega))
-    # WZL Eqn 62
-    kappa = 0.5 * (np.sqrt(1.0/eta_plus**15) + np.sqrt(1.0/eta_minus**15))
+    # WZL Eqn 65
+    kappa_bar = 0.5 * (np.sqrt(1.0/eta_plus**7) + np.sqrt(1.0/eta_minus**7))
+    # WZL Eqn 66
+    xi_bar = 0.5 * (np.sqrt(sigma_plus**4/eta_plus**13) + np.sqrt(sigma_minus**4/eta_minus**13))
+    # WZL Eqn 67
+    zeta_bar = xi_bar / kappa_bar
     # WZL Eqn 30
     delta = 0.5 * (sigma_plus/eta_plus**2 + sigma_minus/eta_minus**2)
-    # WZL Eqn 71
+    # WZL Eqn 72
     #   NOTE: preserved retrograde_bh_locations in r_g to feed to disk_surf_model function
     #   tau in units of sec
-    tau_i_dyn = np.sqrt(2.0) * inc * (delta - np.cos(inc))**1.5 \
+    tau_a_dyn = (1.0-ecc**2) * np.sin(inc) * (delta - np.cos(inc))**1.5 \
                 * mass_smbh**2 * period / (retro_mass*disk_surf_model(retrograde_bh_locations)*np.pi*semi_lat_rec**2) \
-                / kappa
-    
-    # assume the fractional change in inclination is the fraction
-    #   of tau_i_dyn represented by one timestep
-    frac_change = timestep / tau_i_dyn
+                / (np.sqrt(2)) * kappa_bar * np.abs(np.cos(inc) - zeta_bar)
 
-    # if the timescale for change of inclination is larger than the timestep
-    #    send the new inclination to zero
+    # assume the fractional change in semi-major axis is the fraction
+    #   of tau_a_dyn represented by one timestep; in case of semi-maj axis
+    #   always moving inwards (because drag)
+    frac_change = timestep / tau_a_dyn
+
+    # if the timescale for change of semi-major axis is larger than the timestep
+    #    send the new location to zero (btw we should probably have a special
+    #    handling procedure for these--like, remove & count them)
+    # we may also want to add a check for if a_0/tau_a_dyn > c (should only cause
+    #    issues not handled here at very small a_0 or very large timesteps)
     frac_change[frac_change>1.0] = 1.0
 
-    new_orb_inc = inc * (1.0 - frac_change)
+    retrograde_bh_new_locations = retrograde_bh_locations * (1.0 - frac_change)
 
-    return new_orb_inc
+    return retrograde_bh_new_locations
