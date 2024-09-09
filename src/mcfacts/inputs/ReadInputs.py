@@ -1,5 +1,57 @@
-import numpy as np
+"""Define input handling functions for mcfacts_sim
 
+Inifile
+-------
+    "disk_model_name"               : str
+    "flag_use_pagn"                 : bool
+    "smbh_mass"                     : float
+    "disk_radius_trap"              : float
+    "disk_radius_outer"             : float
+    "disk_radius_max_pc"            : float
+    "disk_alpha_viscosity"          : float
+    "nsc_radius_outer"              : float
+    "nsc_mass"                      : float
+    "nsc_radius_crit"               : float
+    "nsc_ratio_bh_num_star_num"     : float
+    "nsc_ratio_bh_mass_star_mass"   : float
+    "nsc_density_index_inner"       : float
+    "nsc_density_index_outer"       : float
+    "flag_pisk_aspect_ratio_avg"    : float
+    "nsc_spheroid_normalization"    : float
+    "nsc_bh_imf_mode"               : float
+    "nsc_bh_imf_powerlaw_index"     : float
+    "nsc_bh_imf_mass_max"           : float
+    "nsc_bh_spin_dist_mu"           : float
+    "nsc_bh_spin_dist_sigma"        : float
+    "disk_bh_torque_condition"      : float
+    "disk_bh_eddington_ratio"       : float
+    "disk_bh_orb_ecc_max_init"      : float
+    "disk_star_mass_max_init"       : float
+    "disk_star_mass_min_init"       : float
+    "nsc_imf_star_powerlaw_index"   : float
+    "nsc_star_spin_dist_mu"         : float
+    "nsc_star_spin_dist_sigma"      : float
+    "disk_star_torque_condition"    : float
+    "disk_star_eddington_ratio"     : float
+    "disk_star_orb_ecc_max_init"    : float
+    "nsc_star_metallicity_x_init"   : float
+    "nsc_star_metallicity_y_init"   : float
+    "nsc_star_metallicity_z_init"   : float
+    "timestep_duration_yr"          : float
+    "timestep_num"                  : int
+    "iteration_num"                 : int
+    "fraction_retro"                : float
+    "fraction_bin_retro"            : float
+    "flag_thermal_feedback"         : int
+    "flag_orb_ecc_damping"          : int
+    "capture_time_myr"              : float
+    "disk_radius_capture_outer"     : float
+    "orb_ecc_crit"                  : float
+    "flag_dynamic_enc"              : int
+    "delta_energy_strong"           : float
+    "flag_prior_agn"                : int
+"""
+import numpy as np
 import configparser as ConfigParser
 from io import StringIO
 
@@ -9,42 +61,56 @@ from mcfacts.inputs import data
 
 # Dictionary of types
 INPUT_TYPES = {
-    'disk_model_name' : str,
-    'disk_model_use_pagn': bool,
-    'mass_smbh' : float,
-    'trap_radius' : float,
-    'disk_outer_radius' : float,
-    'max_disk_radius_pc' : float,
-    'alpha' : float,
-    'n_iterations' : int,
-    'mode_mbh_init' : float,
-    'max_initial_bh_mass' : float,
-    'mbh_powerlaw_index' : float,
-    'mu_spin_distribution' : float,
-    'sigma_spin_distribution' : float,
-    'spin_torque_condition' : float,
-    'frac_Eddington_ratio' : float,
-    'max_initial_eccentricity' : float,
-    'timestep' : float,
-    'number_of_timesteps' : int,
-    'retro' : float,
-    'frac_bin_retro' : float,
-    'feedback' : int,
-    'capture_time' : float,
-    'outer_capture_radius' : float,
-    'crit_ecc' : float,
-    'r_nsc_out' : float,
-    'M_nsc' : float,
-    'r_nsc_crit' : float,
-    'nbh_nstar_ratio' : float,
-    'mbh_mstar_ratio' : float,
-    'nsc_index_inner' : float,
-    'nsc_index_outer' : float,
-    'h_disk_average' : float,
-    'dynamic_enc' : int,
-    'de' : float,
-    'orb_ecc_damping' : int,
+    "disk_model_name"               : str,
+    "flag_use_pagn"                 : bool,
+    "smbh_mass"                     : float,
+    "disk_radius_trap"              : float,
+    "disk_radius_outer"             : float,
+    "disk_radius_max_pc"            : float,
+    "disk_alpha_viscosity"          : float,
+    "nsc_radius_outer"              : float,
+    "nsc_mass"                      : float,
+    "nsc_radius_crit"               : float,
+    "nsc_ratio_bh_num_star_num"     : float,
+    "nsc_ratio_bh_mass_star_mass"   : float,
+    "nsc_density_index_inner"       : float,
+    "nsc_density_index_outer"       : float,
+    "flag_pisk_aspect_ratio_avg"    : float,
+    "nsc_spheroid_normalization"    : float,
+    "nsc_bh_imf_mode"               : float,
+    "nsc_bh_imf_powerlaw_index"     : float,
+    "nsc_bh_imf_mass_max"           : float,
+    "nsc_bh_spin_dist_mu"           : float,
+    "nsc_bh_spin_dist_sigma"        : float,
+    "disk_bh_torque_condition"      : float,
+    "disk_bh_eddington_ratio"       : float,
+    "disk_bh_orb_ecc_max_init"      : float,
+    "disk_star_mass_max_init"       : float,
+    "disk_star_mass_min_init"       : float,
+    "nsc_imf_star_powerlaw_index"   : float,
+    "nsc_star_spin_dist_mu"         : float,
+    "nsc_star_spin_dist_sigma"      : float,
+    "disk_star_torque_condition"    : float,
+    "disk_star_eddington_ratio"     : float,
+    "disk_star_orb_ecc_max_init"    : float,
+    "nsc_star_metallicity_x_init"   : float,
+    "nsc_star_metallicity_y_init"   : float,
+    "nsc_star_metallicity_z_init"   : float,
+    "timestep_duration_yr"          : float,
+    "timestep_num"                  : int,
+    "iteration_num"                 : int,
+    "fraction_retro"                : float,
+    "fraction_bin_retro"            : float,
+    "flag_thermal_feedback"         : int,
+    "flag_orb_ecc_damping"          : int,
+    "capture_time_myr"              : float,
+    "disk_radius_capture_outer"     : float,
+    "orb_ecc_crit"                  : float,
+    "flag_dynamic_enc"              : int,
+    "delta_energy_strong"           : float,
+    "flag_prior_agn"                : int,
 }
+
 
 def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     """This function reads your input choices from a file user specifies or
@@ -68,10 +134,10 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     Attributes
     ----------
     Output variables:
-    mass_smbh : float
+    smbh_mass : float
         Mass of the supermassive black hole (M_sun)
     trap_radius : float
-        Radius of migration trap in gravitational radii (r_g = G*mass_smbh/c^2)
+        Radius of migration trap in gravitational radii (r_g = G*smbh_mass/c^2)
         Should be set to zero if disk model has no trap
     n_iterations : int
         Number of iterations of code run (e.g. 1 for testing, 30 for a quick run)
@@ -89,7 +155,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     max_initial_star_mass : float
         Initial mass distribution for stars is assumed Salpeter
     star_mass_powerlaw_index : float
-        Initial mass distribution for stars is assumed Salpeter, alpha = 2.35
+        Initial mass distribution for stars is assumed Salpeter, disk_alpha_viscosity = 2.35
     mu_spin_distribution : float
         Initial spin distribution for stellar bh is assumed to be Gaussian
         --mean of spin dist
@@ -100,7 +166,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         fraction of initial mass required to be accreted before BH spin is torqued 
         fully into alignment with the AGN disk. We don't know for sure but 
         Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
-    frac_Eddington_ratio : float
+    disk_bh_orb_ecc_max_init : float
         assumed accretion rate onto stellar bh from disk gas, in units of Eddington
         accretion rate
     max_initial_eccentricity : float
@@ -132,13 +198,13 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     number_of_timesteps : int
         How many timesteps are you taking (timestep*number_of_timesteps = disk_lifetime)
     disk_model_radius_array : float array
-        The radii along which your disk model is defined in units of r_g (=G*mass_smbh/c^2)
+        The radii along which your disk model is defined in units of r_g (=G*smbh_mass/c^2)
         drawn from modelname_surface_density.txt
     disk_inner_radius : float
         0th element of disk_model_radius_array (units of r_g)
-    disk_outer_radius : float
+    disk_radius_outer : float
         final element of disk_model_radius_array (units of r_g)
-    max_disk_radius_pc: float
+    disk_radius_max_pc: float
         Maximum disk size in parsecs (0. for off)
     surface_density_array : float array
         Surface density corresponding to radii in disk_model_radius_array (units of kg/m^2)
@@ -148,13 +214,15 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         Aspect ratio corresponding to radii in disk_model_radius_array
         drawn from modelname_aspect_ratio.txt
     retro : float
-        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1. Possibly overwritten by initial retro population
+        Fraction of BBH that form retrograde to test (q,X_eff) relation.
+        Default retro=0.1. Possibly overwritten by initial retro population
     frac_bin_retro : float
         Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1     
     feedback : int
         Switch (1) turns feedback from embedded BH on.
     orb_ecc_damping : int
-        Switch (1) turns orb. ecc damping on. If switch = 0, assumes all bh are circularized (at e=e_crit)
+        Switch (1) turns orb. ecc damping on.
+        If switch = 0, assumes all bh are circularized (at e=e_crit)
     r_nsc_out : float
         Radius of NSC (units of pc)
     M_nsc : float
@@ -168,13 +236,15 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     nsc_index_inner : float
         Index of radial density profile of NSC inside r_nsc_crit (usually Bahcall-Wolf, 1.75)
     nsc_index_outer : float
-        Index of radial density profile of NSC outside r_nsc_crit (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
+        Index of radial density profile of NSC outside r_nsc_crit 
+        (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
     h_disk_average : float
         Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
     dynamic_enc : int
         Switch (1) turns dynamical encounters between embedded BH on.
     de : float
-        Average energy change per strong interaction. de can be 20% in cluster interactions. May be 10% on average (with gas)                
+        Average energy change per strong interaction.
+        de can be 20% in cluster interactions. May be 10% on average (with gas)                
     prior_agn : int
         Switch (1) uses BH from a prior AGN episode (in file /recipes/postagn_bh_pop1.dat)
     """
@@ -211,8 +281,8 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
             input_variables[name] = input_variables[name].strip("'")
 
     # Set default : not use pagn.  this allows us not to provide it
-    if not('disk_model_use_pagn' in input_variables):
-        input_variables['disk_model_use_pagn'] = False
+    if not('flag_use_pagn' in input_variables):
+        input_variables['flag_use_pagn'] = False
 
     # Make sure you got all of the ones you were expecting
     for name in INPUT_TYPES:
@@ -230,31 +300,31 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     return input_variables
 
 def construct_disk_interp(
-    mass_smbh,
-    disk_outer_radius,
+    smbh_mass,
+    disk_radius_outer,
     disk_model_name,
-    alpha,
-    frac_Eddington_ratio,
-    max_disk_radius_pc=0.,
-    disk_model_use_pagn=False,
+    disk_alpha_viscosity,
+    disk_bh_orb_ecc_max_init,
+    disk_radius_max_pc=0.,
+    flag_use_pagn=False,
     verbose=False,
     ):
     '''Construct the disk array interpolators
 
     Parameters
     ----------
-        mass_smbh : float
+        smbh_mass : float
             Mass of the supermassive black hole (M_sun)
-        disk_outer_radius : float
+        disk_radius_outer : float
             final element of disk_model_radius_array (units of r_g)
-        alpha : ???
+        disk_alpha_viscosity : ???
             ??? #TODO
-        frac_Eddington_ratio : float
+        disk_bh_orb_ecc_max_init : float
             assumed accretion rate onto stellar bh from disk gas, in units of Eddington
             accretion rate
-        max_disk_radius_pc : float
+        disk_radius_max_pc : float
             Maximum disk size in parsecs (0. for off)
-        disk_model_use_pagn : bool
+        flag_use_pagn : bool
             use pAGN?
         verbose : bool
             Print extra stuff?
@@ -267,37 +337,37 @@ def construct_disk_interp(
             Aspect ratio interpolator
     '''
     ## Check inputs ##
-    # Check mass_smbh
-    assert type(mass_smbh) == float, "mass_smbh expected float, got %s"%(type(mass_smbh))
+    # Check smbh_mass
+    assert type(smbh_mass) == float, "smbh_mass expected float, got %s"%(type(smbh_mass))
         
     ## Check outer disk radius in parsecs
     # Scale factor for parsec distance in r_g
-    pc_dist = 2.e5*((mass_smbh/1.e8)**(-1.0))
+    pc_dist = 2.e5*((smbh_mass/1.e8)**(-1.0))
     # Calculate outer disk radius in pc
-    disk_outer_radius_pc = disk_outer_radius/pc_dist
-    # Check max_disk_radius_pc argument
-    if max_disk_radius_pc == 0.:
-        # Case 1: max_disk_radius_pc is disabled
+    disk_radius_outer_pc = disk_radius_outer/pc_dist
+    # Check disk_radius_max_pc argument
+    if disk_radius_max_pc == 0.:
+        # Case 1: disk_radius_max_pc is disabled
         pass
-    elif max_disk_radius_pc < 0.:
-        # Case 2: max_disk_radius_pc is negative
-        # Always assign disk_outer_radius to given distance in parsecs
-        disk_outer_radius = -1. * max_disk_radius_pc * pc_dist
+    elif disk_radius_max_pc < 0.:
+        # Case 2: disk_radius_max_pc is negative
+        # Always assign disk_radius_outer to given distance in parsecs
+        disk_radius_outer = -1. * disk_radius_max_pc * pc_dist
     else:
-        # Case 3: max_disk_radius_pc is positive
-        # Cap disk_outer_radius at given value
-        if disk_outer_radius_pc > max_disk_radius_pc:
+        # Case 3: disk_radius_max_pc is positive
+        # Cap disk_radius_outer at given value
+        if disk_radius_outer_pc > disk_radius_max_pc:
             # calculate scale factor
-            disk_radius_scale = max_disk_radius_pc / disk_outer_radius_pc
-            # Adjust disk_outer_radius as needed
-            disk_outer_radius = disk_outer_radius * disk_radius_scale
+            disk_radius_scale = disk_radius_max_pc / disk_radius_outer_pc
+            # Adjust disk_radius_outer as needed
+            disk_radius_outer = disk_radius_outer * disk_radius_scale
         
     # open the disk model surface density file and read it in
     # Note format is assumed to be comments with #
     #   density in SI in first column
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
-    if not(disk_model_use_pagn):
+    if not(flag_use_pagn):
         infile_suffix = '_surface_density.txt'
         infile = disk_model_name+infile_suffix
         infile = impresources.files(data) / infile
@@ -306,7 +376,7 @@ def construct_disk_interp(
         surface_density_array = dat[:,0]
         #truncate disk at outer radius
         truncated_disk = np.extract(
-            np.where(disk_model_radius_array < disk_outer_radius),
+            np.where(disk_model_radius_array < disk_radius_outer),
             disk_model_radius_array
         )
         #print('truncated disk', truncated_disk)
@@ -347,14 +417,14 @@ def construct_disk_interp(
         import mcfacts.external.DiskModelsPAGN as dm_pagn
         import pagn.constants as ct
         pagn_name = "Sirko"
-        base_args = { 'Mbh': mass_smbh*ct.MSun,\
-                      'alpha':alpha, \
-                      'le':frac_Eddington_ratio}                    
+        base_args = { 'Mbh': smbh_mass*ct.MSun,\
+                      'alpha':disk_alpha_viscosity, \
+                      'le':disk_bh_orb_ecc_max_init}                    
         if 'thompson' in disk_model_name:
             pagn_name = 'Thompson'
-            base_args = { 'Mbh': mass_smbh*ct.MSun}
-            Rg = mass_smbh*ct.MSun * ct.G / (ct.c ** 2)
-            base_args['Rout'] = disk_outer_radius*Rg;  # remember pagn uses SI units, but we provide r/rg
+            base_args = { 'Mbh': smbh_mass*ct.MSun}
+            Rg = smbh_mass*ct.MSun * ct.G / (ct.c ** 2)
+            base_args['Rout'] = disk_radius_outer*Rg;  # remember pagn uses SI units, but we provide r/rg
         # note Rin default is 3 Rs
         
         pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
