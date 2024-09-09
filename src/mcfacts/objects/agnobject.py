@@ -768,9 +768,7 @@ class AGNBinaryBlackHole(AGNObject):
         
         if nsystems is None: nsystems = blackholes.mass.size
 
-
-
-
+        #need to basically copy the add_new_binary.add_to_binary_array2 function
 
         super(AGNBinaryBlackHole,self).add_objects(new_mass = new_total_mass,
                                                    new_spin=None,
