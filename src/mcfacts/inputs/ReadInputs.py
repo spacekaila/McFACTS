@@ -2,10 +2,10 @@
 
 Inifile
 -------
-Attributes
-----------
     "disk_model_name"               : str
+        'sirko_goodman' or 'thompson_etal'
     "flag_use_pagn"                 : bool
+        Use pAGN to generate disk model?
     "smbh_mass"                     : float
         Mass of the supermassive black hole (solMass)
     "disk_radius_trap"              : float
@@ -16,6 +16,7 @@ Attributes
     "disk_radius_max_pc"            : float
         Maximum disk size in parsecs (0. for off)
     "disk_alpha_viscosity"          : float
+        disk viscosity 'alpha'
     "nsc_radius_outer"              : float
         Radius of NSC (units of pc)
     "nsc_mass"                      : float
@@ -34,6 +35,7 @@ Attributes
     "flag_disk_aspect_ratio_avg"    : float
         Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
     "nsc_spheroid_normalization"    : float
+        Spheroid normalization
     "nsc_bh_imf_mode"               : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--mode of initial mass dist (M_sun)
@@ -54,6 +56,7 @@ Attributes
         fully into alignment with the AGN disk. We don't know for sure but 
         Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
     "disk_bh_eddington_ratio"       : float
+        Eddington ratio for disk bh
     "disk_bh_orb_ecc_max_init"      : float
         assumed accretion rate onto stellar bh from disk gas, in units of Eddington
         accretion rate
@@ -100,12 +103,20 @@ Attributes
     "flag_orb_ecc_damping"          : int
         Switch (1) turns orb. ecc damping on.
         If switch = 0, assumes all bh are circularized (at e=e_crit)
-    "capture_time_myr"              : float
+    "capture_time_yr"              : float
+        Capture time in years Secunda et al. (2021) assume capture rate 1/0.1 Myr
     "disk_radius_capture_outer"     : float
+        Disk capture outer radius (units of r_g)
+        Secunda et al. (2001) assume <2000r_g from Fabj et al. (2020)
     "orb_ecc_crit"                  : float
+        Critical eccentricity (limiting eccentricity, below which assumed circular orbit)
     "flag_dynamic_enc"              : int
+        Switch (1) turns dynamical encounters between embedded BH on.
     "delta_energy_strong"           : float
+        Average energy change per strong interaction.
+        de can be 20% in cluster interactions. May be 10% on average (with gas)                
     "flag_prior_agn"                : int
+        Prior AGN sims BH output used as input
 """
 import numpy as np
 import configparser as ConfigParser
@@ -159,7 +170,7 @@ INPUT_TYPES = {
     "fraction_bin_retro"            : float,
     "flag_thermal_feedback"         : int,
     "flag_orb_ecc_damping"          : int,
-    "capture_time_myr"              : float,
+    "capture_time_yr"              : float,
     "disk_radius_capture_outer"     : float,
     "orb_ecc_crit"                  : float,
     "flag_dynamic_enc"              : int,
@@ -202,12 +213,6 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     aspect_ratio_array : float array
         Aspect ratio corresponding to radii in disk_model_radius_array
         drawn from modelname_aspect_ratio.txt
-    h_disk_average : float
-    dynamic_enc : int
-        Switch (1) turns dynamical encounters between embedded BH on.
-    de : float
-        Average energy change per strong interaction.
-        de can be 20% in cluster interactions. May be 10% on average (with gas)                
     prior_agn : int
         Switch (1) uses BH from a prior AGN episode (in file /recipes/postagn_bh_pop1.dat)
     """
