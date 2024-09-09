@@ -2,48 +2,104 @@
 
 Inifile
 -------
+Attributes
+----------
     "disk_model_name"               : str
     "flag_use_pagn"                 : bool
     "smbh_mass"                     : float
+        Mass of the supermassive black hole (solMass)
     "disk_radius_trap"              : float
+        Radius of migration trap in gravitational radii (r_g = G*`smbh_mass`/c^2)
+        Should be set to zero if disk model has no trap
     "disk_radius_outer"             : float
+        final element of disk_model_radius_array (units of r_g)
     "disk_radius_max_pc"            : float
+        Maximum disk size in parsecs (0. for off)
     "disk_alpha_viscosity"          : float
     "nsc_radius_outer"              : float
+        Radius of NSC (units of pc)
     "nsc_mass"                      : float
+        Mass of NSC (units of M_sun)
     "nsc_radius_crit"               : float
+        Radius where NSC density profile flattens (transition to Bahcall-Wolf) (units of pc)
     "nsc_ratio_bh_num_star_num"     : float
+        Ratio of number of BH to stars in NSC (typically spans 3x10^-4 to 10^-2 in Generozov+18)
     "nsc_ratio_bh_mass_star_mass"   : float
+        Ratio of mass of typical BH to typical star in NSC (typically 10:1 in Generozov+18)
     "nsc_density_index_inner"       : float
+        Index of radial density profile of NSC inside r_nsc_crit (usually Bahcall-Wolf, 1.75)
     "nsc_density_index_outer"       : float
-    "flag_pisk_aspect_ratio_avg"    : float
+        Index of radial density profile of NSC outside r_nsc_crit 
+        (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
+    "flag_disk_aspect_ratio_avg"    : float
+        Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
     "nsc_spheroid_normalization"    : float
     "nsc_bh_imf_mode"               : float
+        Initial mass distribution for stellar bh is assumed to be Pareto
+        with high mass cutoff--mode of initial mass dist (M_sun)
     "nsc_bh_imf_powerlaw_index"     : float
+        Initial mass distribution for stellar bh is assumed to be Pareto
+        with high mass cutoff--powerlaw index for Pareto dist
     "nsc_bh_imf_mass_max"           : float
+        Initial mass distribution for stellar bh is assumed to be Pareto
+        with high mass cutoff--mass of cutoff (M_sun)
     "nsc_bh_spin_dist_mu"           : float
+        Initial spin distribution for stellar bh is assumed to be Gaussian
+        --mean of spin dist
     "nsc_bh_spin_dist_sigma"        : float
+        Initial spin distribution for stellar bh is assumed to be Gaussian
+        --standard deviation of spin dist
     "disk_bh_torque_condition"      : float
+        fraction of initial mass required to be accreted before BH spin is torqued 
+        fully into alignment with the AGN disk. We don't know for sure but 
+        Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
     "disk_bh_eddington_ratio"       : float
     "disk_bh_orb_ecc_max_init"      : float
+        assumed accretion rate onto stellar bh from disk gas, in units of Eddington
+        accretion rate
     "disk_star_mass_max_init"       : float
+        Initial mass distribution for stars is assumed Salpeter
     "disk_star_mass_min_init"       : float
+        Initial mass distribution for stars is assumed Salpeter
     "nsc_imf_star_powerlaw_index"   : float
+        Initial mass distribution for stars is assumed Salpeter, disk_alpha_viscosity = 2.35
     "nsc_star_spin_dist_mu"         : float
+        Initial spin distribution for stars is assumed to be Gaussian
     "nsc_star_spin_dist_sigma"      : float
+        Initial spin distribution for stars is assumed to be Gaussian
+        --standard deviation of spin dist
     "disk_star_torque_condition"    : float
+        fraction of initial mass required to be accreted before star spin is torqued 
+        fully into alignment with the AGN disk. We don't know for sure but 
+        Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
     "disk_star_eddington_ratio"     : float
+        assumed accretion rate onto stars from disk gas, in units of Eddington
+        accretion rate
     "disk_star_orb_ecc_max_init"    : float
+        assuming initially flat eccentricity distribution among single orbiters around SMBH
+        out to max_initial_eccentricity. Eventually this will become smarter.
     "nsc_star_metallicity_x_init"   : float
+        Stellar initial hydrogen mass fraction
     "nsc_star_metallicity_y_init"   : float
+        Stellar initial helium mass fraction
     "nsc_star_metallicity_z_init"   : float
+        Stellar initial metallicity mass fraction
     "timestep_duration_yr"          : float
+        How long is your timestep in years?
     "timestep_num"                  : int
+        How many timesteps are you taking (timestep*number_of_timesteps = disk_lifetime)
     "iteration_num"                 : int
+        Number of iterations of code run (e.g. 1 for testing, 30 for a quick run)
     "fraction_retro"                : float
+        Fraction of BBH that form retrograde to test (q,X_eff) relation.
+        Default retro=0.1. Possibly overwritten by initial retro population
     "fraction_bin_retro"            : float
+        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1     
     "flag_thermal_feedback"         : int
+        Switch (1) turns feedback from embedded BH on.
     "flag_orb_ecc_damping"          : int
+        Switch (1) turns orb. ecc damping on.
+        If switch = 0, assumes all bh are circularized (at e=e_crit)
     "capture_time_myr"              : float
     "disk_radius_capture_outer"     : float
     "orb_ecc_crit"                  : float
@@ -75,7 +131,7 @@ INPUT_TYPES = {
     "nsc_ratio_bh_mass_star_mass"   : float,
     "nsc_density_index_inner"       : float,
     "nsc_density_index_outer"       : float,
-    "flag_pisk_aspect_ratio_avg"    : float,
+    "flag_disk_aspect_ratio_avg"    : float,
     "nsc_spheroid_normalization"    : float,
     "nsc_bh_imf_mode"               : float,
     "nsc_bh_imf_powerlaw_index"     : float,
@@ -134,78 +190,11 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     Attributes
     ----------
     Output variables:
-    smbh_mass : float
-        Mass of the supermassive black hole (M_sun)
-    trap_radius : float
-        Radius of migration trap in gravitational radii (r_g = G*smbh_mass/c^2)
-        Should be set to zero if disk model has no trap
-    n_iterations : int
-        Number of iterations of code run (e.g. 1 for testing, 30 for a quick run)
-    mode_mbh_init : float
-        Initial mass distribution for stellar bh is assumed to be Pareto
-        with high mass cutoff--mode of initial mass dist (M_sun)
-    max_initial_bh_mass : float
-        Initial mass distribution for stellar bh is assumed to be Pareto
-        with high mass cutoff--mass of cutoff (M_sun)
-    mbh_powerlaw_index : float
-        Initial mass distribution for stellar bh is assumed to be Pareto
-        with high mass cutoff--powerlaw index for Pareto dist
-    min_initial_star_mass : float
-        Initial mass distribution for stars is assumed Salpeter
-    max_initial_star_mass : float
-        Initial mass distribution for stars is assumed Salpeter
-    star_mass_powerlaw_index : float
-        Initial mass distribution for stars is assumed Salpeter, disk_alpha_viscosity = 2.35
-    mu_spin_distribution : float
-        Initial spin distribution for stellar bh is assumed to be Gaussian
-        --mean of spin dist
-    sigma_spin_distribution : float
-        Initial spin distribution for stellar bh is assumed to be Gaussian
-        --standard deviation of spin dist
-    spin_torque_condition : float
-        fraction of initial mass required to be accreted before BH spin is torqued 
-        fully into alignment with the AGN disk. We don't know for sure but 
-        Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
-    disk_bh_orb_ecc_max_init : float
-        assumed accretion rate onto stellar bh from disk gas, in units of Eddington
-        accretion rate
-    max_initial_eccentricity : float
-        assuming initially flat eccentricity distribution among single orbiters around SMBH
-        out to max_initial_eccentricity. Eventually this will become smarter.
-    mu_star_spin_distribution : float
-        Initial spin distribution for stars is assumed to be Gaussian
-    sigma_star_spin_distribution : float
-        Initial spin distribution for stars is assumed to be Gaussian
-        --standard deviation of spin dist
-    spin_star_torque_condition : float
-        fraction of initial mass required to be accreted before star spin is torqued 
-        fully into alignment with the AGN disk. We don't know for sure but 
-        Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
-    frac_star_Eddington_ratio : float
-        assumed accretion rate onto stars from disk gas, in units of Eddington
-        accretion rate
-    max_initial_star_eccentricity : float
-        assuming initially flat eccentricity distribution among single orbiters around SMBH
-        out to max_initial_eccentricity. Eventually this will become smarter.
-    stars_initial_X  : float
-        Stellar initial hydrogen mass fraction
-    stars_initial_Y : float
-        Stellar initial helium mass fraction
-    stars_initial_Z : float
-        Stellar initial metallicity mass fraction
-    timestep : float
-        How long is your timestep in years?
-    number_of_timesteps : int
-        How many timesteps are you taking (timestep*number_of_timesteps = disk_lifetime)
     disk_model_radius_array : float array
         The radii along which your disk model is defined in units of r_g (=G*smbh_mass/c^2)
         drawn from modelname_surface_density.txt
     disk_inner_radius : float
         0th element of disk_model_radius_array (units of r_g)
-    disk_radius_outer : float
-        final element of disk_model_radius_array (units of r_g)
-    disk_radius_max_pc: float
-        Maximum disk size in parsecs (0. for off)
     surface_density_array : float array
         Surface density corresponding to radii in disk_model_radius_array (units of kg/m^2)
         Yes, it's in SI not cgs. Get over it. Kisses.
@@ -213,33 +202,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
     aspect_ratio_array : float array
         Aspect ratio corresponding to radii in disk_model_radius_array
         drawn from modelname_aspect_ratio.txt
-    retro : float
-        Fraction of BBH that form retrograde to test (q,X_eff) relation.
-        Default retro=0.1. Possibly overwritten by initial retro population
-    frac_bin_retro : float
-        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1     
-    feedback : int
-        Switch (1) turns feedback from embedded BH on.
-    orb_ecc_damping : int
-        Switch (1) turns orb. ecc damping on.
-        If switch = 0, assumes all bh are circularized (at e=e_crit)
-    r_nsc_out : float
-        Radius of NSC (units of pc)
-    M_nsc : float
-        Mass of NSC (units of M_sun)
-    r_nsc_crit : float
-        Radius where NSC density profile flattens (transition to Bahcall-Wolf) (units of pc)
-    nbh_nstar_ratio : float
-        Ratio of number of BH to stars in NSC (typically spans 3x10^-4 to 10^-2 in Generozov+18)
-    mbh_mstar_ratio : float
-        Ratio of mass of typical BH to typical star in NSC (typically 10:1 in Generozov+18)
-    nsc_index_inner : float
-        Index of radial density profile of NSC inside r_nsc_crit (usually Bahcall-Wolf, 1.75)
-    nsc_index_outer : float
-        Index of radial density profile of NSC outside r_nsc_crit 
-        (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
     h_disk_average : float
-        Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
     dynamic_enc : int
         Switch (1) turns dynamical encounters between embedded BH on.
     de : float
