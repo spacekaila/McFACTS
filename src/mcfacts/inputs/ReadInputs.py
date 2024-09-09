@@ -1,52 +1,55 @@
-"""
-smbh_mass = 1.e8
-disk_model_name = 'sirko_goodman'
-flag_use_pagn = 0
-disk_radius_trap = 700.
-disk_radius_outer = 50000.
-disk_radius_max_pc = 0.
-disk_alpha_viscosity = 0.01
-nsc_radius_outer = 5.0
-nsc_mass = 3.e7
-nsc_radius_crit = 0.25
-nsc_ratio_bh_num_star_num = 1.e-3
-nsc_ratio_bh_mass_star_mass = 10.0
-nsc_density_index_inner = 1.75
-nsc_density_index_outer = 2.5
-flag_pisk_aspect_ratio_avg = 0.03
-nsc_spheroid_normalization = 1.0
-nsc_bh_imf_mode = 10.
-nsc_bh_imf_powerlaw_index = 2.
-nsc_bh_imf_mass_max = 40.
-nsc_bh_spin_dist_mu = 0.
-nsc_bh_spin_dist_sigma = 0.1
-disk_bh_torque_condition = 0.1
-disk_bh_eddington_ratio = 1.0
-disk_bh_orb_ecc_max_init = 0.3
-disk_star_mass_max_init = 5.
-disk_star_mass_min_init = 40.
-nsc_imf_star_powerlaw_index = 2.35
-nsc_star_spin_dist_mu = 100.
-nsc_star_spin_dist_sigma = 20.
-disk_star_torque_condition = 0.1
-disk_star_eddington_ratio = 1.0
-disk_star_orb_ecc_max_init = 0.3
-nsc_star_metallicity_x_init = 0.7274
-nsc_star_metallicity_y_init = 0.2638
-nsc_star_metallicity_z_init = 0.0088
-timestep_duration = 1.e4
-timestep_num = 100
-iteration_num = 1
-fraction_retro = 0.5
-fraction_bin_retro = 0.0
-flag_thermal_feedback = 1
-flag_orb_ecc_damping = 1
-capture_time_myr = 1.e5
-disk_radius_capture_outer = 1.e3
-orb_ecc_crit = 0.01
-flag_dynamic_enc = 1
-delta_energy_strong = 0.1
-flag_prior_agn = 0
+"""Define input handling functions for mcfacts_sim
+
+Inifile
+-------
+    disk_model_name : str,
+    flag_use_pagn : bool,
+    smbh_mass : float,
+    disk_radius_trap  : float,
+    disk_radius_outer : float,
+    disk_radius_max_pc: float,
+    disk_alpha_viscosity : float,
+    nsc_radius_outer  : float,
+    nsc_mass  : float,
+    nsc_radius_crit   : float,
+    nsc_ratio_bh_num_star_num: float,
+    nsc_ratio_bh_mass_star_mass : float,
+    nsc_density_index_inner : float,
+    nsc_density_index_outer : float,
+    flag_pisk_aspect_ratio_avg : float,
+    nsc_spheroid_normalization : float,
+    nsc_bh_imf_mode : float,
+    nsc_bh_imf_powerlaw_index : float,
+    nsc_bh_imf_mass_max : float,
+    nsc_bh_spin_dist_mu : float,
+    nsc_bh_spin_dist_sigma : float,
+    disk_bh_torque_condition: float,
+    disk_bh_eddington_ratio : float,
+    disk_bh_orb_ecc_max_init : float,
+    disk_star_mass_max_init: float,
+    disk_star_mass_min_init : float,
+    nsc_imf_star_powerlaw_index : float,
+    nsc_star_spin_dist_mu : float,
+    nsc_star_spin_dist_sigma : float,
+    disk_star_torque_condition : float
+    disk_star_eddington_ratio : float,
+    disk_star_orb_ecc_max_init : float,
+    nsc_star_metallicity_x_init : float,
+    nsc_star_metallicity_y_init : float,
+    nsc_star_metallicity_z_init : float,
+    timestep_duration_yr : float,
+    timestep_num: int
+    iteration_num: int
+    fraction_retro: float,
+    fraction_bin_retro: float,
+    flag_thermal_feedback: int,
+    flag_orb_ecc_damping: int,
+    capture_time_myr : float,
+    disk_radius_capture_outer: float,
+    orb_ecc_crit : float,
+    flag_dynamic_enc int,
+    delta_energy_strong: float,
+    flag_prior_agn : int,
 """
 import numpy as np
 import configparser as ConfigParser
@@ -58,54 +61,54 @@ from mcfacts.inputs import data
 
 # Dictionary of types
 INPUT_TYPES = {
-    "disk_model_name" : str,
-    "flag_use_pagn" : bool,
-    "smbh_mass" : float,
-    "disk_radius_trap"  : float,
-    "disk_radius_outer" : float,
-    "disk_radius_max_pc": float,
-    "disk_alpha_viscosity" : float,
-    "nsc_radius_outer"  : float,
-    "nsc_mass"  : float,
-    "nsc_radius_crit"   : float,
-    "nsc_ratio_bh_num_star_num": float,
-    "nsc_ratio_bh_mass_star_mass" : float,
-    "nsc_density_index_inner" : float,
-    "nsc_density_index_outer" : float,
-    "flag_pisk_aspect_ratio_avg" : float,
-    "nsc_spheroid_normalization" : float,
-    "nsc_bh_imf_mode" : float,
-    "nsc_bh_imf_powerlaw_index" : float,
-    "nsc_bh_imf_mass_max" : float,
-    "nsc_bh_spin_dist_mu" : float,
-    "nsc_bh_spin_dist_sigma" : float,
-    "disk_bh_torque_condition": float,
-    "disk_bh_eddington_ratio" : float,
-    "disk_bh_orb_ecc_max_init" : float,
-    "disk_star_mass_max_init": float,
-    "disk_star_mass_min_init" : float,
-    "nsc_imf_star_powerlaw_index" : float,
-    "nsc_star_spin_dist_mu" : float,
-    "nsc_star_spin_dist_sigma" : float,
-    "disk_star_torque_condition" : float
-    "disk_star_eddington_ratio" : float,
-    "disk_star_orb_ecc_max_init" : float,
-    "nsc_star_metallicity_x_init" : float,
-    "nsc_star_metallicity_y_init" : float,
-    "nsc_star_metallicity_z_init" : float,
-    "timestep_duration_yr" : float,
-    "timestep_num": int
-    "iteration_num": int
-    "fraction_retro": float,
-    "fraction_bin_retro": float,
-    "flag_thermal_feedback": int,
-    "flag_orb_ecc_damping": int,
-    "capture_time_myr" : float,
-    "disk_radius_capture_outer": float,
-    "orb_ecc_crit" : float,
-    "flag_dynamic_enc" int,
-    "delta_energy_strong": float,
-    "flag_prior_agn" : int,
+    "disk_model_name"               : str,
+    "flag_use_pagn"                 : bool,
+    "smbh_mass"                     : float,
+    "disk_radius_trap"              : float,
+    "disk_radius_outer"             : float,
+    "disk_radius_max_pc"            : float,
+    "disk_alpha_viscosity"          : float,
+    "nsc_radius_outer"              : float,
+    "nsc_mass"                      : float,
+    "nsc_radius_crit"               : float,
+    "nsc_ratio_bh_num_star_num"     : float,
+    "nsc_ratio_bh_mass_star_mass"   : float,
+    "nsc_density_index_inner"       : float,
+    "nsc_density_index_outer"       : float,
+    "flag_pisk_aspect_ratio_avg"    : float,
+    "nsc_spheroid_normalization"    : float,
+    "nsc_bh_imf_mode"               : float,
+    "nsc_bh_imf_powerlaw_index"     : float,
+    "nsc_bh_imf_mass_max"           : float,
+    "nsc_bh_spin_dist_mu"           : float,
+    "nsc_bh_spin_dist_sigma"        : float,
+    "disk_bh_torque_condition"      : float,
+    "disk_bh_eddington_ratio"       : float,
+    "disk_bh_orb_ecc_max_init"      : float,
+    "disk_star_mass_max_init"       : float,
+    "disk_star_mass_min_init"       : float,
+    "nsc_imf_star_powerlaw_index"   : float,
+    "nsc_star_spin_dist_mu"         : float,
+    "nsc_star_spin_dist_sigma"      : float,
+    "disk_star_torque_condition"    : float
+    "disk_star_eddington_ratio"     : float,
+    "disk_star_orb_ecc_max_init"    : float,
+    "nsc_star_metallicity_x_init"   : float,
+    "nsc_star_metallicity_y_init"   : float,
+    "nsc_star_metallicity_z_init"   : float,
+    "timestep_duration_yr"          : float,
+    "timestep_num"                  : int,
+    "iteration_num"                 : int,
+    "fraction_retro"                : float,
+    "fraction_bin_retro"            : float,
+    "flag_thermal_feedback"         : int,
+    "flag_orb_ecc_damping"          : int,
+    "capture_time_myr"              : float,
+    "disk_radius_capture_outer"     : float,
+    "orb_ecc_crit"                  : float,
+    "flag_dynamic_enc"              : int,
+    "delta_energy_strong"           : float,
+    "flag_prior_agn"                : int,
 }
 
 
