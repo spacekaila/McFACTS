@@ -819,13 +819,13 @@ class AGNFilingCabinet(AGNObject):
         super(AGNFilingCabinet,self).__init__(mass=agnobj.mass, spin=agnobj.spin, spin_angle=agnobj.spin_angle,orbit_a=agnobj.orbit_a, orbit_inclination=agnobj.orbit_inclination, orbit_e=agnobj.orbit_e, orbit_arg_periapse=agnobj.orbit_arg_periapse)
 
     def __repr__(self):
-        totals = "AGN Filing Cabinet\n"
+        """         totals = "AGN Filing Cabinet\n"
         for key in obj_types:
             #print(key,getattr(self,"category").count(key))
             totals += (f"\t{obj_types[key]}: { np.sum(getattr(self,"category") == key) }\n")
             for key2 in obj_direction:
                 totals += (f"\t\t{obj_direction[key2]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"direction") == key2))}\n")
-        totals += f"{len(getattr(self,"category"))} objects total"
+        totals += f"{len(getattr(self,"category"))} objects total" """
         return(totals)
 
     def change_category(self, obj_id = None, new_category = None):
