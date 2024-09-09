@@ -71,6 +71,26 @@ def setup_disk_stars_orb_ang_mom(n_stars, M_reduced, M, orbit_a, orbit_inclinati
     stars_initial_orb_ang_mom = stars_initial_orb_ang_mom_sign*stars_initial_orb_ang_mom_value
     return stars_initial_orb_ang_mom
 
+def setup_disk_stars_arg_periapse(n_stars):
+    # Return an array of star arguments of periapse
+    # Should be fine to do a uniform distribution between 0-2pi
+    # Someday we should probably pick all the orbital variables
+    #   to be consistent with a thermal distribution or something
+    #   otherwise physically well-motivated...
+    #
+    # Hahahaha, actually, no, for now everything will be at 0.0 or pi/2
+    # For now, bc crude retro evol only treats arg periapse = (0.0, pi) or pi/2
+    # and intermediate values are fucking up evolution
+    # (and pi is symmetric w/0, pi/2 symmetric w/ 3pi/2 so doesn't matter)
+    # when code can handle arbitrary arg of periapse, uncomment relevant line
+
+    random_uniform_number = rng.random(int(n_stars,))
+    #bh_initial_orb_arg_periapse = 2.0*np.pi*random_uniform_number
+    stars_initial_orb_arg_periapse = 0.5 * np.pi * np.around(random_uniform_number)
+
+    return stars_initial_orb_arg_periapse
+
+
 def setup_disk_stars_eccentricity_thermal(n_stars):
     # Return an array of BH orbital eccentricities
     # For a thermal initial distribution of eccentricities, select from a uniform distribution in e^2.

@@ -3,7 +3,7 @@ from mcfacts.setup import diskstars_hillspheremergers
 from mcfacts.objects.agnobject import AGNStar
 import numpy as np
 
-def init_single_stars(opts,rng):
+def init_single_stars(opts,id_start_val = None):
 
     # Generate initial number of stars
     n_stars_initial = setupdiskstars.setup_disk_nstars(
@@ -52,6 +52,7 @@ def init_single_stars(opts,rng):
     star_spin_angle = setupdiskstars.setup_disk_stars_spin_angles(n_stars, star_spin)
     star_orbit_inclination = setupdiskstars.setup_disk_stars_inclination(n_stars)
     #star_orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(rng,n_stars)
+    star_orbit_argperiapse = setupdiskstars.setup_disk_stars_arg_periapse(n_stars)
     if opts.orb_ecc_damping == 1:
         star_orbit_e = setupdiskstars.setup_disk_stars_eccentricity_uniform(n_stars)
     else:
@@ -66,10 +67,12 @@ def init_single_stars(opts,rng):
                         orbit_inclination = star_orbit_inclination,
                         orbit_e = star_orbit_e,
                         #orb_ang_mom = star_orb_ang_mom,
+                        orbit_arg_periapse = star_orbit_argperiapse,
                         star_radius = star_radius,
                         star_Y = star_Y,
                         star_Z = star_Z,
                         mass_smbh = opts.mass_smbh,
+                        id_start_val=id_start_val,
                         n_stars = n_stars)
 
     

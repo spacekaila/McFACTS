@@ -128,7 +128,7 @@ def setup_disk_blackholes_incl(n_bh, bh_location, ang_mom_idx, aspect_ratio_func
 
     return bh_initial_orb_incl
 
-def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
+def setup_disk_blackholes_circularized(n_bh,crit_ecc):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0
     #
@@ -143,7 +143,7 @@ def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
     bh_initial_orb_ecc = crit_ecc*np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_ecc
 
-def setup_disk_blackholes_arg_periapse(rng, n_bh):
+def setup_disk_blackholes_arg_periapse(n_bh):
     # Return an array of BH arguments of periapse
     # Should be fine to do a uniform distribution between 0-2pi
     # Someday we should probably pick all the orbital variables
