@@ -32,7 +32,7 @@ Inifile
     "nsc_density_index_outer"       : float
         Index of radial density profile of NSC outside r_nsc_crit 
         (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
-    "flag_disk_aspect_ratio_avg"    : float
+    "disk_aspect_ratio_avg"    : float
         Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
     "nsc_spheroid_normalization"    : float
         Spheroid normalization
@@ -124,7 +124,7 @@ from io import StringIO
 
 # Grab those txt files
 from importlib import resources as impresources
-from mcfacts.inputs import data
+from mcfacts.inputs import data as mcfacts_input_data
 
 # Dictionary of types
 INPUT_TYPES = {
@@ -142,7 +142,7 @@ INPUT_TYPES = {
     "nsc_ratio_bh_mass_star_mass"   : float,
     "nsc_density_index_inner"       : float,
     "nsc_density_index_outer"       : float,
-    "flag_disk_aspect_ratio_avg"    : float,
+    "disk_aspect_ratio_avg"         : float,
     "nsc_spheroid_normalization"    : float,
     "nsc_bh_imf_mode"               : float,
     "nsc_bh_imf_powerlaw_index"     : float,
@@ -180,25 +180,15 @@ INPUT_TYPES = {
 
 
 def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
-    """This function reads your input choices from a file user specifies or
+    """Input file parser
+
+    This function reads your input choices from a file user specifies or
     default (inputs/model_choice.txt), and returns the chosen variables for 
     manipulation by main.    
 
     Required input formats and units are given in IOdocumentation.txt file.
 
-    See below for full output list, including units & formats
-
-    Example
-    -------
-    To run, ensure a model_choice.txt is in the same directory and type:
-
-        $ python ReadInputs_ini.py
-
-    Notes
-    -----
-    Function will tell you what it is doing via print statements along the way.
-
-    Attributes
+    Parameters
     ----------
     Output variables:
     disk_model_radius_array : float array
@@ -338,7 +328,7 @@ def construct_disk_interp(
     if not(flag_use_pagn):
         infile_suffix = '_surface_density.txt'
         infile = disk_model_name+infile_suffix
-        infile = impresources.files(data) / infile
+        infile = impresources.files(mcfacts_input_data) / infile
         dat = np.loadtxt(infile)
         disk_model_radius_array = dat[:,1]
         surface_density_array = dat[:,0]
@@ -358,7 +348,7 @@ def construct_disk_interp(
         #   filename = model_aspect_ratio.txt, where model is user choice
         infile_suffix = '_aspect_ratio.txt'
         infile = disk_model_name+infile_suffix
-        infile = impresources.files(data) / infile
+        infile = impresources.files(mcfacts_input_data) / infile
         dat = np.loadtxt(infile)
         aspect_ratio_array = dat[:,0]
         truncated_aspect_ratio_array=aspect_ratio_array[0:len(truncated_disk)]
