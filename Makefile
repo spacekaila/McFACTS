@@ -68,7 +68,7 @@ install: $(CLEAN_CMD) version
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
 mcfacts_sim: $(CLEAN_CMD)
 	python ${MCFACTS_SIM_EXE} \
-		--n_iterations 100 \
+		--n_iterations 3 \
 		--fname-ini ${FNAME_INI} \
 		--fname-log out.log \
 		--seed ${SEED}
@@ -87,7 +87,7 @@ mstar_runs:
 		--fname-ini ${FNAME_INI} \
 		--number_of_timesteps 1000 \
         --n_bins_max 10000 \
-		--n_iterations 100 \
+		--n_iterations 3 \
 		--dynamics \
 		--feedback \
 		--mstar-min 1e9 \
