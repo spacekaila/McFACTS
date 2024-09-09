@@ -2,54 +2,54 @@
 
 Inifile
 -------
-    disk_model_name : str,
-    flag_use_pagn : bool,
-    smbh_mass : float,
-    disk_radius_trap  : float,
-    disk_radius_outer : float,
-    disk_radius_max_pc: float,
-    disk_alpha_viscosity : float,
-    nsc_radius_outer  : float,
-    nsc_mass  : float,
-    nsc_radius_crit   : float,
-    nsc_ratio_bh_num_star_num: float,
-    nsc_ratio_bh_mass_star_mass : float,
-    nsc_density_index_inner : float,
-    nsc_density_index_outer : float,
-    flag_pisk_aspect_ratio_avg : float,
-    nsc_spheroid_normalization : float,
-    nsc_bh_imf_mode : float,
-    nsc_bh_imf_powerlaw_index : float,
-    nsc_bh_imf_mass_max : float,
-    nsc_bh_spin_dist_mu : float,
-    nsc_bh_spin_dist_sigma : float,
-    disk_bh_torque_condition: float,
-    disk_bh_eddington_ratio : float,
-    disk_bh_orb_ecc_max_init : float,
-    disk_star_mass_max_init: float,
-    disk_star_mass_min_init : float,
-    nsc_imf_star_powerlaw_index : float,
-    nsc_star_spin_dist_mu : float,
-    nsc_star_spin_dist_sigma : float,
-    disk_star_torque_condition : float
-    disk_star_eddington_ratio : float,
-    disk_star_orb_ecc_max_init : float,
-    nsc_star_metallicity_x_init : float,
-    nsc_star_metallicity_y_init : float,
-    nsc_star_metallicity_z_init : float,
-    timestep_duration_yr : float,
-    timestep_num: int
-    iteration_num: int
-    fraction_retro: float,
-    fraction_bin_retro: float,
-    flag_thermal_feedback: int,
-    flag_orb_ecc_damping: int,
-    capture_time_myr : float,
-    disk_radius_capture_outer: float,
-    orb_ecc_crit : float,
-    flag_dynamic_enc int,
-    delta_energy_strong: float,
-    flag_prior_agn : int,
+    "disk_model_name"               : str
+    "flag_use_pagn"                 : bool
+    "smbh_mass"                     : float
+    "disk_radius_trap"              : float
+    "disk_radius_outer"             : float
+    "disk_radius_max_pc"            : float
+    "disk_alpha_viscosity"          : float
+    "nsc_radius_outer"              : float
+    "nsc_mass"                      : float
+    "nsc_radius_crit"               : float
+    "nsc_ratio_bh_num_star_num"     : float
+    "nsc_ratio_bh_mass_star_mass"   : float
+    "nsc_density_index_inner"       : float
+    "nsc_density_index_outer"       : float
+    "flag_pisk_aspect_ratio_avg"    : float
+    "nsc_spheroid_normalization"    : float
+    "nsc_bh_imf_mode"               : float
+    "nsc_bh_imf_powerlaw_index"     : float
+    "nsc_bh_imf_mass_max"           : float
+    "nsc_bh_spin_dist_mu"           : float
+    "nsc_bh_spin_dist_sigma"        : float
+    "disk_bh_torque_condition"      : float
+    "disk_bh_eddington_ratio"       : float
+    "disk_bh_orb_ecc_max_init"      : float
+    "disk_star_mass_max_init"       : float
+    "disk_star_mass_min_init"       : float
+    "nsc_imf_star_powerlaw_index"   : float
+    "nsc_star_spin_dist_mu"         : float
+    "nsc_star_spin_dist_sigma"      : float
+    "disk_star_torque_condition"    : float
+    "disk_star_eddington_ratio"     : float
+    "disk_star_orb_ecc_max_init"    : float
+    "nsc_star_metallicity_x_init"   : float
+    "nsc_star_metallicity_y_init"   : float
+    "nsc_star_metallicity_z_init"   : float
+    "timestep_duration_yr"          : float
+    "timestep_num"                  : int
+    "iteration_num"                 : int
+    "fraction_retro"                : float
+    "fraction_bin_retro"            : float
+    "flag_thermal_feedback"         : int
+    "flag_orb_ecc_damping"          : int
+    "capture_time_myr"              : float
+    "disk_radius_capture_outer"     : float
+    "orb_ecc_crit"                  : float
+    "flag_dynamic_enc"              : int
+    "delta_energy_strong"           : float
+    "flag_prior_agn"                : int
 """
 import numpy as np
 import configparser as ConfigParser
@@ -90,7 +90,7 @@ INPUT_TYPES = {
     "nsc_imf_star_powerlaw_index"   : float,
     "nsc_star_spin_dist_mu"         : float,
     "nsc_star_spin_dist_sigma"      : float,
-    "disk_star_torque_condition"    : float
+    "disk_star_torque_condition"    : float,
     "disk_star_eddington_ratio"     : float,
     "disk_star_orb_ecc_max_init"    : float,
     "nsc_star_metallicity_x_init"   : float,
