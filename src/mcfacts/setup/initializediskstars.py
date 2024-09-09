@@ -19,15 +19,15 @@ def init_single_stars(opts, id_start_val=None):
             opts.nsc_radius_crit,
             opts.nsc_density_index_inner,
         )
-    # print(n_stars_initial) 152_248_329
+    # giprint(n_stars_initial) 152_248_329
     n_stars_initial = 1_000_000
-    
+
     # Generate initial masses for the initial number of stars, pre-Hill sphere mergers
     masses_initial = setupdiskstars.setup_disk_stars_masses(n_star=n_stars_initial,
                                                             min_initial_star_mass=opts.disk_star_mass_min_init,
                                                             max_initial_star_mass=opts.disk_star_mass_max_init,
                                                             mstar_powerlaw_index=opts.nsc_imf_star_powerlaw_index)
-    
+
     # Generating star locations in an x^2 distribution
     x_vals = np.random.uniform(0.002, 1, n_stars_initial)
     r_locations_initial = np.sqrt(x_vals)
