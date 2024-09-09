@@ -3,7 +3,8 @@ from mcfacts.setup import diskstars_hillspheremergers
 from mcfacts.objects.agnobject import AGNStar
 import numpy as np
 
-def init_single_stars(opts,id_start_val = None):
+
+def init_single_stars(opts, id_start_val=None):
 
     # Generate initial number of stars
     n_stars_initial = setupdiskstars.setup_disk_nstars(
@@ -18,14 +19,14 @@ def init_single_stars(opts,id_start_val = None):
             opts.nsc_radius_crit,
             opts.nsc_density_index_inner,
         )
-    #print(n_stars_initial) 152_248_329
+    # print(n_stars_initial) 152_248_329
     n_stars_initial = 1_000_000
     
     # Generate initial masses for the initial number of stars, pre-Hill sphere mergers
-    masses_initial = setupdiskstars.setup_disk_stars_masses(n_star = n_stars_initial,
-                                                            min_initial_star_mass = opts.disk_star_mass_min_init,
-                                                            max_initial_star_mass = opts.disk_star_mass_max_init,
-                                                            mstar_powerlaw_index = opts.nsc_imf_star_powerlaw_index)
+    masses_initial = setupdiskstars.setup_disk_stars_masses(n_star=n_stars_initial,
+                                                            min_initial_star_mass=opts.disk_star_mass_min_init,
+                                                            max_initial_star_mass=opts.disk_star_mass_max_init,
+                                                            mstar_powerlaw_index=opts.nsc_imf_star_powerlaw_index)
     
     # Generating star locations in an x^2 distribution
     x_vals = np.random.uniform(0.002, 1, n_stars_initial)
@@ -41,10 +42,10 @@ def init_single_stars(opts,id_start_val = None):
                                                                                      masses_initial_sorted=masses_initial_sorted,
                                                                                      r_locations_initial_sorted=r_locations_initial_sorted,
                                                                                      min_initial_star_mass=opts.disk_star_mass_min_init,
-                                                                                     R_disk = opts.disk_radius_trap,
+                                                                                     R_disk=opts.disk_radius_trap,
                                                                                      M_smbh=opts.smbh_mass,
-                                                                                     P_m = 1.35,
-                                                                                     P_r = 1.)
+                                                                                     P_m=1.35,
+                                                                                     P_r=1.)
     n_stars = len(masses_stars)
     
     star_radius = setupdiskstars.setup_disk_stars_radii(masses_stars)

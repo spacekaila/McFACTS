@@ -1042,7 +1042,7 @@ def main():
             # To do: What eccentricity do we want the captured BH to have? Right now ecc=0.0? Should it be ecc<h at a?             
             # Assume 1st gen BH captured and orb ecc =0.0
             # To do: Bias disk capture to more massive BH!
-            capture = time_passed % opts.capture_time_myr
+            capture = time_passed % opts.capture_time_yr
             if capture == 0:
                 bh_capture_location = setupdiskblackholes.setup_disk_blackholes_location(
                     1, opts.disk_radius_capture_outer)
