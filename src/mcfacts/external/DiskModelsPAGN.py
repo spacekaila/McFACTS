@@ -14,7 +14,7 @@ class AGNGasDiskModel(object):
         if self.disk_type == "Sirko":
             self.disk_model  = Sirko.SirkoAGN(**kwargs)
         else:
-            self.disk_model = Thompson.ThomsonAGN(**kwargs)
+            self.disk_model = Thompson.ThompsonAGN(**kwargs)
         self.disk_model.solve_disk(N=1e4)
 
     def save(self, filename):
