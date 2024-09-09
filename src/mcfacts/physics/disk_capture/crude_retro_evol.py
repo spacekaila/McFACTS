@@ -6,6 +6,7 @@ This module provides a functions for evolving retrograde orbiters.
 """
 import numpy as np
 import scipy
+import mcfacts.constants as mc_const
 
 
 def crude_retro_bh(smbh_mass, disk_bh_retro_masses, disk_bh_retro_orbs_a, disk_bh_retro_orbs_ecc,
@@ -280,15 +281,12 @@ def tau_inc_dyn(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_bh_r
     tau_i_dyn : float array
         inclination damping timescale in seconds
     """
-    # This should probably be set somewhere for the whole code? But...
-    KgPerMsun = 1.99e30
-
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    SI_smbh_mass = smbh_mass * KgPerMsun  # kg
+    SI_smbh_mass = smbh_mass * mc_const.ÏMsun  # kg
     SI_semi_maj_axis = disk_bh_retro_orbs_a * scipy.constants.G * smbh_mass \
                        / (scipy.constants.c) ** 2  # m
-    SI_orbiter_mass = disk_bh_retro_masses * KgPerMsun  # kg
+    SI_orbiter_mass = disk_bh_retro_masses * mc_const.KgPerMsun  # kg
     omega = disk_bh_retro_arg_periapse  # radians
     ecc = disk_bh_retro_orbs_ecc  # unitless
     inc = disk_bh_retro_orbs_inc  # radians
@@ -354,15 +352,12 @@ def tau_semi_lat(smbh_mass, retrograde_bh_locations, retrograde_bh_masses, retro
     tau_p_dyn : float array
         timescales for the evolution of the semi-latus rectum of each object
     """
-    # This should probably be set somewhere for the whole code? But...
-    KgPerMsun = 1.99e30
-
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    smbh_mass = smbh_mass * KgPerMsun  # kg
+    smbh_mass = smbh_mass * mc_const.KgPerMsun  # kg
     semi_maj_axis = retrograde_bh_locations * scipy.constants.G * smbh_mass \
                     / (scipy.constants.c) ** 2  # m
-    retro_mass = retrograde_bh_masses * KgPerMsun  # kg
+    retro_mass = retrograde_bh_masses * mc_const.KgPerMsun  # kg
     omega = retro_arg_periapse  # radians
     ecc = retrograde_bh_orb_ecc  # unitless
     inc = retrograde_bh_orb_inc  # radians

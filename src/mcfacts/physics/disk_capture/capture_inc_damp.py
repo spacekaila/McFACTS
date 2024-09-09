@@ -6,6 +6,7 @@ This module provides a function for calculating change of an orbiter's inclinati
 """
 import numpy as np
 import scipy
+import mcfacts.constants as mc_const
 
 
 def orb_inc_damping(smbh_mass, disk_bh_retro_orbs, disk_bh_retro_masses, disk_bh_retro_orbs_ecc,
@@ -56,15 +57,13 @@ def orb_inc_damping(smbh_mass, disk_bh_retro_orbs, disk_bh_retro_masses, disk_bh
     disk_bh_retro_orbs_ecc_new : float array
         orbital inclinations of retrograde singletons BH at end of a timestep.
     """
-    # This should probably be set somewhere for the whole code? But...
-    KgPerMsun = 1.99e30
 
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    smbh_mass = smbh_mass * KgPerMsun  # kg
+    smbh_mass = smbh_mass * mc_const.KgPerMsun  # kg
     semi_maj_axis = disk_bh_retro_orbs * scipy.constants.G * smbh_mass \
                     / (scipy.constants.c) ** 2  # m
-    retro_mass = disk_bh_retro_masses * KgPerMsun  # kg
+    retro_mass = disk_bh_retro_masses * mc_const.KgPerMsun  # kg
     omega = disk_bh_retro_arg_periapse  # radians
     ecc = disk_bh_retro_orbs_ecc  # unitless
     inc = disk_bh_retro_orbs_inc  # radians
