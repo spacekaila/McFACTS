@@ -108,7 +108,7 @@ Inifile
     "disk_radius_capture_outer"     : float
         Disk capture outer radius (units of r_g)
         Secunda et al. (2001) assume <2000r_g from Fabj et al. (2020)
-    "orb_ecc_crit"                  : float
+    "disk_bh_pro_orb_ecc_crit"      : float
         Critical eccentricity (limiting eccentricity, below which assumed circular orbit)
     "flag_dynamic_enc"              : int
         Switch (1) turns dynamical encounters between embedded BH on.
@@ -170,9 +170,9 @@ INPUT_TYPES = {
     "fraction_bin_retro"            : float,
     "flag_thermal_feedback"         : int,
     "flag_orb_ecc_damping"          : int,
-    "capture_time_yr"              : float,
+    "capture_time_yr"               : float,
     "disk_radius_capture_outer"     : float,
-    "orb_ecc_crit"                  : float,
+    "disk_bh_pro_orb_ecc_crit"      : float,
     "flag_dynamic_enc"              : int,
     "delta_energy_strong"           : float,
     "flag_prior_agn"                : int,
