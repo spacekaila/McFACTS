@@ -1,7 +1,9 @@
 import numpy as np
+from mcfacts.mcfacts_random_state import rng
 
 
-def setup_disk_blackholes_location(rng, n_bh, disk_outer_radius):
+
+def setup_disk_blackholes_location(n_bh, disk_outer_radius):
     #Return an array of BH locations distributed randomly uniformly in disk
     isco_radius = 6.0
     integer_nbh = int(n_bh)
@@ -10,14 +12,14 @@ def setup_disk_blackholes_location(rng, n_bh, disk_outer_radius):
     bh_initial_locations[sma_too_small] = isco_radius
     return bh_initial_locations
 
-def setup_prior_blackholes_indices(rng, prograde_n_bh, prior_bh_locations):
+def setup_prior_blackholes_indices(prograde_n_bh, prior_bh_locations):
     #Return an array of indices which allow us to read prior BH properties & replace prograde BH with these.
     integer_nbh = int(prograde_n_bh)
     len_prior_locations = (prior_bh_locations.size)-1
     bh_indices = np.rint(len_prior_locations*rng.random(integer_nbh))
     return bh_indices
 
-def setup_disk_blackholes_masses(rng, n_bh,mode_mbh_init,max_initial_bh_mass,mbh_powerlaw_index):
+def setup_disk_blackholes_masses(n_bh,mode_mbh_init,max_initial_bh_mass,mbh_powerlaw_index):
     #Return an array of BH initial masses for a given powerlaw index and max mass
     integer_nbh = int(n_bh)
     bh_initial_masses = (rng.pareto(mbh_powerlaw_index,integer_nbh)+1)*mode_mbh_init
@@ -29,14 +31,14 @@ def setup_disk_blackholes_masses(rng, n_bh,mode_mbh_init,max_initial_bh_mass,mbh
     return bh_initial_masses
 
 
-def setup_disk_blackholes_spins(rng, n_bh, mu_spin_distribution, sigma_spin_distribution):
+def setup_disk_blackholes_spins(n_bh, mu_spin_distribution, sigma_spin_distribution):
     #Return an array of BH initial spin magnitudes for a given mode and sigma of a distribution
     integer_nbh = int(n_bh)
     bh_initial_spins = rng.normal(mu_spin_distribution, sigma_spin_distribution, integer_nbh)
     return bh_initial_spins
 
 
-def setup_disk_blackholes_spin_angles(rng, n_bh, bh_initial_spins):
+def setup_disk_blackholes_spin_angles(n_bh, bh_initial_spins):
     #Return an array of BH initial spin angles (in radians).
     #Positive (negative) spin magnitudes have spin angles [0,1.57]([1.5701,3.14])rads
     #All BH spin angles drawn from [0,1.57]rads and +1.57rads to negative spin indices
@@ -48,7 +50,7 @@ def setup_disk_blackholes_spin_angles(rng, n_bh, bh_initial_spins):
     return bh_initial_spin_angles
 
 
-def setup_disk_blackholes_orb_ang_mom(rng, n_bh):
+def setup_disk_blackholes_orb_ang_mom(n_bh):
     #Return an array of BH initial orbital angular momentum.
     #Assume either fully prograde (+1) or retrograde (-1)
     integer_nbh = int(n_bh)
@@ -56,7 +58,7 @@ def setup_disk_blackholes_orb_ang_mom(rng, n_bh):
     bh_initial_orb_ang_mom = (2.0*np.around(random_uniform_number)) - 1.0
     return bh_initial_orb_ang_mom
 
-def setup_disk_blackholes_eccentricity_thermal(rng, n_bh):
+def setup_disk_blackholes_eccentricity_thermal(n_bh):
     # Return an array of BH orbital eccentricities
     # For a thermal initial distribution of eccentricities, select from a uniform distribution in e^2.
     # Thus (e=0.7)^2 is 0.49 (half the eccentricities are <0.7). 
@@ -68,7 +70,7 @@ def setup_disk_blackholes_eccentricity_thermal(rng, n_bh):
     bh_initial_orb_ecc = np.sqrt(random_uniform_number)
     return bh_initial_orb_ecc
 
-def setup_disk_blackholes_eccentricity_uniform(rng, n_bh, max_initial_eccentricity):
+def setup_disk_blackholes_eccentricity_uniform(n_bh, max_initial_eccentricity):
     # Return an array of BH orbital eccentricities
     # For a uniform initial distribution of eccentricities, select from a uniform distribution in e.
     # Thus half the eccentricities are <0.5
@@ -81,7 +83,7 @@ def setup_disk_blackholes_eccentricity_uniform(rng, n_bh, max_initial_eccentrici
     bh_initial_orb_ecc = random_uniform_number*max_initial_eccentricity
     return bh_initial_orb_ecc
 
-def setup_disk_blackholes_eccentricity_uniform_modified(rng, mod_factor, n_bh):
+def setup_disk_blackholes_eccentricity_uniform_modified(mod_factor, n_bh):
     # Return an array of BH orbital eccentricities
     # For a uniform initial distribution of eccentricities, select from a uniform distribution in e.
     # Thus half the eccentricities are <0.5
@@ -93,7 +95,7 @@ def setup_disk_blackholes_eccentricity_uniform_modified(rng, mod_factor, n_bh):
     bh_initial_orb_ecc = mod_factor*random_uniform_number
     return bh_initial_orb_ecc
 
-def setup_disk_blackholes_inclination(rng, n_bh):
+def setup_disk_blackholes_inclination(n_bh):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0
     #
@@ -106,7 +108,7 @@ def setup_disk_blackholes_inclination(rng, n_bh):
     bh_initial_orb_incl = np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_incl
 
-def setup_disk_blackholes_incl(rng, n_bh, bh_location, ang_mom_idx, aspect_ratio_func):
+def setup_disk_blackholes_incl(n_bh, bh_location, ang_mom_idx, aspect_ratio_func):
     # Return an array of BH orbital inclinations
     # initial distribution is not 0.0
     integer_nbh = int(n_bh)
@@ -126,7 +128,7 @@ def setup_disk_blackholes_incl(rng, n_bh, bh_location, ang_mom_idx, aspect_ratio
 
     return bh_initial_orb_incl
 
-def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
+def setup_disk_blackholes_circularized(n_bh,crit_ecc):
     # Return an array of BH orbital inclinations
     # Return an initial distribution of inclination angles that are 0.0
     #
@@ -141,7 +143,7 @@ def setup_disk_blackholes_circularized(rng, n_bh,crit_ecc):
     bh_initial_orb_ecc = crit_ecc*np.zeros((integer_nbh,),dtype = float)
     return bh_initial_orb_ecc
 
-def setup_disk_blackholes_arg_periapse(rng, n_bh):
+def setup_disk_blackholes_arg_periapse(n_bh):
     # Return an array of BH arguments of periapse
     # Should be fine to do a uniform distribution between 0-2pi
     # Someday we should probably pick all the orbital variables
