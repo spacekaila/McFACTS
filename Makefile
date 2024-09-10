@@ -63,6 +63,15 @@ version: $(CLEAN_CMD)
 install: $(CLEAN_CMD) version
 	python -m pip install --editable .
 
+setup: clean version
+	source ~/.bash_profile && \
+	conda activate base && \
+	conda remove -n mcfacts-dev --all -y && \
+	conda create --name mcfacts-dev "python>=3.10.4" pip -c conda-forge -c defaults -y && \
+	conda activate mcfacts-dev && \
+	python -m pip install --editable .
+
+
 #### Test one thing at a time ####
 
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
