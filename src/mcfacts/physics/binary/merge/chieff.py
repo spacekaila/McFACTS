@@ -55,9 +55,9 @@ def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angl
     spin_factors_1 = (masses_1 / bin_total_masses) * spins_abs_1 * np.cos(angles_1)
     spin_factors_2 = (masses_2 / bin_total_masses) * spins_abs_2 * np.cos(angles_2)
 
-    chis_eff = spin_factors_1 + spin_factors_2
+    chi_eff = spin_factors_1 + spin_factors_2
 
-    return chis_eff
+    return chi_eff
 
 def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_momenta, bin_incs_wrt_disk):
     """Calculate the precessing spin component :math:`\chi_p` associated with a merger.
@@ -133,9 +133,9 @@ def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bi
     mass_ratio_factors = mass_ratios * ((4.0 * mass_ratios) + 3.0)/(4.0 + (3.0 * mass_ratios))
     
     # Assume spins_1_perp is dominant source of chis_p
-    chis_p = spins_1_perp
+    chi_p = spins_1_perp
     # if not then change chis_p definition and output
-    if chis_p < mass_ratio_factors * spins_2_perp:
-        chis_p = mass_ratio_factors * spins_2_perp
+    if chi_p < mass_ratio_factors * spins_2_perp:
+        chi_p = mass_ratio_factors * spins_2_perp
 
-    return chis_p
+    return chi_p
