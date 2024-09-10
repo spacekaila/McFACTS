@@ -32,16 +32,14 @@ def merged_mass(masses_1, masses_2, spins_1, spins_2):
     if primary_masses < 1.0:
         print("primary,secondary=", primary_masses, secondary_masses)
         mass_ratios = 1.0
-    if primary_masses > 1.0:    
-        mass_ratios = secondary_masses/primary_masses
+    if primary_masses > 1.0:
+        mass_ratios = secondary_masses / primary_masses
 
     total_masses = primary_masses + secondary_masses
     total_spins = spins_1 + spins_2
-    nu_factors = (1.0+mass_ratios)**2.0
-    nus = mass_ratios/nu_factors
-    nus_square = nus*nus
-    nus =  (primary_masses* secondary_masses)/ (total_masses)**2 # mass_ratio/nu_factor
-    nus_square = nus*nus
+    nu_factors = (1.0 + mass_ratios)**2.0
+    nus = mass_ratios / nu_factors
+    nus_square = nus * nus
 
     mass_factors = 1.0-(0.2*nus)-(0.208*nus_square*total_spins)
     merged_masses = (total_masses)*mass_factors
