@@ -52,8 +52,8 @@ ifeq ($(OS),Windows_NT)
     VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
     VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
 else
-    VERSION_BASE_CMD := echo "__version__ = '${VERSION}' " > __version__.py
-    VERSION_SRC_CMD := echo "__version__ = '${VERSION}' " > src/mcfacts/__version__.py
+    VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
+    VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 endif
 
 version: $(CLEAN_CMD)
