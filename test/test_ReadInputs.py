@@ -6,7 +6,7 @@ Test various things from ReadInputs.py
 #### Standard ####
 from importlib import resources as impresources
 import os
-from os.path import isdir, isfile, basename
+from os.path import isdir, isfile
 import itertools
 import collections
 
@@ -85,7 +85,7 @@ def test_ReadInputs_ini(verbose=True):
     assert isdir(data_folder), "Cannot find mcfacts.inputs.data folder"
     # Find model_choice.ini
     fname_ini = data_folder / "model_choice.ini"
-    assert isfile(fname_ini), "Cannot find default inifile"
+    assert isfile(fname_ini), "Cannot find %s"%fname_ini
     # Get input variables
     input_variables = ReadInputs_ini(fname_ini, verbose=verbose)
     # Check that this returns a dictionary
@@ -127,16 +127,16 @@ def test_load_disk_arrays(verbose=True):
     fname_sirko_goodman_aspect_ratio    = data_folder / "sirko_goodman_aspect_ratio.txt"
     # Check things that should exist in the data folder
     assert isfile(fname_thompson_surface_density), \
-        "Cannot find %s"%(basename(fname_thompson_surface_density))
+        "Cannot find %s"%(fname_thompson_surface_density)
     assert isfile(fname_thompson_aspect_ratio), \
-        "Cannot find %s"%(basename(fname_thompson_aspect_ratio))
+        "Cannot find %s"%(fname_thompson_aspect_ratio)
     assert isfile(fname_sirko_goodman_surface_density), \
-        "Cannot find %s"%(basename(fname_sirko_goodman_surface_density))
+        "Cannot find %s"%(fname_sirko_goodman_surface_density)
     assert isfile(fname_sirko_goodman_aspect_ratio), \
-        "Cannot find %s"%(basename(fname_sirko_goodman_aspect_ratio))
+        "Cannot find %s"%(fname_sirko_goodman_aspect_ratio)
     # Find the default inifile
     fname_default_ini = data_folder / "model_choice.ini"
-    assert isfile(fname_default_ini), "Cannot find default inifile"
+    assert isfile(fname_default_ini), "Cannot find %s"%(fname_default_ini)
     # Get input variables
     input_variables = ReadInputs_ini(fname_default_ini, verbose=verbose)
     # We only want disk_radius_outer
@@ -189,7 +189,7 @@ def test_construct_disk_direct(verbose=True):
     assert isdir(data_folder), "Cannot find mcfacts.inputs.data folder"
     # Find the default inifile
     fname_default_ini = data_folder / "model_choice.ini"
-    assert isfile(fname_default_ini), "Cannot find default inifile"
+    assert isfile(fname_default_ini), "Cannot find %s"%(fname_default_ini)
     # Get input variables
     input_variables = ReadInputs_ini(fname_default_ini, verbose=verbose)
     # We only want disk_radius_outer
@@ -228,7 +228,7 @@ def test_construct_disk_pAGN(verbose=True):
     assert isdir(data_folder), "Cannot find mcfacts.inputs.data folder"
     # Find the default inifile
     fname_default_ini = data_folder / "model_choice.ini"
-    assert isfile(fname_default_ini), "Cannot find default inifile"
+    assert isfile(fname_default_ini), "Cannot find %s"%(fname_default_ini)
     # Get input variables
     input_variables = ReadInputs_ini(fname_default_ini, verbose=verbose)
     # We only want disk_radius_outer
@@ -271,7 +271,7 @@ def test_construct_disk_interp(
     assert isdir(data_folder), "Cannot find mcfacts.inputs.data folder"
     # Find the default inifile
     fname_default_ini = data_folder / "model_choice.ini"
-    assert isfile(fname_default_ini), "Cannot find default inifile"
+    assert isfile(fname_default_ini), "Cannot find %s"%(fname_default_ini)
     # Get input variables
     input_variables = ReadInputs_ini(fname_default_ini, verbose=verbose)
     # We want a few things

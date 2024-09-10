@@ -184,7 +184,7 @@ INPUT_TYPES = {
 }
 
 
-def ReadInputs_ini(fname_ini='inputs/model_choice.txt', verbose=False):
+def ReadInputs_ini(fname_ini, verbose=False):
     """Input file parser
 
     This function reads your input choices from a file user specifies or
