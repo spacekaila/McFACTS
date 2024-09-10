@@ -34,8 +34,8 @@ def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angl
     """
 
     bin_total_masses = masses_1 + masses_2
-    angle_1 = spin_angles_1
-    angle_2 = spin_angles_2
+    angles_1 = spin_angles_1
+    angles_2 = spin_angles_2
     spins_abs_1 = np.abs(spins_1)
     spins_abs_2 = np.abs(spins_2)
 
@@ -44,22 +44,22 @@ def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angl
     # Case for a single binary
     if not isinstance(bin_ang_momenta, np.ndarray):
         if bin_ang_momenta == -1:
-            angle_1 = np.pi - spin_angles_1
-            angle_2 = np.pi - spin_angles_2
+            angles_1 = np.pi - spin_angles_1
+            angles_2 = np.pi - spin_angles_2
     else: # Case for array of binaries
-        indx_swap = np.where(bin_ang_momenta == -1)[0]
-        angle_1[indx_swap] = np.pi - spin_angles_1[indx_swap]
-        angle_2[indx_swap] = np.pi - spin_angles_2[indx_swap]
+        indices_to_change = np.where(bin_ang_momenta == -1)[0]
+        angles_1[indices_to_change] = np.pi - spin_angles_1[indices_to_change]
+        angles_2[indices_to_change] = np.pi - spin_angles_2[indices_to_change]
 
     # Calculate each component of chi_effective
-    chi_factor1 = (masses_1 / bin_total_masses) * spins_abs_1 * np.cos(angle_1)
-    chi_factor2 = (masses_2 / bin_total_masses) * spins_abs_2 * np.cos(angle_2)
+    spin_factors_1 = (masses_1 / bin_total_masses) * spins_abs_1 * np.cos(angles_1)
+    spin_factors_2 = (masses_2 / bin_total_masses) * spins_abs_2 * np.cos(angles_2)
 
-    chi_eff = chi_factor1 + chi_factor2
+    chis_eff = spin_factors_1 + spin_factors_2
 
-    return chi_eff
+    return chis_eff
 
-def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle_1, spin_angle_2, bin_ang_mom, bin_inclination_wrt_disk):
+def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_momenta, bin_incs_wrt_disk):
     """Calculate the precessing spin component :math:`\chi_p` associated with a merger.
     
     chi_p = max[spin_1_perp, (q(4q+3)/(4+3q))* spin_2_perp]
@@ -71,28 +71,27 @@ def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle_1, spin_angle_2, bin_ang_mo
     
     are perpendicular to `spin_1
 
-    and `q=M_2/M_1 where `M_2 < M_1`
+    and :math:`q=M_2/M_1` where :math:`M_2 < M_1`.
 
-    
     Parameters
     ----------
-    mass_1 : float/ndarray
+    masses_1 : float/ndarray
         Mass of object 1.
-    mass_2 : float/ndarray
+    masses_2 : float/ndarray
         Mass of object 2.
-    spin_1 : float/ndarray
+    spins_1 : float/ndarray
         Dimensionless spin magnitude of object 1.
-    spin_2 : float/ndarray
+    spins_2 : float/ndarray
         Dimensionless spin magnitude of object 2.
-    spin_angle_1 : float/ndarray
+    spin_angles_1 : float/ndarray
         Dimensionless spin angle of object 1.
-    spin_angle_2 : float/ndarray
+    spin_angles_2 : float/ndarray
         Dimensionless spin angle of object 2.
-    bin_ang_mom : int/ndarray
+    bin_ang_momenta : int/ndarray
         Direction of the binary's mutual angular momentum. If 1, the binary
         is prograde (aligned with disk angular momentum). If -1, the binary
         is retrograde (anti-aligned with disk angular momentum).
-    bin_inclination_wrt_disk : float/ndarray
+    bin_incs_wrt_disk : float/ndarray
         Angle of inclination of the binary with respect to the disk.
 
     Returns
@@ -103,44 +102,40 @@ def chi_p(mass_1, mass_2, spin_1, spin_2, spin_angle_1, spin_angle_2, bin_ang_mo
 
     # If mass1 is the dominant binary partner
     # Define default mass ratio of 1, otherwise choose based on masses
-    q = 1.0
+    mass_ratios = 1.0
 
-    # Define spin angle to include bin_inclination_wrt_disk (all in units of radians)
-    spin_angle_1 = spin_angle_1 + bin_inclination_wrt_disk
-    spin_angle_2 = spin_angle_2 + bin_inclination_wrt_disk
+    # Define spin angle to include binary inclinations w.r.t. the disk (all in units of radians)
+    spin_angles_1 = spin_angles_1 + bin_incs_wrt_disk
+    spin_angles_2 = spin_angles_2 + bin_incs_wrt_disk
 
     # Make sure angles are <pi radians!
-    spin_angle_diff_1 = spin_angle_1 - np.pi
-    spin_angle_diff_2 = spin_angle_2 - np.pi
-    if spin_angle_diff_1 > 0:
-        spin_angle_1 = spin_angle_1 - spin_angle_diff_1
-    if spin_angle_diff_2 > 0:
-        spin_angle_2 = spin_angle_2 - spin_angle_diff_2
+    spin_angle_diffs_1 = spin_angles_1 - np.pi
+    spin_angle_diffs_2 = spin_angles_2 - np.pi
+    if spin_angle_diffs_1 > 0:
+        spin_angles_1 = spin_angles_1 - spin_angle_diffs_1
+    if spin_angle_diffs_2 > 0:
+        spin_angles_2 = spin_angles_2 - spin_angle_diffs_2
 
     # Define default spins
-    spin_1_perp = abs(spin_1) * np.sin(spin_angle_1)
-    spin_2_perp = abs(spin_2) * np.sin(spin_angle_2)
+    spins_1_perp = abs(spins_1) * np.sin(spin_angles_1)
+    spins_2_perp = abs(spins_2) * np.sin(spin_angles_2)
     
-    if mass_1 > mass_2:
-        q = mass_2 / mass_1
-        spin_1_perp = abs(spin_1) * np.sin(spin_angle_1)
-        spin_2_perp = abs(spin_2) * np.sin(spin_angle_2)
+    if masses_1 > masses_2:
+        mass_ratios = masses_2 / masses_1
+        spins_1_perp = abs(spins_1) * np.sin(spin_angles_1)
+        spins_2_perp = abs(spins_2) * np.sin(spin_angles_2)
     # If mass2 is the dominant binary partner
-    if mass_2 > mass_1:
-        q = mass_1 / mass_2
-        spin_1_perp = abs(spin_2) * np.sin(spin_angle_2)
-        spin_2_perp = abs(spin_1) * np.sin(spin_angle_1)
+    if masses_2 > masses_1:
+        mass_ratios = masses_1 / masses_2
+        spins_1_perp = abs(spins_2) * np.sin(spin_angles_2)
+        spins_2_perp = abs(spins_1) * np.sin(spin_angles_1)
 
-    q_factor = q * ((4.0 * q) + 3.0)/(4.0 + (3.0 * q))
+    mass_ratio_factors = mass_ratios * ((4.0 * mass_ratios) + 3.0)/(4.0 + (3.0 * mass_ratios))
     
-    # Assume spin_1_perp is dominant source of chi_p
-    chi_p = spin_1_perp
-    # if not then change chi_p definition and output
-    if chi_p < q_factor * spin_2_perp:
-        chi_p = q_factor * spin_2_perp
+    # Assume spins_1_perp is dominant source of chis_p
+    chis_p = spins_1_perp
+    # if not then change chis_p definition and output
+    if chis_p < mass_ratio_factors * spins_2_perp:
+        chis_p = mass_ratio_factors * spins_2_perp
 
-    if chi_p < 0:
-        print("chi_p,m1,m2,a1,a2,a1p,a2p,theta1,theta2,bin_inc,q_factor=",chi_p,mass_1,mass_2,spin_1,spin_2,abs(spin_1),abs(spin_2),spin_1_perp,spin_2_perp,spin_angle_1,spin_angle_2,bin_inclination_wrt_disk,q_factor)
-
-
-    return chi_p
+    return chis_p
