@@ -200,11 +200,11 @@ def test_construct_disk_direct(verbose=True):
         truncated_disk_radii, truncated_surface_densities, truncated_aspect_ratios = \
             load_disk_arrays(disk_model_name, disk_radius_outer)
         # Construct disk
-        surf_dens_func, aspect_ratio_func, disk_model_properties = \
+        disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties = \
             construct_disk_direct(disk_model_name, disk_radius_outer)
         # Evaluate estimates for each quantity
-        surface_density_estimate = surf_dens_func(truncated_disk_radii)
-        aspect_ratio_estimate = aspect_ratio_func(truncated_disk_radii)
+        surface_density_estimate = disk_surf_dens_func(truncated_disk_radii)
+        aspect_ratio_estimate = disk_aspect_ratio_func(truncated_disk_radii)
         # Check that they're close
         assert np.allclose(surface_density_estimate, truncated_surface_densities), \
             "NumPy allclose failed for %s surface_density interpolation"%(disk_model_name)
@@ -243,7 +243,7 @@ def test_construct_disk_pAGN(verbose=True):
     # Loop tests
     for test_config in test_product_space:
         # Run pAGN
-        surf_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures = \
+        disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties, bonus_structures = \
             construct_disk_pAGN(
                 test_config.disk_model_name,
                 test_config.smbh_mass,
@@ -288,7 +288,7 @@ def test_construct_disk_interp(
     # Loop tests
     for test_config in test_product_space:
         # Run function
-        surf_dens_func, aspect_ratio_func = construct_disk_interp(
+        disk_surf_dens_func, disk_aspect_ratio_func = construct_disk_interp(
             smbh_mass,
             disk_radius_outer,
             test_config.disk_model_name,
