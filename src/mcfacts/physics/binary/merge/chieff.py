@@ -132,9 +132,9 @@ def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bi
 
     mass_ratio_factors = mass_ratios * ((4.0 * mass_ratios) + 3.0)/(4.0 + (3.0 * mass_ratios))
     
-    # Assume spins_1_perp is dominant source of chis_p
+    # Assume spins_1_perp is dominant source of chi_p
     chi_p = spins_1_perp
-    # if not then change chis_p definition and output
+    # if not then change chi_p definition and output
     if chi_p < mass_ratio_factors * spins_2_perp:
         chi_p = mass_ratio_factors * spins_2_perp
 
