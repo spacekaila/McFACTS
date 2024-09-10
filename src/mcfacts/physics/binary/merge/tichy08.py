@@ -37,7 +37,7 @@ def merged_mass(masses_1, masses_2, spins_1, spins_2):
 
     total_masses = primary_masses + secondary_masses
     total_spins = spins_1 + spins_2
-    nu_factors = (1.0 + mass_ratios)**2.0
+    nu_factors = (1.0 + mass_ratios)**2
     nu = mass_ratios / nu_factors
     nu_square = nu * nu
 
