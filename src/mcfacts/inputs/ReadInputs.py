@@ -30,7 +30,7 @@ Inifile
     "nsc_density_index_inner"       : float
         Index of radial density profile of NSC inside r_nsc_crit (usually Bahcall-Wolf, 1.75)
     "nsc_density_index_outer"       : float
-        Index of radial density profile of NSC outside r_nsc_crit 
+        Index of radial density profile of NSC outside r_nsc_crit
         (e.g. 2.5 in Generozov+18 or 2.25 if Peebles)
     "disk_aspect_ratio_avg"    : float
         Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
@@ -52,8 +52,8 @@ Inifile
         Initial spin distribution for stellar bh is assumed to be Gaussian
         --standard deviation of spin dist
     "disk_bh_torque_condition"      : float
-        fraction of initial mass required to be accreted before BH spin is torqued 
-        fully into alignment with the AGN disk. We don't know for sure but 
+        fraction of initial mass required to be accreted before BH spin is torqued
+        fully into alignment with the AGN disk. We don't know for sure but
         Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
     "disk_bh_eddington_ratio"       : float
         Eddington ratio for disk bh
@@ -72,8 +72,8 @@ Inifile
         Initial spin distribution for stars is assumed to be Gaussian
         --standard deviation of spin dist
     "disk_star_torque_condition"    : float
-        fraction of initial mass required to be accreted before star spin is torqued 
-        fully into alignment with the AGN disk. We don't know for sure but 
+        fraction of initial mass required to be accreted before star spin is torqued
+        fully into alignment with the AGN disk. We don't know for sure but
         Bogdanovic et al. says between 0.01=1% and 0.1=10% is what is required.
     "disk_star_eddington_ratio"     : float
         assumed accretion rate onto stars from disk gas, in units of Eddington
@@ -97,7 +97,7 @@ Inifile
         Fraction of BBH that form retrograde to test (q,X_eff) relation.
         Default retro=0.1. Possibly overwritten by initial retro population
     "fraction_bin_retro"            : float
-        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1     
+        Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1
     "flag_thermal_feedback"         : int
         Switch (1) turns feedback from embedded BH on.
     "flag_orb_ecc_damping"          : int
@@ -114,16 +114,21 @@ Inifile
         Switch (1) turns dynamical encounters between embedded BH on.
     "delta_energy_strong"           : float
         Average energy change per strong interaction.
-        de can be 20% in cluster interactions. May be 10% on average (with gas)                
+        de can be 20% in cluster interactions. May be 10% on average (with gas)
     "flag_prior_agn"                : int
         Prior AGN sims BH output used as input
 """
-import numpy as np
+# Things everyone needs
 import configparser as ConfigParser
 from io import StringIO
-
-# Grab those txt files
 from importlib import resources as impresources
+# Third party
+import numpy as np
+import scipy.interpolate
+# pAGN imports 
+import pagn.constants as pagn_ct
+# Local imports 
+import mcfacts.external.DiskModelsPAGN as dm_pagn
 from mcfacts.inputs import data as mcfacts_input_data
 
 # Dictionary of types
@@ -183,8 +188,8 @@ def ReadInputs_ini(fname_ini='inputs/model_choice.txt', verbose=False):
     """Input file parser
 
     This function reads your input choices from a file user specifies or
-    default (inputs/model_choice.txt), and returns the chosen variables for 
-    manipulation by main.    
+    default (inputs/model_choice.txt), and returns the chosen variables for
+    manipulation by main.
 
     Required input formats and units are given in IOdocumentation.txt file.
 
@@ -236,7 +241,7 @@ def ReadInputs_ini(fname_ini='inputs/model_choice.txt', verbose=False):
             input_variables[name] = input_variables[name].strip("'")
 
     # Set default : not use pagn.  this allows us not to provide it
-    if not('flag_use_pagn' in input_variables):
+    if not ('flag_use_pagn' in input_variables):
         input_variables['flag_use_pagn'] = False
 
     # Print out the dictionary if we are in verbose mode
@@ -254,7 +259,7 @@ def load_disk_arrays(
     disk_radius_outer,
     ):
     """Load the dictionary arrays from file (pAGN_off)
-    
+
     Use import resources to load datafile from src/mcfacts/inputs/data
 
     Parameters
@@ -262,7 +267,7 @@ def load_disk_arrays(
     disk_model_name : str
         sirko_goodman or thompson_etal
     disk_radius_outer : float
-        Outer disk radius we truncate at 
+        Outer disk radius we truncate at
 
     Returns
     -------
@@ -321,7 +326,7 @@ def construct_disk_direct(
     disk_model_name : str
         sirko_goodman or thompson_etal
     disk_radius_outer : float
-        Outer disk radius we truncate at 
+        Outer disk radius we truncate at
 
     Returns
     -------
@@ -339,7 +344,6 @@ def construct_disk_direct(
         disk_radius_outer,
         )
     # Now geenerate interpolating functions
-    import scipy.interpolate
     # create surface density & aspect ratio functions from input arrays
     surf_dens_func_log = scipy.interpolate.CubicSpline(
         np.log(disk_model_radii), np.log(surface_densities))
@@ -358,6 +362,7 @@ def construct_disk_direct(
 def construct_disk_pAGN(
     disk_model_name,
     smbh_mass,
+    disk_radius_outer,
     disk_alpha_viscosity,
     disk_bh_eddington_ratio,
     rad_efficiency=0.1,
@@ -389,16 +394,14 @@ def construct_disk_pAGN(
         for pAGN models
     """
     # instead, populate with pagn
-    import mcfacts.external.DiskModelsPAGN as dm_pagn
-    import pagn.constants as ct
     pagn_name = "Sirko"
-    base_args = { 'Mbh': smbh_mass*ct.MSun,\
+    base_args = { 'Mbh': smbh_mass*pagn_ct.MSun,\
                   'alpha': disk_alpha_viscosity, \
                   'le': disk_bh_eddington_ratio,\
                   'eps': rad_efficiency}
     if 'thompson' in disk_model_name:
         pagn_name = 'Thompson'
-        base_args['Rout'] = disk_radius_outer;
+        base_args['Rout'] = disk_radius_outer
     # note Rin default is 3 Rs
 
     # Run pAGN
@@ -410,7 +413,7 @@ def construct_disk_pAGN(
     disk_model_properties['Sigma'] = surf_dens_func
     disk_model_properties['h_over_r'] = aspect_ratio_func
 
-    return  surface_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures
+    return  surf_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures
 
 
 def construct_disk_interp(
@@ -418,7 +421,7 @@ def construct_disk_interp(
     disk_radius_outer,
     disk_model_name,
     disk_alpha_viscosity,
-    disk_bh_orb_ecc_max_init,
+    disk_bh_eddington_ratio,
     disk_radius_max_pc=0.,
     flag_use_pagn=False,
     verbose=False,
@@ -433,9 +436,6 @@ def construct_disk_interp(
             final element of disk_model_radius_array (units of r_g)
         disk_alpha_viscosity : float
             disk viscosity 'alpha'
-        disk_bh_orb_ecc_max_init : float
-            assumed accretion rate onto stellar bh from disk gas, in units of Eddington
-            accretion rate
         disk_radius_max_pc : float
             Maximum disk size in parsecs (0. for off)
         flag_use_pagn : bool
@@ -453,7 +453,7 @@ def construct_disk_interp(
     ## Check inputs ##
     # Check smbh_mass
     assert type(smbh_mass) == float, "smbh_mass expected float, got %s"%(type(smbh_mass))
-        
+
     ## Check outer disk radius in parsecs
     # Scale factor for parsec distance in r_g
     pc_dist = 2.e5*((smbh_mass/1.e8)**(-1.0))
@@ -475,7 +475,7 @@ def construct_disk_interp(
             disk_radius_scale = disk_radius_max_pc / disk_radius_outer_pc
             # Adjust disk_radius_outer as needed
             disk_radius_outer = disk_radius_outer * disk_radius_scale
-        
+
     # open the disk model surface density file and read it in
     # Note format is assumed to be comments with #
     #   density in SI in first column
@@ -491,14 +491,15 @@ def construct_disk_interp(
 
     else:
         # instead, populate with pagn
-        surface_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures = \
+        surf_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures = \
             construct_disk_pAGN(
                 disk_model_name,
                 smbh_mass,
+                disk_radius_outer,
                 disk_alpha_viscosity,
                 disk_bh_eddington_ratio,
             )
-    
+
     #Truncate disk models at outer disk radius
     if verbose:
         print("I read and digested your disk model")
@@ -508,8 +509,8 @@ def construct_disk_interp(
 
 def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or
-    default (recipies/prior_mergers_population.dat), and returns the chosen variables for 
-    manipulation by main.    
+    default (recipies/prior_mergers_population.dat), and returns the chosen variables for
+    manipulation by main.
 
     Required input formats and units are given in IOdocumentation.txt file.
 
@@ -532,25 +533,22 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         Location of BH in disk
     mass_bh : float
         Mass of BH (M_sun)
-    spin_bh : float    
+    spin_bh : float
         Magnitude of BH spin (dimensionless)
     spin_angle_bh : float
         Angle of BH spin wrt L_disk (radians). 0(pi) radians = aligned (anti-aligned) with L_disk
     gen_bh: float
-        Generation of BH (integer). 1.0 =1st gen (wasn't involved in merger in previous episode; but accretion=mass/spin changed)        
-    )                
+        Generation of BH (integer). 1.0 =1st gen
+        (wasn't involved in merger in previous episode; but accretion=mass/spin changed)
+    )
     """
-
-    #with open('../recipes/prior_mergers_x2_population.dat') as filedata:
-    #    prior_mergers_file = np.genfromtxt('../recipes/prior_mergers_x2_population.dat', unpack = True)
-    
     with open('../recipes/sg1Myrx2_survivors.dat') as filedata:
         prior_mergers_file = np.genfromtxt('../recipes/sg1Myrx2_survivors.dat', unpack = True)
-    
-    
+
+
     #Clean the file of iteration lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
     cleaned_prior_mergers_file = prior_mergers_file
-    
+
     radius_list = []
     masses_list = []
     spins_list = []
@@ -563,10 +561,10 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         # If 1st and 2nd entries in row i are same, it's an iteration marker, delete row.
         if prior_mergers_file[0,i] == prior_mergers_file[1,i]:
             rows_to_be_removed = np.append(rows_to_be_removed,int(i))
-            
+
     rows_to_be_removed=rows_to_be_removed.astype('int32')
     cleaned_prior_mergers_file = np.delete(cleaned_prior_mergers_file,rows_to_be_removed,axis=1)
-    
+
     radius_list = cleaned_prior_mergers_file[0,:]
     masses_list = cleaned_prior_mergers_file[1,:]
     spins_list = cleaned_prior_mergers_file[2,:]
