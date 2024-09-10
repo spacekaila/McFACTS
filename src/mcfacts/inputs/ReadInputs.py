@@ -319,7 +319,7 @@ def construct_disk_direct(
     disk_model_properties ={}
     disk_model_properties['Sigma'] = surf_dens_func
     disk_model_properties['h_over_r'] = aspect_ratio_func
-    return surf_dens_func_log, aspect_ratio_func_log, disk_model_properties
+    return surf_dens_func, aspect_ratio_func, disk_model_properties
 
 def construct_disk_pAGN(
     disk_model_name,
