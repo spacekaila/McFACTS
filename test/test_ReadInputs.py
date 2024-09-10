@@ -26,7 +26,7 @@ from mcfacts.inputs.ReadInputs import construct_disk_interp
 # Disk model names to try
 DISK_MODEL_NAMES = [
     "sirko_goodman",
-    #"thompson_etal",
+    "thompson_etal",
 ]
 
 # SMBH masses to try

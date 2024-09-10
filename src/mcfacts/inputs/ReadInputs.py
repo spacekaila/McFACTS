@@ -130,6 +130,7 @@ import pagn.constants as pagn_ct
 # Local imports 
 import mcfacts.external.DiskModelsPAGN as dm_pagn
 from mcfacts.inputs import data as mcfacts_input_data
+from astropy import constants as ct
 
 # Dictionary of types
 INPUT_TYPES = {
@@ -394,14 +395,27 @@ def construct_disk_pAGN(
         for pAGN models
     """
     # instead, populate with pagn
-    pagn_name = "Sirko"
-    base_args = { 'Mbh': smbh_mass*pagn_ct.MSun,\
-                  'alpha': disk_alpha_viscosity, \
-                  'le': disk_bh_eddington_ratio,\
-                  'eps': rad_efficiency}
-    if 'thompson' in disk_model_name:
+    if "sirko" in disk_model_name:
+        pagn_name = "Sirko"
+        base_args = {
+            'Mbh': smbh_mass*pagn_ct.MSun,
+            'alpha': disk_alpha_viscosity, 
+            'le': disk_bh_eddington_ratio,
+            'eps': rad_efficiency
+        }
+    elif 'thompson' in disk_model_name:
         pagn_name = 'Thompson'
-        base_args['Rout'] = disk_radius_outer
+        base_args = {
+            'Mbh': smbh_mass*pagn_ct.MSun,
+            'm': disk_alpha_viscosity, 
+        }
+            #'epsilon': rad_efficiency
+            #'le': disk_bh_eddington_ratio,\
+        Rg = smbh_mass * ct.M_sun * ct.G / (ct.c**2)
+        base_args['Rout'] = disk_radius_outer * Rg.to('m').value
+    else:
+        raise RuntimeError("unknown disk model: %s"%(disk_model_name))
+        
     # note Rin default is 3 Rs
 
     # Run pAGN
