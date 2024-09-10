@@ -260,9 +260,9 @@ def main():
                                   spin_angle=bh_initial_spin_angles,
                                   orb_a=bh_initial_locations,
                                   orb_inc=bh_initial_orb_incl,
-                                  orbit_ecc=bh_initial_orb_ecc,
+                                  orb_ecc=bh_initial_orb_ecc,
                                   orb_arg_periapse=bh_initial_orb_arg_periapse,
-                                  mass_smbh=opts.smbh_mass,
+                                  smbh_mass=opts.smbh_mass,
                                   obj_num=disk_bh_num)
 
         # Initialize stars
@@ -280,7 +280,7 @@ def main():
                                    new_orb_a=stars.orb_a,
                                    new_orb_inc=stars.orb_inc,
                                    new_orb_ang_mom=stars.orb_ang_mom,
-                                   new_orb_ecc=stars.orbit_ecc,
+                                   new_orb_ecc=stars.orb_ecc,
                                    new_orb_arg_periapse=stars.orb_arg_periapse,
                                    new_gen=stars.gen)
 
@@ -397,8 +397,8 @@ def main():
             print("prior locations", blackholes_pro.orb_a)
             print("prior gens", blackholes_pro.gen)
             prior_ecc_factor = 0.3
-            blackholes_pro.orbit_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(prior_ecc_factor, bh_pro_num)
-            print("prior ecc", blackholes_pro.orbit_ecc)
+            blackholes_pro.orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(prior_ecc_factor, bh_pro_num)
+            print("prior ecc", blackholes_pro.orb_ecc)
 
         # Start Loop of Timesteps
         print("Start Loop!")
@@ -457,7 +457,7 @@ def main():
                 opts.timestep_duration_yr,
                 ratio_heat_mig_torques_agnobj,
                 opts.disk_radius_trap,
-                blackholes_pro.orbit_ecc,
+                blackholes_pro.orb_ecc,
                 opts.disk_bh_pro_orb_ecc_crit
             )
 
@@ -475,7 +475,7 @@ def main():
                 opts.disk_bh_eddington_ratio,
                 opts.disk_bh_torque_condition,
                 opts.timestep_duration_yr,
-                blackholes_pro.orbit_ecc,
+                blackholes_pro.orb_ecc,
                 opts.disk_bh_pro_orb_ecc_crit,
             )
 
@@ -486,18 +486,18 @@ def main():
                 opts.disk_bh_torque_condition,
                 disk_bh_spin_resolution_min,
                 opts.timestep_duration_yr,
-                blackholes_pro.orbit_ecc,
+                blackholes_pro.orb_ecc,
                 opts.disk_bh_pro_orb_ecc_crit
             )
 
             # Damp BH orbital eccentricity
-            blackholes_pro.orbit_ecc = orbital_ecc.orbital_ecc_damping(
+            blackholes_pro.orb_ecc = orbital_ecc.orbital_ecc_damping(
                 opts.smbh_mass,
                 blackholes_pro.orb_a,
                 blackholes_pro.mass,
                 disk_surface_density,
                 disk_aspect_ratio,
-                blackholes_pro.orbit_ecc,
+                blackholes_pro.orb_ecc,
                 opts.timestep_duration_yr,
                 opts.disk_bh_pro_orb_ecc_crit,
             )
@@ -506,11 +506,11 @@ def main():
             #   note this is dyn friction only, not true 'migration'
             # change retrograde eccentricity (some damping, some pumping)
             # damp orbital inclination
-            blackholes_retro.orbit_ecc, blackholes_retro.orb_a, blackholes_retro.orb_inc = crude_retro_evol.crude_retro_bh(
+            blackholes_retro.orb_ecc, blackholes_retro.orb_a, blackholes_retro.orb_inc = crude_retro_evol.crude_retro_bh(
                 opts.smbh_mass,
                 blackholes_retro.mass,
                 blackholes_retro.orb_a,
-                blackholes_retro.orbit_ecc,
+                blackholes_retro.orb_ecc,
                 blackholes_retro.orb_inc,
                 blackholes_retro.orb_arg_periapse,
                 disk_surface_density,
@@ -529,7 +529,7 @@ def main():
                 opts.timestep_duration_yr,
                 ratio_heat_mig_stars_torques,
                 opts.disk_radius_trap,
-                stars_pro.orbit_ecc,
+                stars_pro.orb_ecc,
                 opts.disk_bh_pro_orb_ecc_crit
             )
             
@@ -546,7 +546,7 @@ def main():
                 opts.disk_star_eddington_ratio,
                 opts.disk_bh_torque_condition,
                 opts.timestep_duration_yr,
-                stars_pro.orbit_ecc,
+                stars_pro.orb_ecc,
                 opts.disk_bh_pro_orb_ecc_crit,
             )
 
@@ -557,18 +557,18 @@ def main():
                 opts.disk_bh_torque_condition,
                 disk_bh_spin_resolution_min,
                 opts.timestep_duration_yr,
-                stars_pro.orbit_ecc,
+                stars_pro.orb_ecc,
                 opts.disk_bh_pro_orb_ecc_crit
             )
 
             # Damp stars orbital eccentricity
-            stars_pro.orbit_ecc = orbital_ecc.orbital_ecc_damping(
+            stars_pro.orb_ecc = orbital_ecc.orbital_ecc_damping(
                 opts.smbh_mass,
                 stars_pro.orb_a,
                 stars_pro.mass,
                 disk_surface_density,
                 disk_aspect_ratio,
-                stars_pro.orbit_ecc,
+                stars_pro.orb_ecc,
                 opts.timestep_duration_yr,
                 opts.disk_bh_pro_orb_ecc_crit,
             )
@@ -579,11 +579,11 @@ def main():
             # damp orbital inclination
             
             # This is not working for retrograde stars, just says parameters are unreliable
-            # stars_retro.orbit_ecc, stars_retro.orb_a, stars_retro.orb_inc = crude_retro_evol.crude_retro_bh(
+            # stars_retro.orb_ecc, stars_retro.orb_a, stars_retro.orb_inc = crude_retro_evol.crude_retro_bh(
             #     opts.smbh_mass,
             #     stars_retro.mass,
             #     stars_retro.orb_a,
-            #     stars_retro.orbit_ecc,
+            #     stars_retro.orb_ecc,
             #     stars_retro.orb_inc,
             #     stars_retro.orb_arg_periapse,
             #     disk_surface_density,
@@ -599,13 +599,13 @@ def main():
                     blackholes_pro.mass,
                     disk_surface_density,
                     disk_aspect_ratio,
-                    blackholes_pro.orbit_ecc,
+                    blackholes_pro.orb_ecc,
                     opts.timestep_duration_yr,
                     opts.disk_bh_pro_orb_ecc_crit,
                     opts.delta_energy_strong,
                 )
                 blackholes_pro.orb_a = prograde_bh_locn_orb_ecc[0][0]
-                blackholes_pro.orbit_ecc = prograde_bh_locn_orb_ecc[1][0]
+                blackholes_pro.orb_ecc = prograde_bh_locn_orb_ecc[1][0]
                 
                 stars_pro_locn_orb_ecc = dynamics.circular_singles_encounters_prograde(
                     rng,
@@ -614,13 +614,13 @@ def main():
                     stars_pro.mass,
                     disk_surface_density,
                     disk_aspect_ratio,
-                    stars_pro.orbit_ecc,
+                    stars_pro.orb_ecc,
                     opts.timestep_duration_yr,
                     opts.disk_bh_pro_orb_ecc_crit,
                     opts.delta_energy_strong,
                 )
                 stars_pro.orb_a = stars_pro_locn_orb_ecc[0][0]
-                stars_pro.orbit_ecc = stars_pro_locn_orb_ecc[1][0]
+                stars_pro.orb_ecc = stars_pro_locn_orb_ecc[1][0]
             
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
@@ -653,7 +653,7 @@ def main():
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
                             blackholes_pro.mass,
-                            blackholes_pro.orbit_ecc,
+                            blackholes_pro.orb_ecc,
                             opts.timestep_duration_yr,
                             opts.disk_bh_pro_orb_ecc_crit,
                             opts.delta_energy_strong,
@@ -667,7 +667,7 @@ def main():
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
                             blackholes_pro.mass,
-                            blackholes_pro.orbit_ecc,
+                            blackholes_pro.orb_ecc,
                             opts.timestep_duration_yr,
                             opts.disk_bh_pro_orb_ecc_crit,
                             opts.delta_energy_strong,
@@ -989,7 +989,7 @@ def main():
 
                 # check which binaries should get made
             close_encounters_indices = hillsphere.binary_check2(
-                blackholes_pro.orb_a, blackholes_pro.mass, opts.smbh_mass, blackholes_pro.orbit_ecc, opts.disk_bh_pro_orb_ecc_crit
+                blackholes_pro.orb_a, blackholes_pro.mass, opts.smbh_mass, blackholes_pro.orb_ecc, opts.disk_bh_pro_orb_ecc_crit
             )
 
             if np.size(close_encounters_indices) > 0:
@@ -1063,7 +1063,7 @@ def main():
                 inner_disk_masses = np.append(inner_disk_masses, blackholes_pro.mass[inner_disk_indices])
                 inner_disk_spins = np.append(inner_disk_spins, blackholes_pro.spin[inner_disk_indices])
                 inner_disk_spin_angles = np.append(inner_disk_spin_angles, blackholes_pro.spin_angle[inner_disk_indices])
-                inner_disk_orb_ecc = np.append(inner_disk_orb_ecc, blackholes_pro.orbit_ecc[inner_disk_indices])
+                inner_disk_orb_ecc = np.append(inner_disk_orb_ecc, blackholes_pro.orb_ecc[inner_disk_indices])
                 inner_disk_orb_inc = np.append(inner_disk_orb_inc, blackholes_pro.orb_inc[inner_disk_indices])
                 inner_disk_gens = np.append(inner_disk_gens, blackholes_pro.gen[inner_disk_indices])
                 # Remove BH from prograde_disk_arrays
@@ -1078,7 +1078,7 @@ def main():
                 inner_disk_masses = np.append(inner_disk_masses, blackholes_retro.mass[inner_disk_retro_indices])
                 inner_disk_spins = np.append(inner_disk_spins, blackholes_retro.spin[inner_disk_retro_indices])
                 inner_disk_spin_angles = np.append(inner_disk_spin_angles, blackholes_retro.spin_angle[inner_disk_retro_indices])
-                inner_disk_orb_ecc = np.append(inner_disk_orb_ecc, blackholes_retro.orbit_ecc[inner_disk_retro_indices])
+                inner_disk_orb_ecc = np.append(inner_disk_orb_ecc, blackholes_retro.orb_ecc[inner_disk_retro_indices])
                 inner_disk_orb_inc = np.append(inner_disk_orb_inc, blackholes_retro.orb_inc[inner_disk_retro_indices])
                 inner_disk_gens = np.append(inner_disk_gens, blackholes_retro.gen[inner_disk_retro_indices])
                 
@@ -1145,7 +1145,7 @@ def main():
             # stop treating them with crude retro evolution--it will be sad
             # SF: fix the inc threshhold later!!!
             inc_threshhold = 5.0 * np.pi/180.0
-            flip_to_prograde_indices = np.where((np.abs(blackholes_retro.orb_inc) <= inc_threshhold) | (blackholes_retro.orbit_ecc == 0.0))
+            flip_to_prograde_indices = np.where((np.abs(blackholes_retro.orb_inc) <= inc_threshhold) | (blackholes_retro.orb_ecc == 0.0))
             if np.size(flip_to_prograde_indices) > 0:
                 # add to prograde arrays
                 blackholes_pro.add_blackholes(new_mass=blackholes_retro.mass[flip_to_prograde_indices],
@@ -1154,7 +1154,7 @@ def main():
                                               new_spin_angle=blackholes_retro.spin_angle[flip_to_prograde_indices],
                                               new_orb_inc=blackholes_retro.orb_inc[flip_to_prograde_indices],
                                               new_orb_ang_mom=np.ones(blackholes_retro.mass[flip_to_prograde_indices].size),
-                                              new_orb_ecc=blackholes_retro.orbit_ecc[flip_to_prograde_indices],
+                                              new_orb_ecc=blackholes_retro.orb_ecc[flip_to_prograde_indices],
                                               new_orb_arg_periapse=blackholes_retro.orb_arg_periapse[flip_to_prograde_indices],
                                               new_gen=blackholes_retro.gen[flip_to_prograde_indices],
                                               new_id_num=blackholes_retro.id_num[flip_to_prograde_indices])
