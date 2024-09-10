@@ -196,7 +196,7 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
         drawn from modelname_surface_density.txt
     disk_inner_radius : float
         0th element of disk_model_radius_array (units of r_g)
-    surface_density_array : float array
+    surface_densities : float array
         Surface density corresponding to radii in disk_model_radius_array (units of kg/m^2)
         Yes, it's in SI not cgs. Get over it. Kisses.
         drawn from modelname_surface_density.txt
@@ -256,6 +256,100 @@ def ReadInputs_ini(fname='inputs/model_choice.txt', verbose=False):
 
     # Return the arguments
     return input_variables
+
+def load_disk_arrays(
+    disk_model_name,
+    disk_radius_outer,
+    ):
+
+    # Get density filename
+    fname_disk_density = disk_model_name + '_surface_density.txt'
+    # Look in the source data
+    fname_disk_density = impresources.files(mcfacts_input_data) / fname_disk_density
+    # Load data from the surface density file
+    disk_density_data = np.loadtxt(fname_disk_density)
+    disk_model_radii = disk_density_data[:,1]
+    disk_surface_densities = disk_density_data[:,0]
+    # truncate disk at outer radius
+    truncated_disk_radii = np.extract(
+        np.where(disk_model_radii < disk_radius_outer),
+        disk_model_radii,
+    )
+    # Truncate surface density array
+    truncated_surface_densities = disk_surface_densities[0:len(truncated_disk_radii)]
+
+    # open the disk model aspect ratio file and read it in
+    # Note format is assumed to be comments with #
+    #   aspect ratio in first column
+    #   radius in r_g in second column must be identical to surface density file
+    #       (radius is actually ignored in this file!)
+    #   filename = model_aspect_ratio.txt, where model is user choice
+    fname_disk_aspect_ratio = disk_model_name + "_aspect_ratio.txt"
+    fname_disk_aspect_ratio = impresources.files(mcfacts_input_data) / fname_disk_aspect_ratio
+    # Load data from the aspect ratio file
+    disk_aspect_ratio_data = np.loadtxt(fname_disk_aspect_ratio)
+    aspect_ratios = disk_aspect_ratio_data[:,0]
+    # Truncate the aspect ratio array
+    truncated_aspect_ratios = aspect_ratios[0:len(truncated_disk_radii)]
+
+    # Now redefine arrays used to generate interpolating functions in terms of truncated arrays
+    return truncated_disk_radii, truncated_surface_densities, truncated_aspect_ratios
+
+def construct_disk_direct(
+    disk_model_name,
+    disk_radius_outer,
+    ):
+    # Call the load_disk_arrays function
+    disk_model_radii, surface_densities, aspect_ratios = \
+        load_disk_arrays(
+        disk_model_name,
+        disk_radius_outer,
+        )
+    # Now geenerate interpolating functions
+    import scipy.interpolate
+    # create surface density & aspect ratio functions from input arrays
+    surf_dens_func_log = scipy.interpolate.CubicSpline(
+        np.log(disk_model_radii), np.log(surface_densities))
+    surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
+
+    aspect_ratio_func_log = scipy.interpolate.CubicSpline(
+            np.log(disk_model_radii), np.log(aspect_ratios))
+    aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(np.log(x)))
+
+    disk_model_properties ={}
+    disk_model_properties['Sigma'] = surf_dens_func
+    disk_model_properties['h_over_r'] = aspect_ratio_func
+    return surf_dens_func_log, aspect_ratio_func_log, disk_model_properties
+
+def construct_disk_pAGN(
+    disk_model_name,
+    smbh_mass,
+    disk_alpha_viscosity,
+    disk_bh_eddington_ratio,
+    rad_efficiency=0.1,
+    ):
+    # instead, populate with pagn
+    import mcfacts.external.DiskModelsPAGN as dm_pagn
+    import pagn.constants as ct
+    pagn_name = "Sirko"
+    base_args = { 'Mbh': smbh_mass*ct.MSun,\
+                  'alpha': disk_alpha_viscosity, \
+                  'le': disk_bh_eddington_ratio,\
+                  'eps': rad_efficiency}
+    if 'thompson' in disk_model_name:
+        pagn_name = 'Thompson'
+        base_args['Rout'] = disk_radius_outer;
+    # note Rin default is 3 Rs
+
+    # Run pAGN
+    pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
+    surf_dens_func, aspect_ratio_func, bonus_structures  = pagn_model.return_disk_surf_model()
+    disk_model_properties ={}
+    disk_model_properties['Sigma'] = surf_dens_func
+    disk_model_properties['h_over_r'] = aspect_ratio_func
+
+    return  surface_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures
+
 
 def construct_disk_interp(
     smbh_mass,
@@ -326,69 +420,22 @@ def construct_disk_interp(
     #   radius in r_g in second column
     #   infile = model_surface_density.txt, where model is user choice
     if not(flag_use_pagn):
-        infile_suffix = '_surface_density.txt'
-        infile = disk_model_name+infile_suffix
-        infile = impresources.files(mcfacts_input_data) / infile
-        dat = np.loadtxt(infile)
-        disk_model_radius_array = dat[:,1]
-        surface_density_array = dat[:,0]
-        #truncate disk at outer radius
-        truncated_disk = np.extract(
-            np.where(disk_model_radius_array < disk_radius_outer),
-            disk_model_radius_array
-        )
-        #print('truncated disk', truncated_disk)
-        truncated_surface_density_array = surface_density_array[0:len(truncated_disk)]
-
-        # open the disk model aspect ratio file and read it in
-        # Note format is assumed to be comments with #
-        #   aspect ratio in first column
-        #   radius in r_g in second column must be identical to surface density file
-        #       (radius is actually ignored in this file!)
-        #   filename = model_aspect_ratio.txt, where model is user choice
-        infile_suffix = '_aspect_ratio.txt'
-        infile = disk_model_name+infile_suffix
-        infile = impresources.files(mcfacts_input_data) / infile
-        dat = np.loadtxt(infile)
-        aspect_ratio_array = dat[:,0]
-        truncated_aspect_ratio_array=aspect_ratio_array[0:len(truncated_disk)]
-
-
-        # Now redefine arrays used to generate interpolating functions in terms of truncated arrays
-        disk_model_radius_array = truncated_disk
-        surface_density_array = truncated_surface_density_array
-        aspect_ratio_array = truncated_aspect_ratio_array
-
-        # Now geenerate interpolating functions
-        import scipy.interpolate
-        # create surface density & aspect ratio functions from input arrays
-        surf_dens_func_log = scipy.interpolate.CubicSpline(
-            np.log(disk_model_radius_array), np.log(surface_density_array))
-        surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
-
-        aspect_ratio_func_log = scipy.interpolate.CubicSpline(
-                np.log(disk_model_radius_array), np.log(aspect_ratio_array))
-        aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(np.log(x)))
+        # Load interpolators
+        surf_dens_func, aspect_ratio_func, disk_model_properties = \
+            construct_disk_direct(
+                disk_model_name,
+                disk_radius_outer,
+            )
 
     else:
         # instead, populate with pagn
-        import mcfacts.external.DiskModelsPAGN as dm_pagn
-        import pagn.constants as ct
-        pagn_name = "Sirko"
-        base_args = { 'Mbh': smbh_mass*ct.MSun,\
-                      'alpha':disk_alpha_viscosity, \
-                      'le':disk_bh_orb_ecc_max_init}                    
-        if 'thompson' in disk_model_name:
-            pagn_name = 'Thompson'
-            base_args = { 'Mbh': smbh_mass*ct.MSun}
-            Rg = smbh_mass*ct.MSun * ct.G / (ct.c ** 2)
-            base_args['Rout'] = disk_radius_outer*Rg;  # remember pagn uses SI units, but we provide r/rg
-        # note Rin default is 3 Rs
-        
-        pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
-        
-        surf_dens_func, aspect_ratio_func, Ragn  = pagn_model.return_disk_surf_model()
-        
+        surface_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures = \
+            construct_disk_pAGN(
+                disk_model_name,
+                smbh_mass,
+                disk_alpha_viscosity,
+                disk_bh_eddington_ratio,
+            )
     
     #Truncate disk models at outer disk radius
     if verbose:
@@ -465,3 +512,4 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
     gens_list = cleaned_prior_mergers_file[4,:]
 
     return radius_list,masses_list,spins_list,spin_angles_list,gens_list
+
