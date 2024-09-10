@@ -410,9 +410,9 @@ def main():
             # Record
             if not (opts.no_snapshots):
 
-                blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_{timestep_current_num}.dat"))
+                blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
                 blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                stars_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_{timestep_current_num}.dat"))
+                stars_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_pro_{timestep_current_num}.dat"))
                 stars_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
                 
                 # Binary output: does not work

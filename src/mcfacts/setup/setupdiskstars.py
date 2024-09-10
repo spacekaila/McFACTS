@@ -133,35 +133,36 @@ def setup_disk_stars_spins(star_num,
 
     Returns
     -------
-    star_spin_initial : numpy array
+    star_spins_initial : numpy array
         initial spins for stars
     """
-    # Return an array of BH initial spin magnitudes for a given mode and sigma of a distribution
-    star_spin_initial = rng.normal(nsc_star_spin_dist_mu, nsc_star_spin_dist_sigma, star_num)
-    return (star_spin_initial)
+    star_spins_initial = rng.normal(nsc_star_spin_dist_mu, nsc_star_spin_dist_sigma, star_num)
+    return (star_spins_initial)
 
 
-def setup_disk_stars_spin_angles(star_num, stars_initial_spins):
-    """_summary_
+def setup_disk_stars_spin_angles(star_num, star_spins_initial):
+    """
+    Return an array of star initial spin angles (in radians). Positive
+    (negative) spin magnitudes have spin angles
+    [0,1.57]([1.5701,3.14])rads. All star spin angles drawn
+    from [0,1.57]rads and +1.57rads to negative spin indices
 
     Parameters
     ----------
-    star_num : _type_
-        _description_
-    stars_initial_spins : _type_
-        _description_
+    star_num : int
+        number of stars
+    star_spins_initial : numpy array
+        spins of stars
 
     Returns
     -------
-    _type_
-        _description_
+    stars_initial_spin_angles : numpy array
+        spin angles of stars
     """
-    #Return an array of BH initial spin angles (in radians).
-    #Positive (negative) spin magnitudes have spin angles [0,1.57]([1.5701,3.14])rads
-    #All BH spin angles drawn from [0,1.57]rads and +1.57rads to negative spin indices
-    stars_initial_spin_indices = np.array(stars_initial_spins)
+
+    stars_initial_spin_indices = np.array(star_spins_initial)
     negative_spin_indices = np.where(stars_initial_spin_indices < 0.)
-    stars_initial_spin_angles = rng.uniform(0.,1.57,star_num)
+    stars_initial_spin_angles = rng.uniform(0., 1.57, star_num)
     stars_initial_spin_angles[negative_spin_indices] = stars_initial_spin_angles[negative_spin_indices] + 1.57
     return (stars_initial_spin_angles)
 
