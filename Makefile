@@ -91,3 +91,4 @@ clean:
 	rm -rf output_mergers_emris.dat
 	rm -rf output_mergers_lvk.dat
 	rm -rf output_mergers_survivors.dat
+	rm -rf r_chi_p.png

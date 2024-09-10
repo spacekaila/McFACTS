@@ -40,7 +40,7 @@ DEFAULT_INI = Path(__file__).parent.resolve() / ".." / "recipes" / "model_choice
 DEFAULT_PRIOR_POP = Path(__file__).parent.resolve() / ".." / "recipes" / "prior_mergers_population.dat"
 
 assert DEFAULT_INI.is_file()
-assert DEFAULT_PRIOR_POP.is_file()
+#assert DEFAULT_PRIOR_POP.is_file()
 
 def arg():
     import argparse
@@ -172,6 +172,7 @@ def main():
         opts.disk_model_radius_array, np.log(opts.aspect_ratio_array))
     aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(x))
     
+    # Creating population arrays for various objects 
     merged_bh_array_pop = []
 
     surviving_bh_array_pop = []
@@ -207,6 +208,8 @@ def main():
         # NSC mass
         # SMBH mass
         #Housekeeping for array initialization
+        
+        # Temp arrays are to check if the type of object is created and then adds it into the full array after clearing the check
         temp_emri_array = np.zeros(7)
 
         emri_array = np.zeros(7)
@@ -214,18 +217,19 @@ def main():
         temp_bbh_gw_array = np.zeros(7)
 
         bbh_gw_array = np.zeros(7)    
-
+        
+        # Values that are able to be overriden by the user through opts
         #Set up number of BH in disk
         n_bh = setupdiskblackholes.setup_disk_nbh(
             opts.M_nsc,
             opts.nbh_nstar_ratio,
             opts.mbh_mstar_ratio,
             opts.r_nsc_out,
-            opts.nsc_index_outer,
+            opts.nsc_index_outer, #radial dist of the nsc
             opts.mass_smbh,
             opts.disk_outer_radius,
             opts.h_disk_average,
-            opts.r_nsc_crit,
+            opts.r_nsc_crit, #what classifies inner and outer
             opts.nsc_index_inner,
         )
 
@@ -258,6 +262,8 @@ def main():
             rng,
             n_bh
         )
+
+        # Checks to activate the eccentricity damping in the opts (switch that's on (==1) or off (==0))
         if opts.orb_ecc_damping == 1:
             bh_initial_orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(rng,n_bh)
         else:
@@ -277,6 +283,7 @@ def main():
         inner_disk_orb_inc = []
         inner_disk_gens = []
 
+        # Taking functions made from the surface density and aspect ratio interpolations and assigning them to variable values
         # assign functions to variable names (continuity issue)
         # Disk surface density (in kg/m^2) is a function of radius, where radius is in r_g
         disk_surface_density = surf_dens_func
@@ -285,9 +292,30 @@ def main():
         # Housekeeping: Set up time
         initial_time = 0.0
         final_time = opts.timestep*opts.number_of_timesteps
+        #print(bh_initial_orb_ang_mom)
+        #print(type(bh_initial_orb_ang_mom))
+
+        # -------------------- Why put array back into an array? -------------------
 
         # Find prograde BH orbiters. Identify BH with orb. ang mom =+1
         bh_orb_ang_mom_indices = np.array(bh_initial_orb_ang_mom)
+        #print(type(bh_orb_ang_mom_indices))
+        #exit()
+        ''' ---------------Checking how many prograde and retrograde orbiters there are altogether -----------------
+        print(bh_orb_ang_mom_indices)
+        pro_mom = 0
+        ret_mom = 0
+        for i in bh_orb_ang_mom_indices:
+            if (i == 1.):
+                pro_mom += 1
+            else:
+                ret_mom += 1
+        
+        print("prograde orbits: ", pro_mom)
+        print("retrograde orbits: ", ret_mom)
+        print(len(bh_orb_ang_mom_indices))'''
+        
+        # Sorting/filtering each of the parameters (mass, location, inclination, etc) for the prograde orbiters 
         prograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == 1)
         #retrograde_orb_ang_mom_indices = np.where(bh_orb_ang_mom_indices == -1)
         prograde_bh_locations = bh_initial_locations[prograde_orb_ang_mom_indices]
@@ -296,7 +324,6 @@ def main():
         prograde_bh_masses = bh_initial_masses[prograde_orb_ang_mom_indices]
         # Orbital eccentricities
         prograde_bh_orb_ecc = bh_initial_orb_ecc[prograde_orb_ang_mom_indices]
-        
         #Orbital inclinations
         prograde_bh_orb_incl = bh_initial_orb_incl[prograde_orb_ang_mom_indices]
         #print("Prograde orbital inclinations")
@@ -315,7 +342,9 @@ def main():
         prograde_bh_generations = bh_initial_generations[prograde_orb_ang_mom_indices]
 
         # Housekeeping:
-        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc, nu_gw, h_bin)
+        # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, 
+        #                                                           gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc, nu_gw, h_bin)
+        # ------------------------- Might need to specify bin == binary and not the bins as in a histogram -----------------------------------
         number_of_bin_properties = len(binary_field_names.split())+1
         integer_nbinprop = int(number_of_bin_properties)
         bin_index = 0
@@ -324,8 +353,8 @@ def main():
         integer_test_bin_number = int(test_bin_number)
         number_of_mergers = 0
         int_n_timesteps = int(opts.number_of_timesteps)
-        # Set up EMRI output array with properties we want to record (iteration, time, R,M,e,h_char,f_gw)
         
+        # Set up EMRI output array with properties we want to record (iteration, time, R,M,e,h_char,f_gw)
         num_of_emri_properties = 7
         nemri = 0
 
@@ -342,6 +371,7 @@ def main():
         # Set up empty initial Binary gw array. Initially all zeros, but records gw freq and strain for all binaries ever made at each timestep, including ones that don't merge or are ionized
         gw_data_array =np.zeros((int_n_timesteps,integer_test_bin_number))
         # Set up normalization for t_gw (SF: I do not like this way of handling, flag for update)
+        # ------------------------------- is t_gw the time of the GW? How does the normalization come into play? -------------------------------------
         norm_t_gw = tgw.normalize_tgw(opts.mass_smbh)
         print("Scale of t_gw (yrs)=", norm_t_gw)
     
@@ -358,6 +388,8 @@ def main():
         # Make sure you have a file 'recipes/prior_model_name_population.dat' so that ReadInputs can take it in
         # and in your .ini file set switch prior_agn = 1.0.
         # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
+        
+        #------------------------- Could this be in a separte class that was mentioned during the software group? -------------------------
         if opts.prior_agn == 1.0:
             
             prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
@@ -381,17 +413,23 @@ def main():
         time_passed = initial_time
         print("Initial Time(yrs) = ",time_passed)
 
+        # -------------------- n_its: is this number of iterations?? ----------------------
         n_its = 0
         n_mergers_so_far = 0
+        # -------------------- time step of the merger timeline? --------------------
         n_timestep_index = 0
+        # -------------------- is this the limiting mass or time for mergers to occur? --------------------
         n_merger_limit =1e4
 
+        # -------------------------- What happens when ran as long as possible? --------------------------
         while time_passed < final_time:
             # Record 
+            # -------------------- snapshots as in recording values as the program is running the time steps? --------------------
             if not(opts.no_snapshots):
                 n_bh_out_size = len(prograde_bh_locations)
 
                 #svals = list(map( lambda x: x.shape,[prograde_bh_locations, prograde_bh_masses, prograde_bh_spins, prograde_bh_spin_angles, prograde_bh_orb_ecc, prograde_bh_generations[:n_bh_out_size]]))
+                # --------------------------- is this checking that all values are printing? -------------------------------
                 # Single output:  does work
                 np.savetxt(
                     os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_{n_timestep_index}.dat"),
@@ -409,6 +447,7 @@ def main():
                 n_timestep_index +=1
 
             #Order of operations:        
+            # ----------------------------- Papers for critical eccentricity? ------------------------------
             # No migration until orbital eccentricity damped to e_crit 
             # 1. check orb. eccentricity to see if any prograde_bh_location BH have orb. ecc. <e_crit.
             #    Create array prograde_bh_location_ecrit for those (mask prograde_bh_locations?)
@@ -418,6 +457,8 @@ def main():
         
             # Migrate
             # First if feedback present, find ratio of feedback heating torque to migration torque
+            # -------------------------- How does feedback come into the code? Whats the value of feedback thats being used? (units?) ----------------------------
+            # ----------------------- hankla ?? -------------------------
             if opts.feedback > 0:
                 ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(
                     prograde_bh_locations, surf_dens_func, opts.frac_Eddington_ratio, opts.alpha)
@@ -492,6 +533,7 @@ def main():
                     opts.crit_ecc,
                     opts.de,
                 )
+                # --------------------------- why are there only two instances of the locations and ecc saved? -----------------------------
                 prograde_bh_locations = prograde_bh_locn_orb_ecc[0]
                 prograde_bh_orb_ecc = prograde_bh_locn_orb_ecc[1]
                 prograde_bh_locations = prograde_bh_locations[0]
