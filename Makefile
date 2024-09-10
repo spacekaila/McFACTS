@@ -52,8 +52,8 @@ ifeq ($(OS),Windows_NT)
     VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
     VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
 else
-    VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
-    VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
+    VERSION_BASE_CMD := echo "__version__ = '${VERSION}' " > __version__.py
+    VERSION_SRC_CMD := echo "__version__ = '${VERSION}' " > src/mcfacts/__version__.py
 endif
 
 version: $(CLEAN_CMD)
@@ -62,6 +62,15 @@ version: $(CLEAN_CMD)
 
 install: $(CLEAN_CMD) version
 	python -m pip install --editable .
+
+setup: clean version
+	source ~/.bash_profile && \
+	conda activate base && \
+	conda remove -n mcfacts-dev --all -y && \
+	conda create --name mcfacts-dev "python>=3.10.4" pip -c conda-forge -c defaults -y && \
+	conda activate mcfacts-dev && \
+	python -m pip install --editable .
+
 
 #### Test one thing at a time ####
 
