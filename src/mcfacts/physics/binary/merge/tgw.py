@@ -1,4 +1,3 @@
-import numpy as np
 
 
 def normalize_tgw(mass_smbh):
