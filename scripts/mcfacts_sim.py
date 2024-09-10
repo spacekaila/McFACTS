@@ -412,17 +412,18 @@ def main():
             # Record
             if not (opts.no_snapshots):
 
-                blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_{timestep_current_num}.dat"))
-                blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                stars_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_{timestep_current_num}.dat"))
-                stars_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
-                
-                # Binary output: does not work
-                np.savetxt(
-                    os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
-                    binary_bh_array[:, :bh_mergers_current_num+1].T,
-                    header=binary_field_names
-                )
+                if (opts.verbose):
+                    blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_{timestep_current_num}.dat"))
+                    blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
+                    stars_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_{timestep_current_num}.dat"))
+                    stars_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
+                    
+                    # Binary output: does not work
+                    np.savetxt(
+                        os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
+                        binary_bh_array[:, :bh_mergers_current_num+1].T,
+                        header=binary_field_names
+                    )
 
                 timestep_current_num += 1
 
