@@ -330,9 +330,9 @@ def construct_disk_direct(
 
     Returns
     -------
-    surf_dens_func : lambda
+    disk_surf_dens_func : lambda
         Surface density (radius)
-    aspect_ratio_func : lambda
+    disk_aspect_ratio_func : lambda
         Aspect ratio (radius)
     disk_model_properties : dict
         Other disk model things we may want
@@ -345,19 +345,19 @@ def construct_disk_direct(
         )
     # Now geenerate interpolating functions
     # create surface density & aspect ratio functions from input arrays
-    surf_dens_func_log = scipy.interpolate.CubicSpline(
+    disk_surf_dens_func_log = scipy.interpolate.CubicSpline(
         np.log(disk_model_radii), np.log(surface_densities))
-    surf_dens_func = lambda x, f=surf_dens_func_log: np.exp(f(np.log(x)))
+    disk_surf_dens_func = lambda x, f=disk_surf_dens_func_log: np.exp(f(np.log(x)))
 
-    aspect_ratio_func_log = scipy.interpolate.CubicSpline(
+    disk_aspect_ratio_func_log = scipy.interpolate.CubicSpline(
             np.log(disk_model_radii), np.log(aspect_ratios))
-    aspect_ratio_func = lambda x, f=aspect_ratio_func_log: np.exp(f(np.log(x)))
+    disk_aspect_ratio_func = lambda x, f=disk_aspect_ratio_func_log: np.exp(f(np.log(x)))
 
     # Define properties we want to return
     disk_model_properties ={}
-    disk_model_properties['Sigma'] = surf_dens_func
-    disk_model_properties['h_over_r'] = aspect_ratio_func
-    return surf_dens_func, aspect_ratio_func, disk_model_properties
+    disk_model_properties['Sigma'] = disk_surf_dens_func
+    disk_model_properties['h_over_r'] = disk_aspect_ratio_func
+    return disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties
 
 def construct_disk_pAGN(
     disk_model_name,
@@ -383,9 +383,9 @@ def construct_disk_pAGN(
 
     Returns
     -------
-    surf_dens_func : lambda
+    disk_surf_dens_func : lambda
         Surface density (radius)
-    aspect_ratio_func : lambda
+    disk_aspect_ratio_func : lambda
         Aspect ratio (radius)
     disk_model_properties : dict
         Other disk model things we may want
@@ -406,14 +406,15 @@ def construct_disk_pAGN(
 
     # Run pAGN
     pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
-    surf_dens_func, aspect_ratio_func, bonus_structures  = pagn_model.return_disk_surf_model()
+    disk_surf_dens_func, disk_aspect_ratio_func, bonus_structures  = \
+        pagn_model.return_disk_surf_model()
 
     # Define properties we want to return
     disk_model_properties ={}
-    disk_model_properties['Sigma'] = surf_dens_func
-    disk_model_properties['h_over_r'] = aspect_ratio_func
+    disk_model_properties['Sigma'] = disk_surf_dens_func
+    disk_model_properties['h_over_r'] = disk_aspect_ratio_func
 
-    return  surf_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures
+    return  disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties, bonus_structures
 
 
 def construct_disk_interp(
@@ -445,9 +446,9 @@ def construct_disk_interp(
 
     Returns
     ------
-    surf_dens_func : lambda
+    disk_surf_dens_func : lambda
         Surface density (radius)
-    aspect_ratio_func : lambda
+    disk_aspect_ratio_func : lambda
         Aspect ratio (radius)
     """
     ## Check inputs ##
@@ -483,7 +484,7 @@ def construct_disk_interp(
     #   infile = model_surface_density.txt, where model is user choice
     if not(flag_use_pagn):
         # Load interpolators
-        surf_dens_func, aspect_ratio_func, disk_model_properties = \
+        disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties = \
             construct_disk_direct(
                 disk_model_name,
                 disk_radius_outer,
@@ -491,7 +492,7 @@ def construct_disk_interp(
 
     else:
         # instead, populate with pagn
-        surf_dens_func, aspect_ratio_func, disk_model_properties, bonus_structures = \
+        disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties, bonus_structures = \
             construct_disk_pAGN(
                 disk_model_name,
                 smbh_mass,
@@ -505,7 +506,7 @@ def construct_disk_interp(
         print("I read and digested your disk model")
         print("Sending variables back")
 
-    return surf_dens_func, aspect_ratio_func
+    return disk_surf_dens_func, disk_aspect_ratio_func
 
 def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or
