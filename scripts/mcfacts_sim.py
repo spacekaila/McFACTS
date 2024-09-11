@@ -907,7 +907,6 @@ def main():
                                 binary_bh_array[3, merger_indices[i]],
                                 binary_bh_array[4, merger_indices[i]],
                                 binary_bh_array[5, merger_indices[i]],
-                                binary_bh_array[16, merger_indices[i]]
                             )
                             bh_chi_eff_merged = chieff.chi_effective(
                                 binary_bh_array[2, merger_indices[i]],
