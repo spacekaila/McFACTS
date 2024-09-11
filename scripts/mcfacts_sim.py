@@ -624,17 +624,13 @@ def main():
             
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
-                # First check that binaries are real. Discard any columns where the location or the mass is 0.
-                # SF: I believe this step is handling an error checking thing that may have been
-                #     set up in the previous timeloop if e.g. a binary either merged or was ionized?
-                #     Please explain what this is and how it works right here?
+                # First check that binaries are real. Discard any BBH where the location or the mass is 0. In case a bin has zero mass or location.
                 reality_flag = evolve.reality_check(binary_bh_array, bin_index, bin_properties_num)
                 if reality_flag >= 0:
                     # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
                     binary_bh_array = np.delete(binary_bh_array, reality_flag, 1)
                     bin_index = bin_index - 1
                 else:
-                    # If there are still binaries after this, evolve them.
                     # If there are binaries, evolve them
                     # Damp binary orbital eccentricity
                     binary_bh_array = orbital_ecc.orbital_bin_ecc_damping(
@@ -693,7 +689,6 @@ def main():
                         opts.disk_bh_eddington_ratio,
                         disk_bh_eddington_mass_growth_rate,
                         opts.timestep_duration_yr,
-                        bin_properties_num,
                         bin_index
                     )
                     # Spin up binary components
@@ -702,7 +697,6 @@ def main():
                         opts.disk_bh_eddington_ratio,
                         opts.disk_bh_torque_condition,
                         opts.timestep_duration_yr,
-                        bin_properties_num,
                         bin_index
                     )
                     # Torque angle of binary spin components
@@ -712,7 +706,6 @@ def main():
                         opts.disk_bh_torque_condition,
                         disk_bh_spin_resolution_min,
                         opts.timestep_duration_yr,
-                        bin_properties_num,
                         bin_index
                     )
 
@@ -885,6 +878,13 @@ def main():
                         print(merger_indices)
                     if any_merger > 0:
                         for i in range(any_merger):
+                            #Check if merger is real
+                            #temp_bin_bhbh_pro_array = binary_bh_array[:,merger_indices[i]]
+                            #reality_flag = evolve.reality_check(temp_bin_bhbh_pro_array, bin_index, bin_properties_num)
+                            #if reality_flag >= 0:
+                                # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
+                            #   binary_bh_array = np.delete(binary_bh_array, reality_flag, 1)
+                            #   bin_index = bin_index - 1
                             if time_passed <= opts.timestep_duration_yr:
                                 print("time_passed,loc1,loc2", time_passed, binary_bh_array[0, merger_indices[i]], binary_bh_array[1, merger_indices[i]])
 
