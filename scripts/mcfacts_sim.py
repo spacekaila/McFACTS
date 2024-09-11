@@ -388,6 +388,7 @@ def main():
         # and in your .ini file set switch prior_agn = 1.0.
         # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
         # SF: No promises this handles retrograde orbiters correctly yet
+        '''
         if opts.flag_prior_agn == 1.0:
 
             prior_radii, prior_masses, prior_spins, prior_spin_angles, prior_gens \
@@ -405,6 +406,7 @@ def main():
             prior_ecc_factor = 0.3
             blackholes_pro.orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(prior_ecc_factor, bh_pro_num)
             print("prior ecc", blackholes_pro.orb_ecc)
+        '''
 
         # Start Loop of Timesteps
         print("Start Loop!")
