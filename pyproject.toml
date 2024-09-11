@@ -33,7 +33,8 @@ authors = [
     {name = "Vera Delfavero"},
     {name = "Richard O'Shaughnessy"},
     {name = "Jake Postiglione"},
-    {name = "Kaila Nathaniel"}
+    {name = "Kaila Nathaniel"},
+    {name = "Shawn Ray"}
 ]
 
 # In the future, the people actively developing / maintaining the project may be different!
@@ -44,7 +45,8 @@ maintainers = [
     {name = "Vera Delfavero"},
     {name = "Richard O'Shaughnessy"},
     {name = "Jake Postiglione"},
-    {name = "Kaila Nathaniel"}
+    {name = "Kaila Nathaniel"},
+    {name = "Shawn Ray"}
 ]
 
 classifiers = [
