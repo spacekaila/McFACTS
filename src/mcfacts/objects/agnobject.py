@@ -186,7 +186,7 @@ class AGNObject(object):
         self.gen = np.concatenate([self.gen, new_gen])
         self.id_num = np.concatenate([self.id_num, new_id_num])
 
-    def remove_objects(self, idx_remove=None):
+    def remove_index(self, idx_remove=None):
         """
         Removes objects at specified indices.
 
@@ -207,7 +207,7 @@ class AGNObject(object):
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[idx_change])
    
-    def keep_objects(self, idx_keep=None):
+    def keep_index(self, idx_keep):
         """
         Filters AGNObject to only keep the objects at the specified indices.
 
@@ -227,6 +227,19 @@ class AGNObject(object):
         idx_change[idx_keep] = True
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[idx_change])
+
+    def keep_id_num(self, id_num_keep):
+        """
+        Filters AGNObject to only keep the objects at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num_keep : numpy array
+            ID numbers to keep, others are removed
+        """
+        keep_mask = (np.isin(getattr(self, "id_num"), id_num_keep))
+        for attr in vars(self).keys():
+            setattr(self, attr, getattr(self, attr)[keep_mask])
 
     def copy(self):
         """
@@ -1005,17 +1018,17 @@ class AGNFilingCabinet(AGNObject):
             number and types of objects in AGNFilingCabinet
         """
 
-        # totals = "AGN Filing Cabinet\n"
-        # for key in obj_types:
-        #     #print(key,getattr(self,"category").count(key))
-        #     totals += (f"\t{obj_types[key]}: { np.sum(getattr(self,"category") == key) }\n")
-        #     for direc in obj_direction:
-        #         totals += (f"\t\t{obj_direction[direc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"direction") == direc))}\n")
-        #     totals += "\n"
-        #     for loc in obj_disk_loc:
-        #         totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
-        # totals += f"{len(getattr(self,"category"))} objects total"
-        return()
+        totals = "AGN Filing Cabinet\n"
+        for key in obj_types:
+            #print(key,getattr(self,"category").count(key))
+            totals += (f"\t{obj_types[key]}: { np.sum(getattr(self,"category") == key) }\n")
+            for direc in obj_direction:
+                totals += (f"\t\t{obj_direction[direc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"direction") == direc))}\n")
+            totals += "\n"
+            for loc in obj_disk_loc:
+                totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
+        totals += f"{len(getattr(self,"category"))} objects total"
+        return(totals)
 
     def update(self, id_num, attr, new_info):
         """Update a given attribute in AGNFilingCabinet for the given ID numbers
@@ -1033,14 +1046,16 @@ class AGNFilingCabinet(AGNObject):
         if not isinstance(attr, str):
             raise TypeError("`attr` must be passed as a string")
         
-        getattr(self,attr)[np.isin(getattr(self,"id_num"),id_num)] = new_info
+        try:
+            getattr(self,attr)[np.isin(getattr(self,"id_num"),id_num)] = new_info
+        except:
+            raise AttributeError("{} is not an attribute of AGNFilingCabinet".format(attr))
 
 
     def add_objects(self, new_id_num, new_category, new_orb_a,
                     new_mass, new_size, new_direction, new_disk_inner_outer):
         """
-        Append objects to the AGNFilingCabinet. This method appends the category and direction
-        attributes and sends the rest to the AGNObject add_objects() method.
+        Append objects to the AGNFilingCabinet.
 
         Parameters
         ----------
