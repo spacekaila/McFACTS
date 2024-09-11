@@ -201,12 +201,25 @@ class AGNObject(object):
 
         if idx_remove is None:
             return None
-        
+
         idx_change = np.ones(len(self.mass), dtype=bool)
         idx_change[idx_remove] = False
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[idx_change])
-   
+
+    def remove_id_num(self, id_num_remove=None):
+        """
+        Filters AGNObject to remove the objects at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num_keep : numpy array
+            ID numbers to keep, others are removed
+        """
+        keep_mask = ~(np.isin(getattr(self, "id_num"), id_num_remove))
+        for attr in vars(self).keys():
+            setattr(self, attr, getattr(self, attr)[keep_mask])
+
     def keep_index(self, idx_keep):
         """
         Filters AGNObject to only keep the objects at the specified indices.
