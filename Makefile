@@ -1,14 +1,7 @@
 # Declarations
 .PHONY: all clean
 
-# Windows implementation is hacky, but my desktop is Windows. So please accept my humble apology - Jake
-ifeq ($(OS),Windows_NT)
-    CLEAN_CMD := clean_win
-else
-    CLEAN_CMD := clean_unix
-endif
-
-all: $(CLEAN_CMD) tests plots #vera_plots
+all: clean tests plots #vera_plots
 tests: mcfacts_sim
 
 ######## Definitions ########
@@ -49,11 +42,11 @@ wd=${HERE}
 #### Install ####
 
 ifeq ($(OS),Windows_NT)
-    VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
-    VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
+	VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
+	VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
 else
-    VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
-    VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
+	VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
+	VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 endif
 
 version: $(CLEAN_CMD)
@@ -80,15 +73,18 @@ unit_test: clean version
 
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
 mcfacts_sim: $(CLEAN_CMD)
-	python ${MCFACTS_SIM_EXE} \
+	mkdir -p runs
+	cd runs; \
+		python ../${MCFACTS_SIM_EXE} \
 		--galaxy_num 10 \
-		--fname-ini ${FNAME_INI} \
+		--fname-ini ../${FNAME_INI} \
 		--fname-log out.log \
 		--seed ${SEED}
 
 
 plots: mcfacts_sim
-	python ${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
+	cd runs; \
+	python ../${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
 
 vera_plots: mcfacts_sim
 	python ${VERA_PLOTS_EXE} \
@@ -99,7 +95,7 @@ mstar_runs:
 	python ${MSTAR_RUNS_EXE} \
 		--fname-ini ${FNAME_INI} \
 		--number_of_timesteps 1000 \
-        --n_bins_max 10000 \
+		--n_bins_max 10000 \
 		--galaxy_num 3 \
 		--dynamics \
 		--feedback \
@@ -113,14 +109,14 @@ mstar_runs:
 		
 
 #### CLEAN ####
-clean: $(CLEAN_CMD)
 
 #TODO: Create an IO class that wraps the standard IO. This wrapper will keep a persistent log of all of the
 #instantaneous files created. The wrapper would have a cleanup function, and can also report metrics :^)
 #Plus, if we use a standard python IO library, we don't have to worry about rm / del and wildcards!
 
-clean_unix:
+clean:
 	rm -rf ${wd}/run*
+	rm -rf ${wd}/runs/*
 	rm -rf ${wd}/output_mergers*.dat
 	rm -rf ${wd}/m1m2.png
 	rm -rf ${wd}/merger_mass_v_radius.png
