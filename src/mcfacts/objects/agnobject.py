@@ -254,6 +254,31 @@ class AGNObject(object):
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[keep_mask])
 
+    def at(self, id_num, attr):
+        """
+        Returns the attribute at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num : numpy array
+            ID numbers of objects to return
+        attr : str
+            attribute to return
+
+        Returns
+        -------
+        val : numpy array
+            specified attribute at specified ID numbers
+        """
+        id_mask = (np.isin(getattr(self, "id_num"), id_num))
+
+        try:
+            val = getattr(self, attr)[id_mask]
+        except:
+            raise AttributeError("{} is not an attribute of the AGNObject".format(attr))
+
+        return (val)
+
     def copy(self):
         """
         Creates a deep copy of the AGNObject
