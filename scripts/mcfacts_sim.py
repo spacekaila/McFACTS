@@ -274,28 +274,28 @@ def main():
                                           mass=blackholes.mass,
                                           size=np.full(blackholes.mass.shape, -1),
                                           )
-        #print(filing_cabinet)
-        #print(ff)
-        # filing_cabinet = AGNFilingCabinet(category=np.full(blackholes.mass.shape, 0),
-        #                                   agnobj=blackholes
-        #                                   )
-        # filing_cabinet.add_objects(create_id=False, new_id_num=stars.id_num, new_category=np.full(stars.mass.shape, 2),
-        #                            new_direction=np.full(stars.mass.shape, 0),
-        #                            new_mass=stars.mass,
-        #                            new_spin=stars.spin,
-        #                            new_spin_angle=stars.spin_angle,
-        #                            new_orb_a=stars.orb_a,
-        #                            new_orb_inc=stars.orb_inc,
-        #                            new_orb_ang_mom=stars.orb_ang_mom,
-        #                            new_orb_ecc=stars.orb_ecc,
-        #                            new_orb_arg_periapse=stars.orb_arg_periapse,
-        #                            new_gen=stars.gen)
+
+        filing_cabinet.add_objects(new_id_num=stars.id_num,
+                                   new_category=np.full(stars.id_num.size, 1),
+                                   new_orb_a=stars.orb_a,
+                                   new_mass=stars.mass,
+                                   new_size=stars.radius,
+                                   new_direction=np.zeros(stars.id_num.size),
+                                   new_disk_inner_outer=np.zeros(stars.id_num.size))
 
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
         #  that end up with semi-major axis < 50rg
         # Assume all drawn from prograde population for now.
         #   SF: Is this assumption important here? Where does it come up?
+
+        # Test if any BH or BBH are in the danger-zone (<mininum_safe_distance, default =50r_g) from SMBH.
+        # Potential EMRI/BBH EMRIs.
+        # Find prograde BH in inner disk. Define inner disk as <=50r_g. 
+        # Since a 10Msun BH will decay into a 10^8Msun SMBH at 50R_g in ~38Myr and decay time propto a^4.
+        # e.g at 25R_g, decay time is only 2.3Myr.
+        min_safe_distance = 50.0
+
 
         bh_orb_a_inner_disk = []
         bh_mass_inner_disk = []
