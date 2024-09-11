@@ -998,11 +998,9 @@ def main():
                     #Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                     binary_bh_array = baruteau11.bin_harden_baruteau(
                         binary_bh_array,
-                        integer_nbinprop,
                         opts.mass_smbh,
                         opts.timestep,
                         norm_t_gw,
-                        bin_index,
                         time_passed,
                     )
                     #print("Harden binary")
