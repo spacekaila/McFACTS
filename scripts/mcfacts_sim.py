@@ -925,7 +925,6 @@ def main():
                                 binary_bh_array[5, merger_indices[i]],
                                 binary_bh_array[6, merger_indices[i]],
                                 binary_bh_array[7, merger_indices[i]],
-                                binary_bh_array[16, merger_indices[i]],
                                 binary_bh_array[17, merger_indices[i]]
                             )
                             merged_bh_array[:, bh_mergers_current_num + i] = mergerfile.merged_bh(
