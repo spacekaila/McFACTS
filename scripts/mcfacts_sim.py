@@ -682,6 +682,7 @@ def main():
                         opts.smbh_mass,
                         opts.timestep_duration_yr,
                         time_gw_normalization,
+                        bin_index,
                         time_passed,
                     )
                     # Check closeness of binary. Are black holes at merger condition separation
