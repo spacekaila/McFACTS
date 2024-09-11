@@ -905,13 +905,13 @@ class AGNBinaryBlackHole(AGNObject):
 
         #need to basically copy the add_new_binary.add_to_binary_array2 function
 
-        super(AGNBinaryBlackHole,self).add_objects(new_mass = new_total_mass,
-                                                   new_spin=None,
-                                                   new_spin_angle=None,
-                                                   new_a = new_cm_orb_a,
-                                                   new_inc=new_cm_orb_inc,
-                                                   new_e=new_cm_orb_ecc,
-                                                   obj_num=obj_num)
+        super(AGNBinaryBlackHole, self).add_objects(new_mass=new_total_mass,
+                                                    new_spin=None,
+                                                    new_spin_angle=None,
+                                                    new_a = new_cm_orb_a,
+                                                    new_inc=new_cm_orb_inc,
+                                                    new_e=new_cm_orb_ecc,
+                                                    obj_num=obj_num)
 
 
 obj_types = {0 : "single black hole",
@@ -925,6 +925,10 @@ obj_direction = {0 : "orbit direction undetermined",
                  1 : "prograde orbiter",
                 -1 : "retrograde orbiter"}
 
+obj_disk_loc = {0 : "disk location undetermined",
+                1 : "outer disk",
+               -1 : "inner disk"}
+
 
 class AGNFilingCabinet(AGNObject):
     """
@@ -932,7 +936,14 @@ class AGNFilingCabinet(AGNObject):
     type, and orbital direction. Currently it also takes in all parameters present in AGNObject,
     but these are not updated when the instances of AGNBlackHole and AGNStar are updated.
     """
-    def __init__(self, category = None, direction = None, agnobj = None):
+    def __init__(self,
+                 id_num,
+                 category,
+                 orb_a,
+                 mass,
+                 size,
+                 direction=None,
+                 disk_inner_outer=None):
         """
         Creates an instance of AGNFilingCabinet. It extends AGNObject by
         recording ID numbers for each object and their category, so that
@@ -940,41 +951,47 @@ class AGNFilingCabinet(AGNObject):
 
         Parameters
         ----------
-        category : numpy array
+        id_num : numpy array
+            ID numbers of the objects
+        category : numpy array of ints
             category (black hole, star, etc.) of the objects
+        orb_a : numpy array
+            orbital semi-major axis with respect to the SMBH
+        mass : numpy array
+            masses of the objects (for binaries this is total mass)
+        size : numpy array
+            for BH this is set to -1, for stars this is set to the radius in Rsun,
+            for binaries this is the binary's semi-major axis (aka separation)
+            in R_g
         direction : numpy array
             direction of the orbit of the objects, optional
-        agnobj : AGNObject
-            instance of AGNObject, which is currently required to
-            initialize an instance of AGNFilingCabinet, by default None
-        """
+        disk_inner_outer : numpy array
+            if the object is in the inner or outer disk
+        """ 
 
-        # Create ID numbers starting at 0 when initializing
-        self.id_num = np.arange(0,len(category)) #creates ID numbers starting at 0 when initializing
-
-        # If an AGNObject is not passed, then raise an error
-        if agnobj is None:
-            raise AttributeError("Initializing an instance of AGNFilingCabinet requires passing an instance of an AGNObject.")
-
-        # Set category
-        self.category = np.full(agnobj.mass.shape,category)
+        # Set attributes
+        self.id_num = id_num
+        # future: pass an int to category and it fills in the rest
+        self.category = category
+        self.orb_a = orb_a
+        self.mass = mass
+        # size is radius for stars, -1 for BH, bin_a for binary BH
+        self.size = size
 
         # Set direction as 0 (undetermined) if not passed
         # Otherwise set as what is passed
         if direction is None:
-            self.direction = np.full(agnobj.mass.shape,0)
+            self.direction = np.full(id_num.shape,0)
         else:
-            self.direction = np.full(agnobj.mass.shape,direction)
+            self.direction = direction
         
-        #self.id_num = id_num
-        #self.mass = mass
-        #self.orb_a = orb_a
-
-        self.orb_ang_mom = agnobj.orb_ang_mom
-
-        # Calling super init method then sets the ID numbers
-        super(AGNFilingCabinet,self).__init__(mass=agnobj.mass, spin=agnobj.spin, spin_angle=agnobj.spin_angle,orb_a=agnobj.orb_a, orb_inc=agnobj.orb_inc, orb_ecc=agnobj.orb_ecc, orb_arg_periapse=agnobj.orb_arg_periapse)
-
+        # Set disk_inner_outer as 0 (undetermined if not passed)
+        # Otherwise set as what is passed
+        if disk_inner_outer is None:
+            self.disk_inner_outer = np.full(id_num.shape,0)
+        else:
+            self.disk_inner_outer = disk_inner_outer
+        
     def __repr__(self):
         """
         Creates a string representation of AGNFilingCabinet. Prints out
@@ -988,67 +1005,66 @@ class AGNFilingCabinet(AGNObject):
             number and types of objects in AGNFilingCabinet
         """
 
-        """         totals = "AGN Filing Cabinet\n"
+        totals = "AGN Filing Cabinet\n"
         for key in obj_types:
             #print(key,getattr(self,"category").count(key))
             totals += (f"\t{obj_types[key]}: { np.sum(getattr(self,"category") == key) }\n")
-            for key2 in obj_direction:
-                totals += (f"\t\t{obj_direction[key2]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"direction") == key2))}\n")
-        totals += f"{len(getattr(self,"category"))} objects total" """
+            for direc in obj_direction:
+                totals += (f"\t\t{obj_direction[direc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"direction") == direc))}\n")
+            totals += "\n"
+            for loc in obj_disk_loc:
+                totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
+        totals += f"{len(getattr(self,"category"))} objects total"
         return(totals)
 
-    def change_category(self, obj_id = None, new_category = None):
-        """
-        Change the category of an object in AGNFilingCabinet
+    def update(self, id_num, attr, new_info):
+        """Update a given attribute in AGNFilingCabinet for the given ID numbers
 
         Parameters
         ----------
-        obj_id : numpy array
+        id_num : numpy array
             ID numbers of the objects to be changed
-        new_category : numpy array
-            new category of objects to be changed
-        """
-        getattr(self,"category")[np.isin(getattr(self,"id_num"),obj_id)] = new_category
-
-    def change_direction(self, obj_id = None, new_direction = None):
-        """
-        Change the direction of an object in AGNFilingCabinet
-
-        Parameters
-        ----------
-        obj_id : numpy array
-            ID numbers of the objects to be changed
-        new_direction : numpy array
-            new direction of objects to be changed
+        attr : str
+            the attribute to be changed
+        new_info : numpy array
+            the new data for the attribute
         """
 
-        getattr(self,"direction")[np.isin(getattr(self,"id_num"),obj_id)] = new_direction
+        if not isinstance(attr, str):
+            raise TypeError("`attr` must be passed as a string")
+        
+        getattr(self,attr)[np.isin(getattr(self,"id_num"),id_num)] = new_info
 
-    def add_objects(self, create_id = False, new_id_num = None, new_category = None, new_direction = None, **kwargs):
+
+    def add_objects(self, new_id_num, new_category, new_orb_a,
+                    new_mass, new_size, new_direction, new_disk_inner_outer):
         """
         Append objects to the AGNFilingCabinet. This method appends the category and direction
         attributes and sends the rest to the AGNObject add_objects() method.
 
         Parameters
         ----------
-        create_id : bool
-            sets if new ID numbers should be created or already exist, by default False
         new_id_num : numpy array
             ID numbers to be added
         new_category : numpy array
-            categories of objects to be added
+            categories to be added
+        new_orb_a : numpy array
+            orbital semi-major axes to be added
+        new_mass : numpy array
+            masses to be added
+        new_size : numpy array
+            sizes to be added (BH: -1, stars: radii in Rsun,
+            binaries: separation in R_g)
         new_direction : numpy array
             orbital directions of objects to be added
+        new_disk_inner_outer : numpy array
+            new inner/outer disk locations to be added
         """
-        if ((create_id is True) and (new_id_num is None)):
-            id_start_value = self.id_num.max() + 1
-            new_id_num = np.arange(id_start_value, id_start_value+len(new_category),1)
-        elif ((create_id is True) and (new_id_num is not None)):
-            raise AttributeError("if create_id is True then new_id_num must be None. If create_id is False then new_id_num must be array of new ID numbers.")
         
-        #self.id_num = np.concatenate([self.id_num, new_id_num])
-
+        self.id_num = np.concatenate([self.id_num, new_id_num])
         self.category = np.concatenate([self.category, new_category])
+        self.orb_a = np.concatenate([self.orb_a, new_orb_a])
+        self.mass = np.concatenate([self.mass, new_mass])
+        self.size = np.concatenate([self.size, new_size])
         self.direction = np.concatenate([self.direction, new_direction])
-
-        super(AGNFilingCabinet,self).add_objects(new_id_num=new_id_num,**kwargs)
+        self.disk_inner_outer = np.concatenate([self.disk_inner_outer, new_disk_inner_outer])

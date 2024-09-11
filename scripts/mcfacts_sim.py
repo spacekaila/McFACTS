@@ -268,20 +268,28 @@ def main():
         stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=blackholes.id_num.max()+1)
         print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
 
-        filing_cabinet = AGNFilingCabinet(category=np.full(blackholes.mass.shape, 0),
-                                          agnobj=blackholes
+        filing_cabinet = AGNFilingCabinet(id_num=blackholes.id_num,
+                                          category=np.full(blackholes.mass.shape, 0),
+                                          orb_a=blackholes.orb_a,
+                                          mass=blackholes.mass,
+                                          size=np.full(blackholes.mass.shape, -1),
                                           )
-        filing_cabinet.add_objects(create_id=False, new_id_num=stars.id_num, new_category=np.full(stars.mass.shape, 2),
-                                   new_direction=np.full(stars.mass.shape, 0),
-                                   new_mass=stars.mass,
-                                   new_spin=stars.spin,
-                                   new_spin_angle=stars.spin_angle,
-                                   new_orb_a=stars.orb_a,
-                                   new_orb_inc=stars.orb_inc,
-                                   new_orb_ang_mom=stars.orb_ang_mom,
-                                   new_orb_ecc=stars.orb_ecc,
-                                   new_orb_arg_periapse=stars.orb_arg_periapse,
-                                   new_gen=stars.gen)
+        #print(filing_cabinet)
+        #print(ff)
+        # filing_cabinet = AGNFilingCabinet(category=np.full(blackholes.mass.shape, 0),
+        #                                   agnobj=blackholes
+        #                                   )
+        # filing_cabinet.add_objects(create_id=False, new_id_num=stars.id_num, new_category=np.full(stars.mass.shape, 2),
+        #                            new_direction=np.full(stars.mass.shape, 0),
+        #                            new_mass=stars.mass,
+        #                            new_spin=stars.spin,
+        #                            new_spin_angle=stars.spin_angle,
+        #                            new_orb_a=stars.orb_a,
+        #                            new_orb_inc=stars.orb_inc,
+        #                            new_orb_ang_mom=stars.orb_ang_mom,
+        #                            new_orb_ecc=stars.orb_ecc,
+        #                            new_orb_arg_periapse=stars.orb_arg_periapse,
+        #                            new_gen=stars.gen)
 
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
@@ -308,7 +316,7 @@ def main():
         blackholes_pro.keep_objects(bh_indices_pro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(bh_id_num_pro, np.ones(blackholes_pro.mass.shape))
+        #filing_cabinet.change_direction(bh_id_num_pro, np.ones(blackholes_pro.mass.shape))
 
         # Find prograde star orbiters.
         star_indices_pro = np.where(stars.orb_ang_mom > 0)
@@ -317,7 +325,7 @@ def main():
         stars_pro.keep_objects(star_indices_pro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(star_id_num_pro, np.ones(stars_pro.mass.shape))
+        #filing_cabinet.change_direction(star_id_num_pro, np.ones(stars_pro.mass.shape))
 
         # Find retrograde black holes
         bh_indices_retro = np.where(blackholes.orb_ang_mom < 0)
@@ -326,7 +334,7 @@ def main():
         bh_id_num_retro = np.take(blackholes.id_num, bh_indices_retro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(bh_id_num_retro, np.full(blackholes_retro.mass.shape, -1))
+        #filing_cabinet.change_direction(bh_id_num_retro, np.full(blackholes_retro.mass.shape, -1))
 
         # Find retrograde stars
         star_indices_retro = np.where(stars.orb_ang_mom < 0)
@@ -335,7 +343,7 @@ def main():
         star_id_num_retro = np.take(stars.id_num, star_indices_retro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(star_id_num_retro, np.full(stars_retro.mass.shape, -1))
+        #filing_cabinet.change_direction(star_id_num_retro, np.full(stars_retro.mass.shape, -1))
 
         # Writing initial parameters to file
         stars.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_star.dat"))
