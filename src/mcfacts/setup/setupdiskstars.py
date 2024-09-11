@@ -61,13 +61,13 @@ def setup_disk_stars_spin_angles(n_stars, stars_initial_spins):
     return stars_initial_spin_angles
 
 
-def setup_disk_stars_orb_ang_mom(n_stars, M_reduced, M, orbit_a, orbit_inclination,):
+def setup_disk_stars_orb_ang_mom(star_num, M_reduced, M, orb_a, orb_inc,):
     #Return an array of BH initial orbital angular momentum.
     #Assume either fully prograde (+1) or retrograde (-1)
-    integer_nstars = int(n_stars)
+    integer_nstars = int(star_num)
     random_uniform_number = rng.random((integer_nstars,))
     stars_initial_orb_ang_mom_sign = (2.0*np.around(random_uniform_number)) - 1.0
-    stars_initial_orb_ang_mom_value = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*orbit_a*(1-orbit_inclination**2))
+    stars_initial_orb_ang_mom_value = M_reduced*np.sqrt(G.to('m^3/(M_sun s^2)').value*M*orb_a*(1-orb_inc**2))
     stars_initial_orb_ang_mom = stars_initial_orb_ang_mom_sign*stars_initial_orb_ang_mom_value
     return stars_initial_orb_ang_mom
 
