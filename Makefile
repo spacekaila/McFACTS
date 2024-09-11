@@ -3,9 +3,9 @@
 
 # Windows implementation is hacky, but my desktop is Windows. So please accept my humble apology - Jake
 ifeq ($(OS),Windows_NT)
-    CLEAN_CMD := clean_win
+	CLEAN_CMD := clean_win
 else
-    CLEAN_CMD := clean_unix
+	CLEAN_CMD := clean_unix
 endif
 
 all: $(CLEAN_CMD) tests plots #vera_plots
@@ -49,11 +49,11 @@ wd=${HERE}
 #### Install ####
 
 ifeq ($(OS),Windows_NT)
-    VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
-    VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
+	VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
+	VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
 else
-    VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
-    VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
+	VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
+	VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 endif
 
 version: $(CLEAN_CMD)
@@ -99,7 +99,7 @@ mstar_runs:
 	python ${MSTAR_RUNS_EXE} \
 		--fname-ini ${FNAME_INI} \
 		--number_of_timesteps 1000 \
-        --n_bins_max 10000 \
+		--n_bins_max 10000 \
 		--galaxy_num 3 \
 		--dynamics \
 		--feedback \
