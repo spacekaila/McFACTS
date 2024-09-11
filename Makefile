@@ -41,19 +41,11 @@ wd=${HERE}
 ######## Instructions ########
 #### Install ####
 
-ifeq ($(OS),Windows_NT)
-	VERSION_BASE_CMD := echo __version__ = '${VERSION}' > __version__.py
-	VERSION_SRC_CMD := echo __version__ = '${VERSION}'" > src/mcfacts/__version__.py
-else
+version: clean
 	VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
 	VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
-endif
 
-version: $(CLEAN_CMD)
-	$(VERSION_BASE_CMD)
-	$(VERSION_SRC_CMD)
-
-install: $(CLEAN_CMD) version
+install: clean version
 	python -m pip install --editable .
 
 setup: clean version
@@ -72,7 +64,7 @@ unit_test: clean version
 #### Test one thing at a time ####
 
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
-mcfacts_sim: $(CLEAN_CMD)
+mcfacts_sim: clean
 	mkdir -p runs
 	cd runs; \
 		python ../${MCFACTS_SIM_EXE} \
