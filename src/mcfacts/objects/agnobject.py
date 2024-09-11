@@ -945,8 +945,8 @@ class AGNFilingCabinet(AGNObject):
         direction : numpy array
             direction of the orbit of the objects, optional
         agnobj : AGNObject
-            instance of AGNObject, which is currently
-            required to initialize an instance of AGNFilingCabinet, by default None
+            instance of AGNObject, which is currently required to
+            initialize an instance of AGNFilingCabinet, by default None
         """
 
         # Create ID numbers starting at 0 when initializing
