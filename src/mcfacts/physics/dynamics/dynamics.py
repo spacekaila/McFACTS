@@ -1,23 +1,21 @@
 import numpy as np
-
 import scipy
 
-#from astropy.constants import M_sun
+from mcfacts.mcfacts_random_state import rng
 
 def circular_singles_encounters_prograde(
-        rng,
         smbh_mass,
         disk_bh_pro_orbs_a,
         disk_bh_pro_masses,
         disk_bh_pro_orbs_ecc,
-        timestep,
-        crit_ecc,
-        de
+        timestep_duration_yr,
+        disk_bh_pro_orb_ecc_crit,
+        delta_energy_strong
         ):
     """"Adjust orb ecc due to encounters btw 2 single circ pro BH
     
     Return array of modified singleton BH orbital eccentricities perturbed
-    by encounters within f*R_Hill, where f is some fraction/multiple of 
+    by encounters within f*R_Hill, where f is some fraction/multiple of
     Hill sphere radius R_H
     
     Assume encounters between damped BH (e<e_crit) and undamped BH
@@ -119,16 +117,19 @@ def circular_singles_encounters_prograde(
         mass of prograde singleton BH at start of timestep in units of solar
         masses
     disk_bh_pro_orbs_ecc : float array
-        orbital eccentricity of singleton BH
-    timestep : float
+        orbital eccentricity of singleton prograde BH
+    timestep_duration_yr : float
         size of timestep in years
-    de : float
+    disk_bh_pro_orb_ecc_crit : float
+        critical orbital eccentricity below which orbit is close enough to circ
+    delta_energy_strong : float
         average energy change per strong encounter
-        
+
     Returns
     -------
-    bh_new_loc_orb_ecc : float array
-        updated bh locations and orbital eccentricities perturbed by dynamics
+    new_disk_bh_pro_orbs_a_ecc : float array [2,N] or [N,2]
+        updated bh semi-maj axis and orbital eccentricities perturbed by
+        dynamics
     """
 
     # Set up new_disk_bh_pro_orbs_ecc
@@ -137,24 +138,17 @@ def circular_singles_encounters_prograde(
     # Calculate & normalize all the parameters above in t_damp
     # E.g. normalize q=bh_mass/smbh_mass to 10^-7
     mass_ratio = disk_bh_pro_masses/smbh_mass
-    
-    #Assume all incoming eccentricities are prograde (for now)
-    #prograde_disk_bh_pro_orbs_ecc = disk_bh_pro_orbs_ecc
 
     #Find the e< crit_ecc. population. These are the (circularized) population that can form binaries.
-    circ_prograde_population = np.ma.masked_where(disk_bh_pro_orbs_ecc > crit_ecc, disk_bh_pro_orbs_ecc)
+    circ_prograde_population = np.ma.masked_where(disk_bh_pro_orbs_ecc > disk_bh_pro_orb_ecc_crit, disk_bh_pro_orbs_ecc)
     #Find the e> crit_ecc population. These are the interlopers that can perturb the circularized population
-    ecc_prograde_population = np.ma.masked_where(disk_bh_pro_orbs_ecc < crit_ecc, disk_bh_pro_orbs_ecc)
-    #print('Circ prograde',circ_prograde_population)
+    ecc_prograde_population = np.ma.masked_where(disk_bh_pro_orbs_ecc < disk_bh_pro_orb_ecc_crit, disk_bh_pro_orbs_ecc)
     #Find the indices of the e<crit_ecc population     
     circ_prograde_population_indices = np.ma.nonzero(circ_prograde_population)
     ecc_prograde_population_indices = np.ma.nonzero(ecc_prograde_population)
-    #print('Circ indices',circ_prograde_population_indices)
     #Find their locations and masses
     circ_prograde_population_locations = disk_bh_pro_orbs_a[circ_prograde_population_indices]
     circ_prograde_population_masses = disk_bh_pro_masses[circ_prograde_population_indices]
-    #print('Circ locations',circ_prograde_population_locations)
-    #print('Circ masses',circ_prograde_population_masses)
     #Ecc locs
     ecc_prograde_population_locations = disk_bh_pro_orbs_a[ecc_prograde_population_indices]
     ecc_prograde_population_masses = disk_bh_pro_masses[ecc_prograde_population_indices]
@@ -162,14 +156,9 @@ def circular_singles_encounters_prograde(
     #T_orb = pi (R/r_g)^1.5 (GM_smbh/c^2) = pi (R/r_g)^1.5 (GM_smbh*2e30/c^2)
     #      = pi (R/r_g)^1.5 (6.7e-11 2e38/27e24)= pi (R/r_g)^1.5 (1.3e11)s =(R/r_g)^1/5 (1.3e4)
     orbital_timescales_circ_pops = scipy.constants.pi*((circ_prograde_population_locations)**(1.5))*(2.e30*smbh_mass*scipy.constants.G)/(scipy.constants.c**(3.0)*3.15e7) 
-    N_circ_orbs_per_timestep = timestep/orbital_timescales_circ_pops
-    #print('Orb. timescales (yr)' , orbital_timescales_circ_pops)
-    #print('N_circ_orb/timestep' , N_circ_orbs_per_timestep)
+    N_circ_orbs_per_timestep = timestep_duration_yr/orbital_timescales_circ_pops
     ecc_orb_min = disk_bh_pro_orbs_a[ecc_prograde_population_indices]*(1.0-disk_bh_pro_orbs_ecc[ecc_prograde_population_indices])
     ecc_orb_max = disk_bh_pro_orbs_a[ecc_prograde_population_indices]*(1.0+disk_bh_pro_orbs_ecc[ecc_prograde_population_indices])
-    #print('min',ecc_orb_min)
-    #print('max',ecc_orb_max)
-    #print('len(circ_locns)',len(circ_prograde_population_locations))
     num_poss_ints = 0
     num_encounters = 0
     if len(circ_prograde_population_locations) > 0:
@@ -192,30 +181,43 @@ def circular_singles_encounters_prograde(
                             # if close encounter, pump ecc of circ orbiter to e=0.1 from near circular, and incr a_circ1 by 10%
                             # drop ecc of a_i by 10% and drop a_i by 10% (P.E. = -GMm/a)
                             # if already pumped in eccentricity, no longer circular, so don't need to follow other interactions
-                            if disk_bh_pro_orbs_ecc[indx_array[i]] <= crit_ecc:
-                                disk_bh_pro_orbs_ecc[indx_array[i]] = de
-                                disk_bh_pro_orbs_a[indx_array[i]] = disk_bh_pro_orbs_a[indx_array[i]]*(1.0 + de)
-                                disk_bh_pro_orbs_ecc[j] = disk_bh_pro_orbs_ecc[j]*(1 - de)
-                                disk_bh_pro_orbs_a[j] = disk_bh_pro_orbs_a[j]*(1 - de)
-                        
+                            if disk_bh_pro_orbs_ecc[indx_array[i]] <= disk_bh_pro_orb_ecc_crit:
+                                disk_bh_pro_orbs_ecc[indx_array[i]] = delta_energy_strong
+                                disk_bh_pro_orbs_a[indx_array[i]] = disk_bh_pro_orbs_a[indx_array[i]]*(1.0 + delta_energy_strong)
+                                disk_bh_pro_orbs_ecc[j] = disk_bh_pro_orbs_ecc[j]*(1 - delta_energy_strong)
+                                disk_bh_pro_orbs_a[j] = disk_bh_pro_orbs_a[j]*(1 - delta_energy_strong)                        
                         num_poss_ints = num_poss_ints + 1
             num_poss_ints = 0
             num_encounters = 0
     
-    prograde_bh_locn_orb_ecc = [[disk_bh_pro_orbs_a],[disk_bh_pro_orbs_ecc]]    
-    return prograde_bh_locn_orb_ecc
+    new_disk_bh_pro_orbs_a_ecc = [[disk_bh_pro_orbs_a],[disk_bh_pro_orbs_ecc]]
+    return new_disk_bh_pro_orbs_a_ecc
 
-def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, bh_orb_ecc, timestep, crit_ecc, de,bin_array,bindex):
-    """"Return array of modified binary BH separations and eccentricities perturbed by encounters within f*R_Hill, for eccentric singleton population, where f is some fraction/multiple of Hill sphere radius R_H
+def circular_binaries_encounters_ecc_prograde(
+        smbh_mass,
+        disk_bh_pro_orbs_a,
+        disk_bh_pro_masses,
+        disk_bh_pro_orbs_ecc,
+        timestep_duration_yr,
+        disk_bh_pro_orb_ecc_crit,
+        delta_energy_strong,
+        disk_bins_bhbh,
+        bindex
+        ):
+    """"Adjust orb ecc due to encounters btw BBH and ecc single
+    
+    Return array of modified binary BH separations and eccentricities
+    perturbed by encounters within f*R_Hill, for eccentric singleton
+    population, where f is some fraction/multiple of Hill sphere radius R_H
     Right now assume f=1.
-    Logic:  
+    Logic:
             0.  Find number of binaries in this timestep given by bindex
             1.  Find the binary center of mass (c.o.m.) and corresponding orbital velocities & binary total masses.
-                bin_array[9,:] = bin c.o.m. = [R_bin1_com,R_bin2_com,...]. These are the orbital radii of the bins.
-                bin_array[8,;] = bin_separation =[a_bin1,a_bin2,...]
-                bin_array[2,:]+bin_array[3,:] = mass of binaries
-                bin_array[13,:] = ecc of binary around com
-                bin_array[18,:] = orb. ecc of binary com around SMBH
+                disk_bins_bhbh[9,:] = bin c.o.m. = [R_bin1_com,R_bin2_com,...]. These are the orbital radii of the bins.
+                disk_bins_bhbh[8,;] = bin_separation =[a_bin1,a_bin2,...]
+                disk_bins_bhbh[2,:]+disk_bins_bhbh[3,:] = mass of binaries
+                disk_bins_bhbh[13,:] = ecc of binary around com
+                disk_bins_bhbh[18,:] = orb. ecc of binary com around SMBH
                 Keplerian orbital velocity of the bin c.o.m. around SMBH: v_bin,i= sqrt(GM_SMBH/R_bin,i_com)= c/sqrt(R_bin,i_com)
             2.  Calculate the binary orbital time and N_orbits/timestep
                 For example, since
@@ -291,41 +293,45 @@ def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locatio
       add binary components m1,m2 back to singleton arrays with new orbital eccentricities e_1,e_2 from energy of encounter.
       Equipartition energy so m1v1^2 =m2 v_2^2 and 
       generate new individual orbital eccentricities e1=v1/v_kep_circ and e_2=v_2/v_kep_circ
-      Take energy put into destroying binary from orb. eccentricity of m3.  
-        Parameters
+      Take energy put into destroying binary from orb. eccentricity of m3.
+
+    Parameters
     ----------
-    mass_smbh : float
+    smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    prograde_bh_locations : float array
-        locations of prograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
-    prograde_bh_masses : float array
-        mass of prograde singleton BH at start of timestep in units of solar masses
-    disk_surf_model : function
-        returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
-        can accept a simple float (constant), but this is deprecated
-    disk_aspect_ratio_model : function
-        returns AGN gas disk aspect ratio given a distance from the SMBH in r_g
-        can accept a simple float (constant), but this is deprecated
-    bh_orb_ecc : float array
-        orbital eccentricity of singleton BH     
-    timestep : float
+    disk_bh_pro_orbs_a : float array
+        locations of prograde singleton BH at start of timestep in units of
+        gravitational radii (r_g=GM_SMBH/c^2)
+    disk_bh_pro_masses : float array
+        mass of prograde singleton BH at start of timestep in units of solar
+        masses
+    disk_bh_pro_orbs_ecc : float array
+        orbital eccentricity of singleton BH
+    timestep_duration_yr : float
         size of timestep in years
+    disk_bh_pro_orb_ecc_crit : float
+        critical orbital eccentricity below which orbit is close enough to circ
+    delta_energy_strong : float
+        average energy change per strong encounter
+    disk_bins_bhbh : [21, bindex] mixed array
+        properties of binary BBH, see add_to_binary_array2 function for
+        complete description
+    bindex : int
+        number of binaries at time of function call
         
-        Returns
+    Returns
     -------
-    bh_new_orb_ecc : float array
-        updated orbital eccentricities damped by AGN gas
-        """
-    #Read in binary array properties.
-    #Loop through number of binaries (given by bindex) and number of bin properties (given by integer_nbinprop)
-    
+    disk_bins_bhbh : [21, bindex] mixed array
+        updated version of input after dynamical perturbations
+    """
     #Housekeeping
     #Mass of Sun in kg
     #solar_mass = M_sun.value
     solar_mass = 2.e30
 
     number_of_binaries = bindex
-    # set up 1-d arrays for bin com, masses, separations, velocities of com, orbit time (in yrs), orbits/timestep
+    # set up 1-d arrays for bin com, masses, separations, velocities of com,
+    # orbit time (in yrs), orbits/timestep
     bin_coms = np.zeros(number_of_binaries)
     bin_masses = np.zeros(number_of_binaries)
     bin_separations = np.zeros(number_of_binaries)
@@ -336,136 +342,134 @@ def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locatio
     bin_orbits_per_timestep = np.zeros(number_of_binaries)
     bin_binding_energy = np.zeros(number_of_binaries)
 
-    #Read in values of binaries at start of timestep
+    # Read in values of binaries at start of timestep
     for j in range(0, number_of_binaries-1):
-        bin_coms[j] = bin_array[9,j]
-        bin_masses[j] = bin_array[2,j] + bin_array[3,j]
-        bin_separations[j] = bin_array[8,j]
+        bin_coms[j] = disk_bins_bhbh[9,j]
+        bin_masses[j] = disk_bins_bhbh[2,j] + disk_bins_bhbh[3,j]
+        bin_separations[j] = disk_bins_bhbh[8,j]
         # Eccentricity of binary around its own center of mass
-        bin_eccentricities[j] = bin_array[13,j]
+        bin_eccentricities[j] = disk_bins_bhbh[13,j]
         # Orbital Eccentricity of binary c.o.m. around SMBH
-        bin_orbital_eccentricities[j] = bin_array[18,j] 
+        bin_orbital_eccentricities[j] = disk_bins_bhbh[18,j] 
         # Keplerian binary velocity of c.o.m. around SMBH
         bin_velocities[j] = scipy.constants.c/np.sqrt(bin_coms[j])
         # binary orbital time around SMBH in yrs (3.15yrs at 1000r_g from 1e8 Msun SMBH)
-        bin_orbital_times[j] = 3.15*(mass_smbh/1.e8)*(bin_coms[j]/1.e3)**(1.5)
+        bin_orbital_times[j] = 3.15*(smbh_mass/1.e8)*(bin_coms[j]/1.e3)**(1.5)
         # number of orbits per timestep
-        bin_orbits_per_timestep[j] = timestep/bin_orbital_times[j]
+        bin_orbits_per_timestep[j] = timestep_duration_yr/bin_orbital_times[j]
         # binary binding energy (GM1M2/Sep) in Joules where M1,M2 in Kg and Sep in meters
-        rg_in_meters = scipy.constants.G*(solar_mass*mass_smbh)/(scipy.constants.c)**2.0
-        bin_binding_energy[j] = scipy.constants.G*((solar_mass)**2)*bin_array[2,j]*bin_array[3,j]/(bin_separations[j]*rg_in_meters)
+        rg_in_meters = scipy.constants.G*(solar_mass*smbh_mass)/(scipy.constants.c)**2.0
+        bin_binding_energy[j] = scipy.constants.G*((solar_mass)**2)*disk_bins_bhbh[2,j]*disk_bins_bhbh[3,j]/(bin_separations[j]*rg_in_meters)
 
-
-    #Assume all incoming eccentricities are prograde (for now)
-    prograde_bh_orb_ecc = bh_orb_ecc
-    #Find the e> crit_ecc population. These are the interlopers that can perturb the circularized population
-    ecc_prograde_population = np.ma.masked_where(prograde_bh_orb_ecc < crit_ecc, prograde_bh_orb_ecc)
-    #Find the indices of the e<crit_ecc population
+    # Find the e> crit_ecc population. These are the interlopers that can perturb the circularized population
+    ecc_prograde_population = np.ma.masked_where(disk_bh_pro_orbs_ecc < disk_bh_pro_orb_ecc_crit, disk_bh_pro_orbs_ecc)
+    # Find the indices of the e<crit_ecc population
     ecc_prograde_population_indices = np.ma.nonzero(ecc_prograde_population)
-    #Find their locations and masses
-    ecc_prograde_population_locations = prograde_bh_locations[ecc_prograde_population_indices]
-    ecc_prograde_population_masses = prograde_bh_masses[ecc_prograde_population_indices]
-    ecc_prograde_population_eccentricities = prograde_bh_orb_ecc[ecc_prograde_population_indices]
-    #Find min and max radii around SMBH for eccentric orbiters
-    ecc_orb_min = prograde_bh_locations[ecc_prograde_population_indices]*(1.0-prograde_bh_orb_ecc[ecc_prograde_population_indices])
-    ecc_orb_max = prograde_bh_locations[ecc_prograde_population_indices]*(1.0+prograde_bh_orb_ecc[ecc_prograde_population_indices])
-    #print('min',ecc_orb_min)
-    #print('max',ecc_orb_max)
+    # Find their locations and masses
+    ecc_prograde_population_locations = disk_bh_pro_orbs_a[ecc_prograde_population_indices]
+    ecc_prograde_population_masses = disk_bh_pro_masses[ecc_prograde_population_indices]
+    ecc_prograde_population_eccentricities = disk_bh_pro_orbs_ecc[ecc_prograde_population_indices]
+    # Find min and max radii around SMBH for eccentric orbiters
+    ecc_orb_min = disk_bh_pro_orbs_a[ecc_prograde_population_indices]*(1.0-disk_bh_pro_orbs_ecc[ecc_prograde_population_indices])
+    ecc_orb_max = disk_bh_pro_orbs_a[ecc_prograde_population_indices]*(1.0+disk_bh_pro_orbs_ecc[ecc_prograde_population_indices])
     # Keplerian velocity of ecc prograde orbiter around SMBH (=c/sqrt(a/r_g))
     ecc_velocities = scipy.constants.c/np.sqrt(ecc_prograde_population_locations)
 
-    #Set up number of interactions/encounters
+    # Set up number of interactions/encounters
     num_poss_ints = 0
     num_encounters = 0
     if number_of_binaries > 0:
             for i in range(0, number_of_binaries-1):
                 for j in range (0,len(ecc_prograde_population_locations)):
-                    #If binary com orbit lies inside eccentric orbit [min,max] radius
+                    # If binary com orbit lies inside eccentric orbit [min,max] radius
                     # i.e. does R_m3_minimum lie inside R_bin_maximum and does R_m3_max lie outside R_bin_minimum 
                     if (1.0-bin_orbital_eccentricities[i])*bin_coms[i] < ecc_orb_max[j] and (1.0+bin_orbital_eccentricities[i])*bin_coms[i] > ecc_orb_min[j]:
                         # Make a temporary Hill sphere treating binary + ecc interloper as a 'binary' = M_1+M_2+M_3
                         # r_h = a_circ1(temp_bin_mass/3mass_smbh)^1/3 so prob_enc/orb = mass_ratio^1/3/pi
                         temp_bin_mass = bin_masses[i] + ecc_prograde_population_masses[j]
-                        bh_smbh_mass_ratio = temp_bin_mass/(3.0*mass_smbh)
+                        bh_smbh_mass_ratio = temp_bin_mass/(3.0*smbh_mass)
                         mass_ratio_factor = (bh_smbh_mass_ratio)**(1./3.)
                         prob_orbit_overlap = (1./scipy.constants.pi)*mass_ratio_factor
                         prob_enc_per_timestep = prob_orbit_overlap * bin_orbits_per_timestep[i]
                         # critical velocity for ionization given by
                         # v_crit =sqrt(GM_1M_2(M_1+M_2+M_3)/M_3(M_1+M_2)a_bin) =sqrt(GM_1M_2(M_bin+M_3)/M_3M_bin a_bin)
                         # & divide by 1.e3 to get v_crit in km/s
-                        v_crit_kms = np.sqrt(scipy.constants.G*bin_array[2,i]*bin_array[3,i]*temp_bin_mass*solar_mass/(ecc_prograde_population_masses[j]*bin_masses[i]*bin_separations[i]*rg_in_meters))/1.e3 
+                        v_crit_kms = np.sqrt(scipy.constants.G*disk_bins_bhbh[2,i]*disk_bins_bhbh[3,i]*temp_bin_mass*solar_mass/(ecc_prograde_population_masses[j]*bin_masses[i]*bin_separations[i]*rg_in_meters))/1.e3 
 
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
                         random_uniform_number = rng.random()
                         if random_uniform_number < prob_enc_per_timestep:
                             #Perturb *this* ith binary depending on how hard it already is.
-                            num_encounters = num_encounters + 1                            
+                            num_encounters = num_encounters + 1
                             #Line below is key. Right now it say only dynamically perturb bin if its circularized. If not circularized, leave alone.
                             #If comment out this line then all binaries are perturbed.
                             #if bin_orbital_eccentricities[i] <= crit_ecc:
                                 # Find relative velocity of interloper in km/s so divide by 1.e3
                             rel_vel_kms = abs(bin_velocities[i] - ecc_velocities[j])/1.e3
                             rel_vel_ms = abs(bin_velocities[i] - ecc_velocities[j])
-                                # K.E. of interloper
+                            # K.E. of interloper
                             ke_interloper = 0.5*ecc_prograde_population_masses[j]*solar_mass*(rel_vel_ms**2.0)
                             hard = bin_binding_energy[i] - ke_interloper
                             if hard > 0:
                                 # Binary is hard w.r.t interloper
-                                # Change binary parameters; decr separation, incr ecc around com and orb_ecc 
-                                #print("Hardening Ke3,BEb, bin dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de),bin_eccentricities[i],bin_eccentricities[i]*(1+de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
-                                bin_separations[i] = bin_separations[i]*(1-de)
-                                bin_eccentricities[i] = bin_eccentricities[i]*(1+de)
-                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
-                                #Change interloper parameters; increase a_ecc, increase e_ecc
-                                ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1+de)
-                                ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1+de)
-
+                                # Change binary parameters; decr separation, incr ecc around com and orb_ecc
+                                bin_separations[i] = bin_separations[i]*(1-delta_energy_strong)
+                                bin_eccentricities[i] = bin_eccentricities[i]*(1+delta_energy_strong)
+                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
+                                # Change interloper parameters; increase a_ecc, increase e_ecc
+                                ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1+delta_energy_strong)
+                                ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1+delta_energy_strong)
                             if hard < 0:
-                                #Binary is soft w.r.t. interloper
-                                #Check to see if binary is ionized
-                                #if rel_vel_kms > v_crit_kms:
-                                #    print("Ionize bin, rel_vel, v_crit", rel_vel_kms, v_crit_kms)
-                                    
+                                # Binary is soft w.r.t. interloper
+                                # Check to see if binary is ionized
                                 # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
-                                #print("Softening bin Ke3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
-                                bin_separations[i] = bin_separations[i]*(1+de)
-                                bin_eccentricities[i] = bin_eccentricities[i]*(1-de)
-                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
-                                #Change interloper parameters; decrease a_ecc, decrease e_ecc
-                                ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1-de)
-                                ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1-de)
-
-
-                                
+                                bin_separations[i] = bin_separations[i]*(1+delta_energy_strong)
+                                bin_eccentricities[i] = bin_eccentricities[i]*(1-delta_energy_strong)
+                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
+                                # Change interloper parameters; decrease a_ecc, decrease e_ecc
+                                ecc_prograde_population_locations[j] = ecc_prograde_population_locations[j]*(1-delta_energy_strong)
+                                ecc_prograde_population_eccentricities[j] = ecc_prograde_population_eccentricities[j]*(1-delta_energy_strong)                               
                         num_poss_ints = num_poss_ints + 1
-                #print("Num encounters",i,num_poss_ints,num_encounters)
             num_poss_ints = 0
             num_encounters = 0
-        
 
-            
-    #Write new binary parameters (new separations, new orb. ecc around SMBH, new ecc around c.o.m.)
+    # Write new binary parameters (new separations, new orb. ecc around SMBH, new ecc around c.o.m.)
     for j in range(0,number_of_binaries-1):
-        bin_array[8,j] = bin_separations[j]
-        bin_array[18,j] = bin_orbital_eccentricities[j]
-        bin_array[13,j] = bin_eccentricities[j]
+        disk_bins_bhbh[8,j] = bin_separations[j]
+        disk_bins_bhbh[18,j] = bin_orbital_eccentricities[j]
+        disk_bins_bhbh[13,j] = bin_eccentricities[j]
 
     # TO DO: ALSO return new array of singletons with changed params.
 
-    return bin_array
+    return disk_bins_bhbh
 
-def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, bh_orb_ecc, timestep, crit_ecc, de,bin_array,bindex):
-    """"Return array of modified binary BH separations and eccentricities perturbed by encounters within f*R_Hill, for circularized singleton population, where f is some fraction/multiple of Hill sphere radius R_H
+def circular_binaries_encounters_circ_prograde(
+        smbh_mass,
+        disk_bh_pro_orbs_a,
+        disk_bh_pro_masses,
+        disk_bh_pro_orbs_ecc,
+        timestep_duration_yr,
+        disk_bh_pro_orb_ecc_crit,
+        delta_energy_strong,
+        disk_bins_bhbh,
+        bindex
+        ):
+    """"Adjust orb ecc due to encounters btw BBH and circ single
+
+    Return array of modified binary BH separations and eccentricities
+    perturbed by encounters within f*R_Hill, for circularized singleton
+    population, where f is some fraction/multiple of Hill sphere radius
+    R_H
     Right now assume f=1.
     Logic:  
             0.  Find number of binaries in this timestep given by bindex
             1.  Find the binary center of mass (c.o.m.) and corresponding orbital velocities & binary total masses.
-                bin_array[9,:] = bin c.o.m. = [R_bin1_com,R_bin2_com,...]. These are the orbital radii of the bins.
-                bin_array[8,;] = bin_separation =[a_bin1,a_bin2,...]
-                bin_array[2,:]+bin_array[3,:] = mass of binaries
-                bin_array[13,:] = ecc of binary around com
-                bin_array[18,:] = orb. ecc of binary com around SMBH
+                disk_bins_bhbh[9,:] = bin c.o.m. = [R_bin1_com,R_bin2_com,...]. These are the orbital radii of the bins.
+                disk_bins_bhbh[8,;] = bin_separation =[a_bin1,a_bin2,...]
+                disk_bins_bhbh[2,:]+disk_bins_bhbh[3,:] = mass of binaries
+                disk_bins_bhbh[13,:] = ecc of binary around com
+                disk_bins_bhbh[18,:] = orb. ecc of binary com around SMBH
                 Keplerian orbital velocity of the bin c.o.m. around SMBH: v_bin,i= sqrt(GM_SMBH/R_bin,i_com)= c/sqrt(R_bin,i_com)
             2.  Calculate the binary orbital time and N_orbits/timestep
                 For example, since
@@ -541,34 +545,37 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
       add binary components m1,m2 back to singleton arrays with new orbital eccentricities e_1,e_2 from energy of encounter.
       Equipartition energy so m1v1^2 =m2 v_2^2 and 
       generate new individual orbital eccentricities e1=v1/v_kep_circ and e_2=v_2/v_kep_circ
-      Take energy put into destroying binary from orb. eccentricity of m3.  
-        Parameters
+      Take energy put into destroying binary from orb. eccentricity of m3.
+
+    Parameters
     ----------
-    mass_smbh : float
+    smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    prograde_bh_locations : float array
-        locations of prograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
-    prograde_bh_masses : float array
-        mass of prograde singleton BH at start of timestep in units of solar masses
-    disk_surf_model : function
-        returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
-        can accept a simple float (constant), but this is deprecated
-    disk_aspect_ratio_model : function
-        returns AGN gas disk aspect ratio given a distance from the SMBH in r_g
-        can accept a simple float (constant), but this is deprecated
-    bh_orb_ecc : float array
-        orbital eccentricity of singleton BH     
-    timestep : float
+    disk_bh_pro_orbs_a : float array
+        locations of prograde singleton BH at start of timestep in units of
+        gravitational radii (r_g=GM_SMBH/c^2)
+    disk_bh_pro_masses : float array
+        mass of prograde singleton BH at start of timestep in units of solar
+        masses
+    disk_bh_pro_orbs_ecc : float array
+        orbital eccentricity of singleton BH
+    timestep_duration_yr : float
         size of timestep in years
+    disk_bh_pro_orb_ecc_crit : float
+        critical orbital eccentricity below which orbit is close enough to circ
+    delta_energy_strong : float
+        average energy change per strong encounter
+    disk_bins_bhbh : [21, bindex] mixed array
+        properties of binary BBH, see add_to_binary_array2 function for
+        complete description
+    bindex : int
+        number of binaries at time of function call
         
-        Returns
+    Returns
     -------
-    bh_new_orb_ecc : float array
-        updated orbital eccentricities damped by AGN gas
-        """
-    #Read in binary array properties.
-    #Loop through number of binaries (given by bindex) and number of bin properties (given by integer_nbinprop)
-    
+    disk_bins_bhbh : [21, bindex] mixed array
+        updated version of input after dynamical perturbations
+    """
     # Housekeeping
     # Mass of Sun in kg
     solar_mass = 2.e30
@@ -589,39 +596,34 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
 
     #Read in values of binaries at start of timestep
     for j in range(0, number_of_binaries-1):
-        bin_coms[j] = bin_array[9,j]
-        bin_masses[j] = bin_array[2,j] + bin_array[3,j]
-        bin_separations[j] = bin_array[8,j]
+        bin_coms[j] = disk_bins_bhbh[9,j]
+        bin_masses[j] = disk_bins_bhbh[2,j] + disk_bins_bhbh[3,j]
+        bin_separations[j] = disk_bins_bhbh[8,j]
         # Eccentricity of binary around its own center of mass
-        bin_eccentricities[j] = bin_array[13,j]
+        bin_eccentricities[j] = disk_bins_bhbh[13,j]
         # Orbital Eccentricity of binary c.o.m. around SMBH
-        bin_orbital_eccentricities[j] = bin_array[18,j] 
+        bin_orbital_eccentricities[j] = disk_bins_bhbh[18,j] 
         # Keplerian binary velocity of c.o.m. around SMBH
         bin_velocities[j] = scipy.constants.c/np.sqrt(bin_coms[j])
         # binary orbital time around SMBH in yrs (3.15yrs at 1000r_g from 1e8 Msun SMBH)
-        bin_orbital_times[j] = 3.15*(mass_smbh/1.e8)*(bin_coms[j]/1.e3)**(1.5)
+        bin_orbital_times[j] = 3.15*(smbh_mass/1.e8)*(bin_coms[j]/1.e3)**(1.5)
         # number of orbits per timestep
-        bin_orbits_per_timestep[j] = timestep/bin_orbital_times[j]
+        bin_orbits_per_timestep[j] = timestep_duration_yr/bin_orbital_times[j]
         # binary binding energy (GM1M2/Sep) in Joules where M1,M2 in Kg and Sep in meters
-        rg_in_meters = scipy.constants.G*(solar_mass*mass_smbh)/(scipy.constants.c)**2.0
-        bin_binding_energy[j] = scipy.constants.G*((solar_mass)**2)*bin_array[2,j]*bin_array[3,j]/(bin_separations[j]*rg_in_meters)
+        rg_in_meters = scipy.constants.G*(solar_mass*smbh_mass)/(scipy.constants.c)**2.0
+        bin_binding_energy[j] = scipy.constants.G*((solar_mass)**2)*disk_bins_bhbh[2,j]*disk_bins_bhbh[3,j]/(bin_separations[j]*rg_in_meters)
 
-
-    #Assume all incoming eccentricities are prograde (for now)
-    prograde_bh_orb_ecc = bh_orb_ecc
     #Find the e< crit_ecc population. These are the interlopers w. low encounter vel that can harden the circularized population
-    circ_prograde_population = np.ma.masked_where(prograde_bh_orb_ecc > crit_ecc, prograde_bh_orb_ecc)
+    circ_prograde_population = np.ma.masked_where(disk_bh_pro_orbs_ecc > disk_bh_pro_orb_ecc_crit, disk_bh_pro_orbs_ecc)
     #Find the indices of the e<crit_ecc population     
     circ_prograde_population_indices = np.ma.nonzero(circ_prograde_population)
     #Find their locations and masses
-    circ_prograde_population_locations = prograde_bh_locations[circ_prograde_population_indices]
-    circ_prograde_population_masses = prograde_bh_masses[circ_prograde_population_indices]
-    circ_prograde_population_eccentricities = prograde_bh_orb_ecc[circ_prograde_population_indices]
+    circ_prograde_population_locations = disk_bh_pro_orbs_a[circ_prograde_population_indices]
+    circ_prograde_population_masses = disk_bh_pro_masses[circ_prograde_population_indices]
+    circ_prograde_population_eccentricities = disk_bh_pro_orbs_ecc[circ_prograde_population_indices]
     #Find min and max radii around SMBH for eccentric orbiters
-    ecc_orb_min = prograde_bh_locations[circ_prograde_population_indices]*(1.0-prograde_bh_orb_ecc[circ_prograde_population_indices])
-    ecc_orb_max = prograde_bh_locations[circ_prograde_population_indices]*(1.0+prograde_bh_orb_ecc[circ_prograde_population_indices])
-    #print('min',ecc_orb_min)
-    #print('max',ecc_orb_max)
+    ecc_orb_min = disk_bh_pro_orbs_a[circ_prograde_population_indices]*(1.0-disk_bh_pro_orbs_ecc[circ_prograde_population_indices])
+    ecc_orb_max = disk_bh_pro_orbs_a[circ_prograde_population_indices]*(1.0+disk_bh_pro_orbs_ecc[circ_prograde_population_indices])
     # Keplerian velocity of ecc prograde orbiter around SMBH (=c/sqrt(a/r_g))
     circ_velocities = scipy.constants.c/np.sqrt(circ_prograde_population_locations)
 
@@ -635,16 +637,16 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
                     # i.e. does R_m3_minimum lie inside R_bin_maximum and does R_m3_max lie outside R_bin_minimum 
                     if (1.0-bin_orbital_eccentricities[i])*bin_coms[i] < ecc_orb_max[j] and (1.0+bin_orbital_eccentricities[i])*bin_coms[i] > ecc_orb_min[j]:
                         # Make a temporary Hill sphere treating binary + ecc interloper as a 'binary' = M_1+M_2+M_3
-                        # r_h = a_circ1(temp_bin_mass/3mass_smbh)^1/3 so prob_enc/orb = mass_ratio^1/3/pi
+                        # r_h = a_circ1(temp_bin_mass/3smbh_mass)^1/3 so prob_enc/orb = mass_ratio^1/3/pi
                         temp_bin_mass = bin_masses[i] + circ_prograde_population_masses[j]
-                        bh_smbh_mass_ratio = temp_bin_mass/(3.0*mass_smbh)
+                        bh_smbh_mass_ratio = temp_bin_mass/(3.0*smbh_mass)
                         mass_ratio_factor = (bh_smbh_mass_ratio)**(1./3.)                        
                         prob_orbit_overlap = (1./scipy.constants.pi)*mass_ratio_factor
                         prob_enc_per_timestep = prob_orbit_overlap * bin_orbits_per_timestep[i]
                         # critical velocity for ionization given by
                         # v_crit =sqrt(GM_1M_2(M_1+M_2+M_3)/M_3(M_1+M_2)a_bin) =sqrt(GM_1M_2(M_bin+M_3)/M_3M_bin a_bin)
                         # & divide by 1.e3 to get v_crit in km/s
-                        v_crit_kms = np.sqrt(scipy.constants.G*bin_array[2,i]*bin_array[3,i]*temp_bin_mass*solar_mass/(circ_prograde_population_masses[j]*bin_masses[i]*bin_separations[i]*rg_in_meters))/1.e3 
+                        v_crit_kms = np.sqrt(scipy.constants.G*disk_bins_bhbh[2,i]*disk_bins_bhbh[3,i]*temp_bin_mass*solar_mass/(circ_prograde_population_masses[j]*bin_masses[i]*bin_separations[i]*rg_in_meters))/1.e3 
 
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
@@ -664,51 +666,52 @@ def circular_binaries_encounters_circ_prograde(rng,mass_smbh, prograde_bh_locati
                             if hard > 0:
                                 # Binary is hard w.r.t interloper
                                 # Change binary parameters; decr separation, incr ecc around com and orb_ecc 
-                                # print("HARDEN bin KE3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de_strong),bin_eccentricities[i],bin_eccentricities[i]*(1+de_strong),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
                                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
-                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
-                                #Change interloper parameters; increase a_ecc, increase e_ecc
-                                circ_prograde_population_locations[j] = circ_prograde_population_locations[j]*(1+de)
-                                circ_prograde_population_eccentricities[j] = circ_prograde_population_eccentricities[j]*(1+de)
+                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
+                                # Change interloper parameters; increase a_ecc, increase e_ecc
+                                circ_prograde_population_locations[j] = circ_prograde_population_locations[j]*(1+delta_energy_strong)
+                                circ_prograde_population_eccentricities[j] = circ_prograde_population_eccentricities[j]*(1+delta_energy_strong)
 
                             if hard < 0:
-                                #Binary is soft w.r.t. interloper
-                                #Check to see if binary is ionized
-                                #if rel_vel_kms > v_crit_kms:
-                                #    print("IONIZE bin, rel_vel, v_crit", rel_vel_kms, v_crit_kms)
-                                    
+                                # Binary is soft w.r.t. interloper
+                                # Check to see if binary is ionized
                                 # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
-                                #print("SOFTEN KE3,BEb, bin dr,dr(1+de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
-                                bin_separations[i] = bin_separations[i]*(1+de)
-                                bin_eccentricities[i] = bin_eccentricities[i]*(1-de)
-                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
-                                #Change interloper parameters; decrease a_ecc, decrease e_ecc
-                                circ_prograde_population_locations[j] = circ_prograde_population_locations[j]*(1-de)
-                                circ_prograde_population_eccentricities[j] = circ_prograde_population_eccentricities[j]*(1-de)
-
-
-                                
+                                bin_separations[i] = bin_separations[i]*(1+delta_energy_strong)
+                                bin_eccentricities[i] = bin_eccentricities[i]*(1-delta_energy_strong)
+                                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
+                                # Change interloper parameters; decrease a_ecc, decrease e_ecc
+                                circ_prograde_population_locations[j] = circ_prograde_population_locations[j]*(1-delta_energy_strong)
+                                circ_prograde_population_eccentricities[j] = circ_prograde_population_eccentricities[j]*(1-delta_energy_strong)
                         num_poss_ints = num_poss_ints + 1
-                #print("Num encounters",i,num_poss_ints,num_encounters)
             num_poss_ints = 0
             num_encounters = 0
-        
 
-            
-    #Write new binary parameters (new separations, new orb. ecc around SMBH, new ecc around c.o.m.)
+    # Write new binary parameters (new separations, new orb. ecc around SMBH,
+    # new ecc around c.o.m.)
     for j in range(0,number_of_binaries-1):
-        bin_array[8,j] = bin_separations[j]
-        bin_array[18,j] = bin_orbital_eccentricities[j]
-        bin_array[13,j] = bin_eccentricities[j]
+        disk_bins_bhbh[8,j] = bin_separations[j]
+        disk_bins_bhbh[18,j] = bin_orbital_eccentricities[j]
+        disk_bins_bhbh[13,j] = bin_eccentricities[j]
 
-    
     #TO DO: Also return array of modified circularized orbiters.
 
-    return bin_array
+    return disk_bins_bhbh
 
-def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bindex, mbh_powerlaw_index, mode_mbh_init, de, sph_norm):
-    """ Use Leigh+18 to figure out the rate at which spheroid encounters happen to binaries embedded in the disk
+def bin_spheroid_encounter(
+        smbh_mass,
+        timestep_duration_yr,
+        disk_bins_bhbh,
+        time_passed,
+        bindex,
+        mbh_powerlaw_index,
+        mode_mbh_init,
+        delta_energy_strong,
+        sph_norm
+        ):
+    """Perturb orbits due to encounters with spheroid (NSC) objects
+    
+    Use Leigh+18 to figure out the rate at which spheroid encounters happen to binaries embedded in the disk
     Binaries at small disk radii encounter spheroid objects at high rate, particularly early on in the disk lifetime
     However, orbits at those small radii get captured quickly by the disk.
      
@@ -810,6 +813,33 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
     If binary is soft ie GM_bin/a_bin <m3v_rel^2 then:
       soften binary to a_bin = a_bin + da_bin and
       new binary eccentricity e_bin = e_bin + de
+
+    Parameters
+    ----------
+    smbh_mass : float
+        mass of supermassive black hole in units of solar masses
+    timestep_duration_yr : float
+        size of timestep in years
+    disk_bins_bhbh : [21, bindex] mixed array
+        properties of binary BBH, see add_to_binary_array2 function for
+        complete description
+    time_passed : float
+        the current time in the sim?
+    bindex : int
+        number of binaries at time of function call
+    mbh_powerlaw_index : 
+        dunno?
+    mode_mbh_init : 
+        dunno?
+    delta_energy_strong : float
+        average energy change per strong encounter
+    sph_norm :
+        dunno?
+        
+    Returns
+    -------
+    disk_bins_bhbh : [21, bindex] mixed array
+        updated version of input after dynamical perturbations
     """
     number_of_binaries = bindex
     # set up 1-d arrays for bin com, masses, separations
@@ -823,7 +853,7 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
     bin_orbital_inclinations = np.zeros(number_of_binaries)
 
     #Units of r_g normalized to 1AU around a 10^8Msun SMBH
-    dist_in_rg_m8 = 1.0*(1.0e8/mass_smbh)
+    dist_in_rg_m8 = 1.0*(1.0e8/smbh_mass)
 
     #Critical time (in yrs) for capture of all BH with a<1e3r_g (default is 1Myr for Sirko & Goodman (2003) disk)
     crit_time = 1.e6
@@ -842,30 +872,30 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
 
     #Read in values of binaries at start of timestep
     for j in range(0, number_of_binaries-1):
-        bin_coms[j] = bin_array[9,j]
-        bin_masses[j] = bin_array[2,j] + bin_array[3,j]
-        bin_separations[j] = bin_array[8,j]
+        bin_coms[j] = disk_bins_bhbh[9,j]
+        bin_masses[j] = disk_bins_bhbh[2,j] + disk_bins_bhbh[3,j]
+        bin_separations[j] = disk_bins_bhbh[8,j]
         # Eccentricity of binary around its own center of mass
-        bin_eccentricities[j] = bin_array[13,j]
+        bin_eccentricities[j] = disk_bins_bhbh[13,j]
         # Orbital Eccentricity of binary c.o.m. around SMBH
-        bin_orbital_eccentricities[j] = bin_array[18,j]
+        bin_orbital_eccentricities[j] = disk_bins_bhbh[18,j]
         # Keplerian binary velocity of c.o.m. around SMBH in units m/s
         bin_velocities[j] = scipy.constants.c/np.sqrt(bin_coms[j])
         # binary binding energy (GM1M2/Sep) in Joules where M1,M2 in Kg and Sep in meters
-        rg_in_meters = scipy.constants.G*(solar_mass*mass_smbh)/(scipy.constants.c)**2.0
-        bin_binding_energy[j] = scipy.constants.G*((solar_mass)**2)*bin_array[2,j]*bin_array[3,j]/(bin_separations[j]*rg_in_meters)
+        rg_in_meters = scipy.constants.G*(solar_mass*smbh_mass)/(scipy.constants.c)**2.0
+        bin_binding_energy[j] = scipy.constants.G*((solar_mass)**2)*disk_bins_bhbh[2,j]*disk_bins_bhbh[3,j]/(bin_separations[j]*rg_in_meters)
         # Binary orbital inclinations
-        bin_orbital_inclinations[j] = bin_array[17,j]
+        bin_orbital_inclinations[j] = disk_bins_bhbh[17,j]
 
     for i in range(0,number_of_binaries-1):
         #Calculate encounter rate for each binary based on com location, binary size and time passed
         if bin_coms[i] < crit_radius:
             if time_passed <= crit_time:
-                enc_rate = 0.02*(sph_norm/0.1)*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e3))
+                enc_rate = 0.02*(sph_norm/0.1)*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e3))
             if time_passed > crit_time:
                 enc_rate = 0.0
         if bin_coms[i] > crit_radius:
-                enc_rate = 0.002*(sph_norm/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
+                enc_rate = 0.002*(sph_norm/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
 
         # Based on est encounter rate, calculate if binary actually has a spheroid encounter
         random_uniform_number = rng.random()
@@ -935,21 +965,21 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
                 # print("HARDEN bin KE3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de_strong),bin_eccentricities[i],bin_eccentricities[i]*(1+de_strong),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
-                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
+                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
                 #Ignore interloper parameters, since just drawing randomly from NSC population.     
             if hard < 0:
                 # Binary is soft w.r.t. interloper
                 # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
                 #print("SOFTEN KE3,BEb, bin dr,dr(1+de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
-                bin_separations[i] = bin_separations[i]*(1+de)
-                bin_eccentricities[i] = bin_eccentricities[i]*(1-de)
-                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+de)
+                bin_separations[i] = bin_separations[i]*(1+delta_energy_strong)
+                bin_eccentricities[i] = bin_eccentricities[i]*(1-delta_energy_strong)
+                bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
                 # Ignore interloper parameters, since just drawing randomly from NSC population.
 
             # Rewrite new binary properties
-            bin_array[8,i] = bin_separations[i]
-            bin_array[13,i] = bin_eccentricities[i]
-            bin_array[18,i] = bin_orbital_eccentricities[i]
+            disk_bins_bhbh[8,i] = bin_separations[i]
+            disk_bins_bhbh[13,i] = bin_eccentricities[i]
+            disk_bins_bhbh[18,i] = bin_orbital_eccentricities[i]
             
             #New angle of binary w.r.t disk (in radians)
             if L_ratio < 1:
@@ -958,12 +988,11 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
                 bin_orbital_inclinations[i] = bin_orbital_inclinations[i] + (1/L_ratio)*(i3_rad/2.0)
 
             #Update bin array with new orbital inclination
-            bin_array[17,i] = bin_orbital_inclinations[i]
+            disk_bins_bhbh[17,i] = bin_orbital_inclinations[i]
 
-            #print("1 sep,ecc,orb ecc, i=",bin_separations[i],bin_eccentricities[i],bin_orbital_eccentricities[i],bin_orbital_inclinations[i])
             # End encounter
 
-    return bin_array
+    return disk_bins_bhbh
 
 def bin_recapture(bindex,bin_array,timestep):
     """ Recapture BBH that has orbital inclination >0 post spheroid encounter. 

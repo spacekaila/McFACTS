@@ -591,7 +591,6 @@ def main():
             # Perturb eccentricity via dynamical encounters
             if opts.flag_dynamic_enc > 0:
                 bh_orb_a_orb_ecc_pro = dynamics.circular_singles_encounters_prograde(
-                    rng,
                     opts.smbh_mass,
                     blackholes_pro.orb_a,
                     blackholes_pro.mass,
@@ -604,7 +603,6 @@ def main():
                 blackholes_pro.orb_ecc = bh_orb_a_orb_ecc_pro[1][0]
                 
                 star_orb_a_orb_ecc_pro = dynamics.circular_singles_encounters_prograde(
-                    rng,
                     opts.smbh_mass,
                     stars_pro.orb_a,
                     stars_pro.mass,
@@ -643,7 +641,6 @@ def main():
                         # Harden/soften binaries via dynamical encounters
                         # Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
                         binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
-                            rng,
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
                             blackholes_pro.mass,
@@ -657,7 +654,6 @@ def main():
 
                         # Soften/ ionize binaries due to encounters with eccentric singletons
                         binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
-                            rng,
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
                             blackholes_pro.mass,
@@ -713,7 +709,6 @@ def main():
                     if (opts.flag_dynamic_enc > 0):
                         # Spheroid encounters
                         binary_bh_array = dynamics.bin_spheroid_encounter(
-                            rng,
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
                             binary_bh_array,
