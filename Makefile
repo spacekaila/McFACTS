@@ -34,8 +34,8 @@ MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
 SEED=3456789012
-FNAME_INI= ${HERE}/recipes/p1_thompson.ini
-#FNAME_INI= ${HERE}/recipes/model_choice_old.ini
+#FNAME_INI= ${HERE}/recipes/p1_thompson.ini
+FNAME_INI= ${HERE}/recipes/model_choice_old.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
 # NAL files might not exist unless you download them from
 # https://gitlab.com/xevra/nal-data
@@ -63,12 +63,25 @@ version: $(CLEAN_CMD)
 install: $(CLEAN_CMD) version
 	python -m pip install --editable .
 
+setup: clean version
+	source ~/.bash_profile && \
+	conda activate base && \
+	conda remove -n mcfacts-dev --all -y && \
+	conda create --name mcfacts-dev "python>=3.10.4" pip -c conda-forge -c defaults -y && \
+	conda activate mcfacts-dev && \
+	python -m pip install --editable .
+
+unit_test: clean version
+	source ~/.bash_profile && \
+	conda activate mcfacts-dev && \
+	pytest
+
 #### Test one thing at a time ####
 
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
 mcfacts_sim: $(CLEAN_CMD)
 	python ${MCFACTS_SIM_EXE} \
-		--n_iterations 100 \
+		--iteration_num 3 \
 		--fname-ini ${FNAME_INI} \
 		--fname-log out.log \
 		--seed ${SEED}
@@ -87,7 +100,7 @@ mstar_runs:
 		--fname-ini ${FNAME_INI} \
 		--number_of_timesteps 1000 \
         --n_bins_max 10000 \
-		--n_iterations 100 \
+		--iteration_num 3 \
 		--dynamics \
 		--feedback \
 		--mstar-min 1e9 \

@@ -283,7 +283,7 @@ def tau_inc_dyn(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_bh_r
     """
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    SI_smbh_mass = smbh_mass * mc_const.ÏMsun  # kg
+    SI_smbh_mass = smbh_mass * mc_const.KgPerMsun  # kg
     SI_semi_maj_axis = disk_bh_retro_orbs_a * scipy.constants.G * smbh_mass \
                        / (scipy.constants.c) ** 2  # m
     SI_orbiter_mass = disk_bh_retro_masses * mc_const.KgPerMsun  # kg
