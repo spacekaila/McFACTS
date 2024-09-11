@@ -4,10 +4,26 @@ import scipy
 
 #from astropy.constants import M_sun
 
-def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, crit_ecc, de):
-    """"Return array of modified singleton BH orbital eccentricities perturbed by encounters within f*R_Hill, where f is some fraction/multiple of Hill sphere radius R_H
+def circular_singles_encounters_prograde(
+        rng,
+        smbh_mass,
+        disk_bh_pro_orbs_a,
+        disk_bh_pro_masses,
+        disk_surf_density_func,
+        disk_aspect_ratio_model,
+        bh_orb_ecc,
+        timestep,
+        crit_ecc,
+        de
+        ):
+    """"Adjust orb ecc due to encounters btw 2 single circ pro BH
     
-    Assume encounters between damped BH (e<e_crit) and undamped BH (e>e_crit) are the only important ones for now. 
+    Return array of modified singleton BH orbital eccentricities perturbed
+    by encounters within f*R_Hill, where f is some fraction/multiple of 
+    Hill sphere radius R_H
+    
+    Assume encounters between damped BH (e<e_crit) and undamped BH
+    (e>e_crit) are the only important ones for now.
     Since the e<e_crit population is the most likely BBH merger source.
     
     1, find those orbiters with e<e_crit and their
@@ -92,57 +108,54 @@ def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, 
                 a_bin -> a_bin + da_bin and
             new binary eccentricity 
                 e_bin -> e_bin + de
-            and remove da_bin worth of binary energy from eccentricity of m3. 
+            and remove da_bin worth of binary energy from eccentricity of m3.
 
-
-        Parameters
+    Parameters
     ----------
-    mass_smbh : float
+    smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    prograde_bh_locations : float array
-        locations of prograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
-    prograde_bh_masses : float array
-        mass of prograde singleton BH at start of timestep in units of solar masses
-    disk_surf_model : function
-        returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
+    disk_bh_pro_orbs_a : float array
+        locations of prograde singleton BH at start of timestep in units of
+        gravitational radii (r_g=GM_SMBH/c^2)
+    disk_bh_pro_masses : float array
+        mass of prograde singleton BH at start of timestep in units of solar
+        masses
+    disk_surf_density_func : function
+        returns AGN gas disk surface density in kg/m^2 given a distance from
+        the SMBH in r_g
         can accept a simple float (constant), but this is deprecated
     disk_aspect_ratio_model : function
         returns AGN gas disk aspect ratio given a distance from the SMBH in r_g
         can accept a simple float (constant), but this is deprecated
     bh_orb_ecc : float array
-        orbital eccentricity of singleton BH     
+        orbital eccentricity of singleton BH
     timestep : float
         size of timestep in years
     de : float
-        average energy change per strong encounter    
+        average energy change per strong encounter
         
-        Returns
+    Returns
     -------
     bh_new_loc_orb_ecc : float array
         updated bh locations and orbital eccentricities perturbed by dynamics
         """
     # get surface density function, or deal with it if only a float
-    if isinstance(disk_surf_model, float):
-        disk_surface_density = disk_surf_model
-    else:
-        disk_surface_density = disk_surf_model(prograde_bh_locations)
+    #if isinstance(disk_surf_density_func, float):
+    #    disk_surface_density = disk_surf_density_func
+    #else:
+    #    disk_surface_density = disk_surf_density_func(disk_bh_pro_orbs_a)
     # ditto for aspect ratio
-    if isinstance(disk_aspect_ratio_model, float):
-        disk_aspect_ratio = disk_aspect_ratio_model
-    else:
-        disk_aspect_ratio = disk_aspect_ratio_model(prograde_bh_locations)
+    #if isinstance(disk_aspect_ratio_model, float):
+    #    disk_aspect_ratio = disk_aspect_ratio_model
+    #else:
+    #    disk_aspect_ratio = disk_aspect_ratio_model(disk_bh_pro_orbs_a)
     #Set up new_bh_orb_ecc
     new_bh_orb_ecc=np.empty_like(bh_orb_ecc)
     
     #Calculate & normalize all the parameters above in t_damp
     # E.g. normalize q=bh_mass/smbh_mass to 10^-7
-    mass_ratio = prograde_bh_masses/mass_smbh
+    mass_ratio = disk_bh_pro_masses/smbh_mass
     
-    #normalized_mass_ratio = mass_ratio/10**(-7)
-    #normalized_bh_locations = prograde_bh_locations/1.e4
-    #normalized_disk_surf_model = disk_surface_density/1.e5
-    #normalized_aspect_ratio = disk_aspect_ratio/0.03
-
     #Assume all incoming eccentricities are prograde (for now)
     prograde_bh_orb_ecc = bh_orb_ecc
 
@@ -156,22 +169,22 @@ def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, 
     ecc_prograde_population_indices = np.ma.nonzero(ecc_prograde_population)
     #print('Circ indices',circ_prograde_population_indices)
     #Find their locations and masses
-    circ_prograde_population_locations = prograde_bh_locations[circ_prograde_population_indices]
-    circ_prograde_population_masses = prograde_bh_masses[circ_prograde_population_indices]
+    circ_prograde_population_locations = disk_bh_pro_orbs_a[circ_prograde_population_indices]
+    circ_prograde_population_masses = disk_bh_pro_masses[circ_prograde_population_indices]
     #print('Circ locations',circ_prograde_population_locations)
     #print('Circ masses',circ_prograde_population_masses)
     #Ecc locs
-    ecc_prograde_population_locations = prograde_bh_locations[ecc_prograde_population_indices]
-    ecc_prograde_population_masses = prograde_bh_masses[ecc_prograde_population_indices]
+    ecc_prograde_population_locations = disk_bh_pro_orbs_a[ecc_prograde_population_indices]
+    ecc_prograde_population_masses = disk_bh_pro_masses[ecc_prograde_population_indices]
 
     #T_orb = pi (R/r_g)^1.5 (GM_smbh/c^2) = pi (R/r_g)^1.5 (GM_smbh*2e30/c^2)
     #      = pi (R/r_g)^1.5 (6.7e-11 2e38/27e24)= pi (R/r_g)^1.5 (1.3e11)s =(R/r_g)^1/5 (1.3e4)
-    orbital_timescales_circ_pops = scipy.constants.pi*((circ_prograde_population_locations)**(1.5))*(2.e30*mass_smbh*scipy.constants.G)/(scipy.constants.c**(3.0)*3.15e7) 
+    orbital_timescales_circ_pops = scipy.constants.pi*((circ_prograde_population_locations)**(1.5))*(2.e30*smbh_mass*scipy.constants.G)/(scipy.constants.c**(3.0)*3.15e7) 
     N_circ_orbs_per_timestep = timestep/orbital_timescales_circ_pops
     #print('Orb. timescales (yr)' , orbital_timescales_circ_pops)
     #print('N_circ_orb/timestep' , N_circ_orbs_per_timestep)
-    ecc_orb_min = prograde_bh_locations[ecc_prograde_population_indices]*(1.0-prograde_bh_orb_ecc[ecc_prograde_population_indices])
-    ecc_orb_max = prograde_bh_locations[ecc_prograde_population_indices]*(1.0+prograde_bh_orb_ecc[ecc_prograde_population_indices])
+    ecc_orb_min = disk_bh_pro_orbs_a[ecc_prograde_population_indices]*(1.0-prograde_bh_orb_ecc[ecc_prograde_population_indices])
+    ecc_orb_max = disk_bh_pro_orbs_a[ecc_prograde_population_indices]*(1.0+prograde_bh_orb_ecc[ecc_prograde_population_indices])
     #print('min',ecc_orb_min)
     #print('max',ecc_orb_max)
     #print('len(circ_locns)',len(circ_prograde_population_locations))
@@ -181,12 +194,10 @@ def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, 
             for i in range(0,len(circ_prograde_population_locations)):
                 for j in range (0,len(ecc_prograde_population_locations)):
                     if circ_prograde_population_locations[i] < ecc_orb_max[j] and circ_prograde_population_locations[i] > ecc_orb_min[j]:
-                        #print("Possible Interaction!")
-                        #print(prograde_bh_locations[j],prograde_bh_orb_ecc[j],ecc_orb_min[j],circ_prograde_population_locations[i],ecc_orb_max[j])
                         #prob_encounter/orbit =hill sphere size/circumference of circ orbit =2RH/2pi a_circ1
-                        # r_h = a_circ1(temp_bin_mass/3mass_smbh)^1/3 so prob_enc/orb = mass_ratio^1/3/pi
+                        # r_h = a_circ1(temp_bin_mass/3smbh_mass)^1/3 so prob_enc/orb = mass_ratio^1/3/pi
                         temp_bin_mass = circ_prograde_population_masses[i] + ecc_prograde_population_masses[j]
-                        bh_smbh_mass_ratio = temp_bin_mass/(3.0*mass_smbh)
+                        bh_smbh_mass_ratio = temp_bin_mass/(3.0*smbh_mass)
                         mass_ratio_factor = (bh_smbh_mass_ratio)**(1./3.)
                         prob_orbit_overlap = (1./scipy.constants.pi)*mass_ratio_factor
                         prob_enc_per_timestep = prob_orbit_overlap * N_circ_orbs_per_timestep[i]
@@ -206,9 +217,9 @@ def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, 
                             if prograde_bh_orb_ecc[indx_array[i]] <= crit_ecc:
                                 #print(prograde_bh_orb_ecc[indx_array[i]],prograde_bh_orb_ecc[j])
                                 prograde_bh_orb_ecc[indx_array[i]] = de
-                                prograde_bh_locations[indx_array[i]] = prograde_bh_locations[indx_array[i]]*(1.0 + de)
+                                disk_bh_pro_orbs_a[indx_array[i]] = disk_bh_pro_orbs_a[indx_array[i]]*(1.0 + de)
                                 prograde_bh_orb_ecc[j] = prograde_bh_orb_ecc[j]*(1 - de)
-                                prograde_bh_locations[j] = prograde_bh_locations[j]*(1 - de)
+                                disk_bh_pro_orbs_a[j] = disk_bh_pro_orbs_a[j]*(1 - de)
                                 #print(prograde_bh_orb_ecc[indx_array[i]],prograde_bh_orb_ecc[j])
                         
                         num_poss_ints = num_poss_ints + 1
@@ -216,7 +227,7 @@ def circular_singles_encounters_prograde(rng, mass_smbh, prograde_bh_locations, 
             num_poss_ints = 0
             num_encounters = 0
     
-    prograde_bh_locn_orb_ecc = [[prograde_bh_locations],[prograde_bh_orb_ecc]]    
+    prograde_bh_locn_orb_ecc = [[disk_bh_pro_orbs_a],[prograde_bh_orb_ecc]]    
     return prograde_bh_locn_orb_ecc
 
 def circular_binaries_encounters_ecc_prograde(rng,mass_smbh, prograde_bh_locations, prograde_bh_masses, bh_orb_ecc, timestep, crit_ecc, de,bin_array,bindex):
