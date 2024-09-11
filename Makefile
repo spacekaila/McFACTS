@@ -71,6 +71,10 @@ setup: clean version
 	conda activate mcfacts-dev && \
 	python -m pip install --editable .
 
+unit_test: clean version
+	source ~/.bash_profile && \
+	conda activate mcfacts-dev && \
+	pytest
 
 #### Test one thing at a time ####
 
