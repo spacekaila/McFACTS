@@ -187,18 +187,18 @@ def main():
     print("opts.smbh_mass", opts.smbh_mass)
     print("opts.fraction_bin_retro", opts.fraction_bin_retro)
 
-    for galaxy in range(opts.galaxy_num):
-        print("Iteration", galaxy)
+    for iteration in range(opts.iteration_num):
+        print("Iteration", iteration)
         # Set random number generator for this run with incremented seed
-        reset_random(opts.seed+galaxy)
+        reset_random(opts.seed+iteration)
 
-        # Make subdirectories for each galaxy
+        # Make subdirectories for each iteration
         # Fills run number with leading zeros to stay sequential
-        galaxy_zfilled_str = f"{galaxy:>0{int(np.log10(opts.galaxy_num))+1}}"
+        iteration_zfilled_str = f"{iteration:>0{int(np.log10(opts.iteration_num))+1}}"
         try:  # Make subdir, exit if it exists to avoid clobbering.
-            os.makedirs(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}"), exist_ok=False)
+            os.makedirs(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}"), exist_ok=False)
         except FileExistsError:
-            raise FileExistsError(f"Directory \'run{galaxy_zfilled_str}\' exists. Exiting so I don't delete your data.")
+            raise FileExistsError(f"Directory \'run{iteration_zfilled_str}\' exists. Exiting so I don't delete your data.")
 
         # can index other parameter lists here if needed.
         # Housekeeping for array initialization
@@ -268,26 +268,34 @@ def main():
         stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=blackholes.id_num.max()+1)
         print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
 
-        filing_cabinet = AGNFilingCabinet(category=np.full(blackholes.mass.shape, 0),
-                                          agnobj=blackholes
+        filing_cabinet = AGNFilingCabinet(id_num=blackholes.id_num,
+                                          category=np.full(blackholes.mass.shape, 0),
+                                          orb_a=blackholes.orb_a,
+                                          mass=blackholes.mass,
+                                          size=np.full(blackholes.mass.shape, -1),
                                           )
-        filing_cabinet.add_objects(create_id=False, new_id_num=stars.id_num, new_category=np.full(stars.mass.shape, 2),
-                                   new_direction=np.full(stars.mass.shape, 0),
-                                   new_mass=stars.mass,
-                                   new_spin=stars.spin,
-                                   new_spin_angle=stars.spin_angle,
+
+        filing_cabinet.add_objects(new_id_num=stars.id_num,
+                                   new_category=np.full(stars.id_num.size, 1),
                                    new_orb_a=stars.orb_a,
-                                   new_orb_inc=stars.orb_inc,
-                                   new_orb_ang_mom=stars.orb_ang_mom,
-                                   new_orb_ecc=stars.orb_ecc,
-                                   new_orb_arg_periapse=stars.orb_arg_periapse,
-                                   new_gen=stars.gen)
+                                   new_mass=stars.mass,
+                                   new_size=stars.radius,
+                                   new_direction=np.zeros(stars.id_num.size),
+                                   new_disk_inner_outer=np.zeros(stars.id_num.size))
 
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
         #  that end up with semi-major axis < 50rg
         # Assume all drawn from prograde population for now.
         #   SF: Is this assumption important here? Where does it come up?
+
+        # Test if any BH or BBH are in the danger-zone (<mininum_safe_distance, default =50r_g) from SMBH.
+        # Potential EMRI/BBH EMRIs.
+        # Find prograde BH in inner disk. Define inner disk as <=50r_g. 
+        # Since a 10Msun BH will decay into a 10^8Msun SMBH at 50R_g in ~38Myr and decay time propto a^4.
+        # e.g at 25R_g, decay time is only 2.3Myr.
+        min_safe_distance = 50.0
+
 
         bh_orb_a_inner_disk = []
         bh_mass_inner_disk = []
@@ -308,7 +316,7 @@ def main():
         blackholes_pro.keep_objects(bh_indices_pro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(bh_id_num_pro, np.ones(blackholes_pro.mass.shape))
+        #filing_cabinet.change_direction(bh_id_num_pro, np.ones(blackholes_pro.mass.shape))
 
         # Find prograde star orbiters.
         star_indices_pro = np.where(stars.orb_ang_mom > 0)
@@ -317,7 +325,7 @@ def main():
         stars_pro.keep_objects(star_indices_pro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(star_id_num_pro, np.ones(stars_pro.mass.shape))
+        #filing_cabinet.change_direction(star_id_num_pro, np.ones(stars_pro.mass.shape))
 
         # Find retrograde black holes
         bh_indices_retro = np.where(blackholes.orb_ang_mom < 0)
@@ -326,7 +334,7 @@ def main():
         bh_id_num_retro = np.take(blackholes.id_num, bh_indices_retro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(bh_id_num_retro, np.full(blackholes_retro.mass.shape, -1))
+        #filing_cabinet.change_direction(bh_id_num_retro, np.full(blackholes_retro.mass.shape, -1))
 
         # Find retrograde stars
         star_indices_retro = np.where(stars.orb_ang_mom < 0)
@@ -335,11 +343,11 @@ def main():
         star_id_num_retro = np.take(stars.id_num, star_indices_retro)
 
         # Update filing cabinet
-        filing_cabinet.change_direction(star_id_num_retro, np.full(stars_retro.mass.shape, -1))
+        #filing_cabinet.change_direction(star_id_num_retro, np.full(stars_retro.mass.shape, -1))
 
         # Writing initial parameters to file
-        stars.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_star.dat"))
-        blackholes.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_bh.dat"))
+        stars.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_star.dat"))
+        blackholes.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_bh.dat"))
 
         # Housekeeping:
         # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc, nu_gw, h_bin)
@@ -349,11 +357,11 @@ def main():
         number_of_mergers = 0
         frac_bin_retro = opts.fraction_bin_retro
 
-        # Set up EMRI output array with properties we want to record (galaxy, time, R,M,e,h_char,f_gw)
+        # Set up EMRI output array with properties we want to record (iteration, time, R,M,e,h_char,f_gw)
         num_of_emri_properties = 7
         nemri = 0
 
-        # Set up BBH gw array with properties we want to record (galaxy, time, sep, Mb, eb(around c.o.m.),h_char,f_gw)
+        # Set up BBH gw array with properties we want to record (iteration, time, sep, Mb, eb(around c.o.m.),h_char,f_gw)
         # Set up empty list of indices of BBH to track
         bbh_gw_indices = []
         num_of_bbh_gw_properties = 7
@@ -409,15 +417,16 @@ def main():
         while time_passed < time_final:
             # Record
             if not (opts.no_snapshots):
+
                 if (opts.verbose):
-                    blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
-                    blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                    stars_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_pro_{timestep_current_num}.dat"))
-                    stars_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
+                    blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
+                    blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
+                    stars_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
+                    stars_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
                     
                     # Binary output: does not work
                     np.savetxt(
-                        os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
+                        os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
                         binary_bh_array[:, :bh_mergers_current_num+1].T,
                         header=binary_field_names
                     )
@@ -791,7 +800,7 @@ def main():
                         if num_bbh_gw_tracked == 1:
                             index = bbh_gw_indices[0]
 
-                            temp_bbh_gw_array[0] = galaxy
+                            temp_bbh_gw_array[0] = iteration
                             temp_bbh_gw_array[1] = time_passed
                             temp_bbh_gw_array[2] = binary_bh_array[8, index]
                             temp_bbh_gw_array[3] = binary_bh_array[2, index] + binary_bh_array[3, index]
@@ -807,8 +816,8 @@ def main():
 
                                 index = bbh_gw_indices[0][i]
 
-                                # Record: galaxy, time_passed, bin sep, bin_mass, bin_ecc(around c.o.m.),bin strain, bin freq       
-                                temp_bbh_gw_array[0] = galaxy
+                                # Record: iteration, time_passed, bin sep, bin_mass, bin_ecc(around c.o.m.),bin strain, bin freq       
+                                temp_bbh_gw_array[0] = iteration
                                 temp_bbh_gw_array[1] = time_passed
                                 temp_bbh_gw_array[2] = binary_bh_array[8, index]
                                 temp_bbh_gw_array[3] = binary_bh_array[2, index] + binary_bh_array[3, index]
@@ -1107,7 +1116,7 @@ def main():
             nemri = nemri + num_in_inner_disk
             if num_in_inner_disk > 0:
                 for i in range(0, num_in_inner_disk):
-                    temp_emri_array[0] = galaxy
+                    temp_emri_array[0] = iteration
                     temp_emri_array[1] = time_passed
                     temp_emri_array[2] = bh_orb_a_inner_disk[i]
                     temp_emri_array[3] = bh_mass_inner_disk[i]
@@ -1163,8 +1172,8 @@ def main():
             # Iterate the time step
             time_passed = time_passed + opts.timestep_duration_yr
             # Print time passed every 10 timesteps for now
-            time_galaxy_tracker = 10.0*opts.timestep_duration_yr
-            if time_passed % time_galaxy_tracker == 0:
+            time_iteration_tracker = 10.0*opts.timestep_duration_yr
+            if time_passed % time_iteration_tracker == 0:
                 print("Time passed=", time_passed)
         # End Loop of Timesteps at Final Time, end all changes & print out results
 
@@ -1254,15 +1263,15 @@ def main():
         if True and number_of_mergers > 0:  # verbose:
             print(merged_bh_array[:, :number_of_mergers].T)
 
-        galaxy_save_name = f"run{galaxy_zfilled_str}/{opts.fname_output_mergers}"
-        np.savetxt(os.path.join(opts.work_directory, galaxy_save_name), merged_bh_array[:, :number_of_mergers].T, header=merger_field_names)
+        iteration_save_name = f"run{iteration_zfilled_str}/{opts.fname_output_mergers}"
+        np.savetxt(os.path.join(opts.work_directory, iteration_save_name), merged_bh_array[:, :number_of_mergers].T, header=merger_field_names)
 
-        # Add mergers to population array including the galaxy number 
-        # this line is linebreak between galaxy outputs consisting of the repeated galaxy number in each column
-        galaxy_row = np.repeat(galaxy, number_of_mergers)
-        survivor_row = np.repeat(galaxy, num_properties_stored)
-        # Append each galaxy result to output arrays
-        merged_bh_array_pop.append(np.concatenate((galaxy_row[np.newaxis], merged_bh_array[:, :number_of_mergers])).T)
+        # Add mergers to population array including the iteration number 
+        # this line is linebreak between iteration outputs consisting of the repeated iteration number in each column
+        iteration_row = np.repeat(iteration, number_of_mergers)
+        survivor_row = np.repeat(iteration, num_properties_stored)
+        # Append each iteration result to output arrays
+        merged_bh_array_pop.append(np.concatenate((iteration_row[np.newaxis], merged_bh_array[:, :number_of_mergers])).T)
         surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived, :])))
 
         if total_emris > 0:
