@@ -1,14 +1,7 @@
 # Declarations
 .PHONY: all clean
 
-# Windows implementation is hacky, but my desktop is Windows. So please accept my humble apology - Jake
-ifeq ($(OS),Windows_NT)
-	CLEAN_CMD := clean_win
-else
-	CLEAN_CMD := clean_unix
-endif
-
-all: $(CLEAN_CMD) tests plots #vera_plots
+all: clean tests plots #vera_plots
 tests: mcfacts_sim
 
 ######## Definitions ########
@@ -71,6 +64,10 @@ setup: clean version
 	conda activate mcfacts-dev && \
 	python -m pip install --editable .
 
+unit_test: clean version
+	source ~/.bash_profile && \
+	conda activate mcfacts-dev && \
+	pytest
 
 #### Test one thing at a time ####
 
@@ -112,13 +109,12 @@ mstar_runs:
 		
 
 #### CLEAN ####
-clean: $(CLEAN_CMD)
 
 #TODO: Create an IO class that wraps the standard IO. This wrapper will keep a persistent log of all of the
 #instantaneous files created. The wrapper would have a cleanup function, and can also report metrics :^)
 #Plus, if we use a standard python IO library, we don't have to worry about rm / del and wildcards!
 
-clean_unix:
+clean:
 	rm -rf ${wd}/run*
 	rm -rf ${wd}/runs/*
 	rm -rf ${wd}/output_mergers*.dat

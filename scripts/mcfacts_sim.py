@@ -1003,7 +1003,6 @@ def main():
                 bin_num_new = np.shape(close_encounters_indices)[1]
                 # make new binaries
                 binary_bh_array = add_new_binary.add_to_binary_array2(
-                    rng,
                     binary_bh_array,
                     blackholes_pro.orb_a,
                     blackholes_pro.mass,
