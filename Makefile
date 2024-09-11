@@ -42,8 +42,8 @@ wd=${HERE}
 #### Install ####
 
 version: clean
-	VERSION_BASE_CMD := echo "__version__ = '${VERSION}'" > __version__.py
-	VERSION_SRC_CMD := echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
+	echo "__version__ = '${VERSION}'" > __version__.py
+	echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 
 install: clean version
 	python -m pip install --editable .
