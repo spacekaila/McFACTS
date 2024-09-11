@@ -56,11 +56,11 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # Only show BH with orb ecc <=e_crit
     disk_bh_orb_ecc_pro = np.ma.masked_where(disk_bh_orb_ecc_pro > disk_bh_pro_orb_ecc_crit, disk_bh_orb_ecc_pro)
     #Those BH with orb ecc > e_crit
-    prograde_bh_not_mig = np.ma.masked_where(disk_bh_orb_ecc_pro <= disk_bh_pro_orb_ecc_crit, disk_bh_orb_ecc_pro)
+    disk_bh_not_mig = np.ma.masked_where(disk_bh_orb_ecc_pro <= disk_bh_pro_orb_ecc_crit, disk_bh_orb_ecc_pro)
     #Indices of BH with <=critical ecc
-    crit_ecc_prograde_indices = np.ma.nonzero(disk_bh_orb_ecc_pro)
+    disk_bh_crit_ecc_pro_indices = np.ma.nonzero(disk_bh_orb_ecc_pro)
     #Indicies of BH with > critical ecc
-    indices_not_mig_BH = np.ma.nonzero(prograde_bh_not_mig)    
+    disk_bh_crit_ecc_not_mig = np.ma.nonzero(disk_bh_not_mig)    
     
     #Migration only if there are BH with e<=e_crit
     #if np.size(crit_ecc_prograde_indices) > 0:
@@ -71,81 +71,76 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     #   and Omega is the Keplerian orbital frequency around the SMBH
     # here smbh_mass/disk_bh_mass_pro are both in M_sun, so units cancel
     # c, G and disk_surface_density in SI units
-    tau_mig = ((disk_aspect_ratio**2)* scipy.constants.c/(3.0*scipy.constants.G) * (smbh_mass/disk_bh_mass_pro) / disk_surface_density) / np.sqrt(disk_bh_orb_a_pro)
+    tau = ((disk_aspect_ratio**2)* scipy.constants.c/(3.0*scipy.constants.G) * (smbh_mass/disk_bh_mass_pro) / disk_surface_density) / np.sqrt(disk_bh_orb_a_pro)
     # ratio of timestep to tau_mig (timestep in years so convert)
-    dt = timestep_duration * scipy.constants.year / tau_mig
+    dt = timestep_duration * scipy.constants.year / tau
     # migration distance is original locations times fraction of tau_mig elapsed
-    migration_distance = disk_bh_orb_a_pro * dt
+    disk_bh_dist_mig = disk_bh_orb_a_pro * dt
     #Mask migration distance with zeros if orb ecc >= e_crit.
-    migration_distance[indices_not_mig_BH] = 0.
+    disk_bh_dist_mig[disk_bh_crit_ecc_not_mig] = 0.
      
     # Feedback provides a universal modification of migration distance
     # If feedback off, then feedback_ratio= ones and migration is unchanged
     # Construct empty array same size as prograde_bh_locations 
 
-    bh_new_locations = np.empty_like(disk_bh_orb_a_pro)
+    disk_bh_pro_a_new = np.empty_like(disk_bh_orb_a_pro)
 
     # Find indices of objects where feedback ratio <1; these still migrate inwards, but more slowly
     # feedback ratio is a tuple, so need [0] part not [1] part (ie indices not details of array)
-    index_inwards_modified = np.where(disk_feedback_ratio_func < 1)[0]
-    index_inwards_size = index_inwards_modified.size
-    all_inwards_migrators = disk_bh_orb_a_pro[index_inwards_modified]
-    #print("all inwards migrators",all_inwards_migrators)
+    disk_bh_mig_inward_mod = np.where(disk_feedback_ratio_func < 1)[0]
+    disk_bh_mig_inward_all = disk_bh_orb_a_pro[disk_bh_mig_inward_mod]
 
     #Given a population migrating inwards
-    if index_inwards_size > 0: 
-        for i in range(0,index_inwards_size):
+    if disk_bh_mig_inward_mod.size > 0: 
+        for i in range(0,disk_bh_mig_inward_mod.size):
                 # Among all inwards migrators, find location in disk & compare to trap radius
-                critical_distance = all_inwards_migrators[i]
-                actual_index = index_inwards_modified[i]
+                disk_bh_mig_inward_index = disk_bh_mig_inward_mod[i]
+                
                 #If outside trap, migrates inwards
-                if critical_distance > disk_radius_trap:
-                    bh_new_locations[actual_index] = disk_bh_orb_a_pro[actual_index] - (migration_distance[actual_index]*(1-disk_feedback_ratio_func[actual_index]))
+                if disk_bh_mig_inward_all[i] > disk_radius_trap:
+                    disk_bh_pro_a_new[disk_bh_mig_inward_index] = disk_bh_orb_a_pro[disk_bh_mig_inward_index] - (disk_bh_dist_mig[disk_bh_mig_inward_index]*(1-disk_feedback_ratio_func[disk_bh_mig_inward_index]))
                     #If inward migration takes object inside trap, fix at trap.
-                    if bh_new_locations[actual_index] <= disk_radius_trap:
-                        bh_new_locations[actual_index] = disk_radius_trap
-                #If inside trap, migrates out
-                if critical_distance < disk_radius_trap:
-                    #print("inside trap radius!")
-                    bh_new_locations[actual_index] = disk_bh_orb_a_pro[actual_index] + (migration_distance[actual_index]*(1-disk_feedback_ratio_func[actual_index]))
-                    #print("bh_inside_trap", bh_new_locations[actual_index])
+                    if disk_bh_pro_a_new[disk_bh_mig_inward_index] <= disk_radius_trap:
+                        disk_bh_pro_a_new[disk_bh_mig_inward_index] = disk_radius_trap
+                #If inside trap, migrate outwards
+                elif disk_bh_mig_inward_all[i] < disk_radius_trap:
+                    disk_bh_pro_a_new[disk_bh_mig_inward_index] = disk_bh_orb_a_pro[disk_bh_mig_inward_index] + (disk_bh_dist_mig[disk_bh_mig_inward_index]*(1-disk_feedback_ratio_func[disk_bh_mig_inward_index]))
                     #If outward migration takes object outside trap, fix at trap.
-                    if bh_new_locations[actual_index] >= disk_radius_trap:
-                        bh_new_locations[actual_index] = disk_radius_trap
+                    if disk_bh_pro_a_new[disk_bh_mig_inward_index] >= disk_radius_trap:
+                        disk_bh_pro_a_new[disk_bh_mig_inward_index] = disk_radius_trap
                 #If at trap, stays there
-                if critical_distance == disk_radius_trap:
-                    #print("BH AT TRAP!")
-                    #print(bh_new_locations[actual_index])
-                    bh_new_locations[actual_index] = disk_bh_orb_a_pro[actual_index]
+                elif disk_bh_mig_inward_all[i] == disk_radius_trap:
+                    disk_bh_pro_a_new[disk_bh_mig_inward_index] = disk_bh_orb_a_pro[disk_bh_mig_inward_index]
 
     # Find indices of objects where feedback ratio >1; these migrate outwards. 
     # In Sirko & Goodman (2003) disk model this is well outside migration trap region.
-    index_outwards_modified = np.where(disk_feedback_ratio_func >1)[0]
+    disk_bh_mig_outward_mod = np.where(disk_feedback_ratio_func >1)[0]
 
-    if index_outwards_modified.size > 0:
-        bh_new_locations[index_outwards_modified] = disk_bh_orb_a_pro[index_outwards_modified] +(migration_distance[index_outwards_modified]*(disk_feedback_ratio_func[index_outwards_modified]-1))
+    if disk_bh_mig_outward_mod.size > 0:
+        disk_bh_pro_a_new[disk_bh_mig_outward_mod] = disk_bh_orb_a_pro[disk_bh_mig_outward_mod] +(disk_bh_dist_mig[disk_bh_mig_outward_mod]*(disk_feedback_ratio_func[disk_bh_mig_outward_mod]-1))
     
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
-    index_unchanged = np.where(disk_feedback_ratio_func == 1)[0]
-    if index_unchanged.size > 0:
+    disk_bh_mig_unchanged = np.where(disk_feedback_ratio_func == 1)[0]
+    if disk_bh_mig_unchanged.size > 0:
     # If BH location > trap radius, migrate inwards
-        for i in range(0,index_unchanged.size):
-            locn_index = index_unchanged[i]
-            if disk_bh_orb_a_pro[locn_index] > disk_radius_trap:    
-                bh_new_locations[locn_index] = disk_bh_orb_a_pro[locn_index] - migration_distance[locn_index]
+        for i in range(0,disk_bh_mig_unchanged.size):
+            disk_bh_mig_unchanged_index = disk_bh_mig_unchanged[i]
+            if disk_bh_orb_a_pro[disk_bh_mig_unchanged_index] > disk_radius_trap:    
+                disk_bh_pro_a_new[disk_bh_mig_unchanged_index] = disk_bh_orb_a_pro[disk_bh_mig_unchanged_index] - disk_bh_dist_mig[disk_bh_mig_unchanged_index]
             # if new location is <= trap radius, set location to trap radius
-                if bh_new_locations[locn_index] <= disk_radius_trap:
-                    bh_new_locations[locn_index] = disk_radius_trap
+                if disk_bh_pro_a_new[disk_bh_mig_unchanged_index] <= disk_radius_trap:
+                    disk_bh_pro_a_new[disk_bh_mig_unchanged_index] = disk_radius_trap
 
             # If BH location < trap radius, migrate outwards
-            if disk_bh_orb_a_pro[locn_index] < disk_radius_trap:
-                bh_new_locations[locn_index] = disk_bh_orb_a_pro[locn_index] + migration_distance[locn_index]
+            if disk_bh_orb_a_pro[disk_bh_mig_unchanged_index] < disk_radius_trap:
+                disk_bh_pro_a_new[disk_bh_mig_unchanged_index] = disk_bh_orb_a_pro[disk_bh_mig_unchanged_index] + disk_bh_dist_mig[disk_bh_mig_unchanged_index]
                 #if new location is >= trap radius, set location to trap radius
-                if bh_new_locations[locn_index] >= disk_radius_trap:
-                    bh_new_locations[locn_index] = disk_radius_trap
+                if disk_bh_pro_a_new[disk_bh_mig_unchanged_index] >= disk_radius_trap:
+                    disk_bh_pro_a_new[disk_bh_mig_unchanged_index] = disk_radius_trap
     #print("bh new locations",np.sort(bh_new_locations))
     #print('migration distance2',migration_distance, prograde_bh_orb_ecc)
     # new locations are original ones - distance traveled
     #bh_new_locations = prograde_bh_locations - migration_distance
     
-    return bh_new_locations
+    return disk_bh_pro_a_new
+
