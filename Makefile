@@ -100,7 +100,7 @@ mstar_runs:
 		--fname-ini ${FNAME_INI} \
 		--number_of_timesteps 1000 \
         --n_bins_max 10000 \
-		--iteration_num 3 \
+		--galaxy_num 3 \
 		--dynamics \
 		--feedback \
 		--mstar-min 1e9 \
