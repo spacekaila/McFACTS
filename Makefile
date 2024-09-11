@@ -81,7 +81,7 @@ unit_test: clean version
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
 mcfacts_sim: $(CLEAN_CMD)
 	python ${MCFACTS_SIM_EXE} \
-		--iteration_num 3 \
+		--n_iterations 10 \
 		--fname-ini ${FNAME_INI} \
 		--fname-log out.log \
 		--seed ${SEED}
