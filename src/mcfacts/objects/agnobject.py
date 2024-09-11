@@ -915,8 +915,8 @@ class AGNBinaryBlackHole(AGNObject):
 
 
 obj_types = {0 : "single black hole",
-             1 : "binary black hole",
-             2 : "single star",
+             1 : "single star",
+             2 : "binary black hole",
              3 : "binary star",
              4 : "exploded star"
             }
@@ -1005,17 +1005,17 @@ class AGNFilingCabinet(AGNObject):
             number and types of objects in AGNFilingCabinet
         """
 
-        totals = "AGN Filing Cabinet\n"
-        for key in obj_types:
-            #print(key,getattr(self,"category").count(key))
-            totals += (f"\t{obj_types[key]}: { np.sum(getattr(self,"category") == key) }\n")
-            for direc in obj_direction:
-                totals += (f"\t\t{obj_direction[direc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"direction") == direc))}\n")
-            totals += "\n"
-            for loc in obj_disk_loc:
-                totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
-        totals += f"{len(getattr(self,"category"))} objects total"
-        return(totals)
+        # totals = "AGN Filing Cabinet\n"
+        # for key in obj_types:
+        #     #print(key,getattr(self,"category").count(key))
+        #     totals += (f"\t{obj_types[key]}: { np.sum(getattr(self,"category") == key) }\n")
+        #     for direc in obj_direction:
+        #         totals += (f"\t\t{obj_direction[direc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"direction") == direc))}\n")
+        #     totals += "\n"
+        #     for loc in obj_disk_loc:
+        #         totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
+        # totals += f"{len(getattr(self,"category"))} objects total"
+        return()
 
     def update(self, id_num, attr, new_info):
         """Update a given attribute in AGNFilingCabinet for the given ID numbers
