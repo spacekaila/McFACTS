@@ -80,15 +80,18 @@ unit_test: clean version
 
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
 mcfacts_sim: $(CLEAN_CMD)
-	python ${MCFACTS_SIM_EXE} \
+	mkdir -p runs
+	cd runs; \
+		python ../${MCFACTS_SIM_EXE} \
 		--galaxy_num 10 \
-		--fname-ini ${FNAME_INI} \
+		--fname-ini ../${FNAME_INI} \
 		--fname-log out.log \
 		--seed ${SEED}
 
 
 plots: mcfacts_sim
-	python ${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
+	cd runs; \
+	python ../${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
 
 vera_plots: mcfacts_sim
 	python ${VERA_PLOTS_EXE} \
@@ -121,6 +124,7 @@ clean: $(CLEAN_CMD)
 
 clean_unix:
 	rm -rf ${wd}/run*
+	rm -rf ${wd}/runs/*
 	rm -rf ${wd}/output_mergers*.dat
 	rm -rf ${wd}/m1m2.png
 	rm -rf ${wd}/merger_mass_v_radius.png
