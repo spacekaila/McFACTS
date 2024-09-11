@@ -1423,7 +1423,6 @@ def main():
                     #print("number of new bins", number_of_new_bins)
                     # make new binaries
                     binary_bh_array = add_new_binary.add_to_binary_array2(
-                        rng,
                         binary_bh_array,
                         prograde_blackholes.orbit_a, #prograde_bh_locations,
                         prograde_blackholes.mass, #prograde_bh_masses,
