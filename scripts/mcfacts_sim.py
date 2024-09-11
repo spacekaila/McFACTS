@@ -188,18 +188,18 @@ def main():
     print("opts.smbh_mass", opts.smbh_mass)
     print("opts.fraction_bin_retro", opts.fraction_bin_retro)
 
-    for iteration in range(opts.iteration_num):
-        print("Iteration", iteration)
+    for galaxy in range(opts.galaxy_num):
+        print("Iteration", galaxy)
         # Set random number generator for this run with incremented seed
-        reset_random(opts.seed+iteration)
+        reset_random(opts.seed+galaxy)
 
-        # Make subdirectories for each iteration
+        # Make subdirectories for each galaxy
         # Fills run number with leading zeros to stay sequential
-        iteration_zfilled_str = f"{iteration:>0{int(np.log10(opts.iteration_num))+1}}"
+        galaxy_zfilled_str = f"{galaxy:>0{int(np.log10(opts.galaxy_num))+1}}"
         try:  # Make subdir, exit if it exists to avoid clobbering.
-            os.makedirs(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}"), exist_ok=False)
+            os.makedirs(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}"), exist_ok=False)
         except FileExistsError:
-            raise FileExistsError(f"Directory \'run{iteration_zfilled_str}\' exists. Exiting so I don't delete your data.")
+            raise FileExistsError(f"Directory \'run{galaxy_zfilled_str}\' exists. Exiting so I don't delete your data.")
 
         # can index other parameter lists here if needed.
         # Housekeeping for array initialization
@@ -339,8 +339,8 @@ def main():
         filing_cabinet.change_direction(retrograde_star_id_num, np.full(stars_retro.mass.shape, -1))
 
         # Writing initial parameters to file
-        stars.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_star.dat"))
-        blackholes.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/initial_params_bh.dat"))
+        stars.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_star.dat"))
+        blackholes.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_bh.dat"))
 
         # Housekeeping:
         # Number of binary properties that we want to record (e.g. R1,R2,M1,M2,a1,a2,theta1,theta2,sep,com,t_gw,merger_flag,time of merger, gen_1,gen_2, bin_ang_mom, bin_ecc, bin_incl,bin_orb_ecc, nu_gw, h_bin)
@@ -350,11 +350,11 @@ def main():
         number_of_mergers = 0
         frac_bin_retro = opts.fraction_bin_retro
 
-        # Set up EMRI output array with properties we want to record (iteration, time, R,M,e,h_char,f_gw)
+        # Set up EMRI output array with properties we want to record (galaxy, time, R,M,e,h_char,f_gw)
         num_of_emri_properties = 7
         nemri = 0
 
-        # Set up BBH gw array with properties we want to record (iteration, time, sep, Mb, eb(around c.o.m.),h_char,f_gw)
+        # Set up BBH gw array with properties we want to record (galaxy, time, sep, Mb, eb(around c.o.m.),h_char,f_gw)
         # Set up empty list of indices of BBH to track
         bbh_gw_indices = []
         num_of_bbh_gw_properties = 7
@@ -412,14 +412,14 @@ def main():
             # Record
             if not (opts.no_snapshots):
 
-                blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_{timestep_current_num}.dat"))
-                blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                stars_pro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_{timestep_current_num}.dat"))
-                stars_retro.to_file(os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
+                blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_{timestep_current_num}.dat"))
+                blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
+                stars_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_{timestep_current_num}.dat"))
+                stars_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
                 
                 # Binary output: does not work
                 np.savetxt(
-                    os.path.join(opts.work_directory, f"run{iteration_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
+                    os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
                     binary_bh_array[:, :bh_mergers_current_num+1].T,
                     header=binary_field_names
                 )
@@ -794,7 +794,7 @@ def main():
                         if num_bbh_gw_tracked == 1:
                             index = bbh_gw_indices[0]
 
-                            temp_bbh_gw_array[0] = iteration
+                            temp_bbh_gw_array[0] = galaxy
                             temp_bbh_gw_array[1] = time_passed
                             temp_bbh_gw_array[2] = binary_bh_array[8, index]
                             temp_bbh_gw_array[3] = binary_bh_array[2, index] + binary_bh_array[3, index]
@@ -810,8 +810,8 @@ def main():
 
                                 index = bbh_gw_indices[0][i]
 
-                                # Record: iteration, time_passed, bin sep, bin_mass, bin_ecc(around c.o.m.),bin strain, bin freq       
-                                temp_bbh_gw_array[0] = iteration
+                                # Record: galaxy, time_passed, bin sep, bin_mass, bin_ecc(around c.o.m.),bin strain, bin freq       
+                                temp_bbh_gw_array[0] = galaxy
                                 temp_bbh_gw_array[1] = time_passed
                                 temp_bbh_gw_array[2] = binary_bh_array[8, index]
                                 temp_bbh_gw_array[3] = binary_bh_array[2, index] + binary_bh_array[3, index]
@@ -1111,7 +1111,7 @@ def main():
             nemri = nemri + num_in_inner_disk
             if num_in_inner_disk > 0:
                 for i in range(0, num_in_inner_disk):
-                    temp_emri_array[0] = iteration
+                    temp_emri_array[0] = galaxy
                     temp_emri_array[1] = time_passed
                     temp_emri_array[2] = inner_disk_locations[i]
                     temp_emri_array[3] = inner_disk_masses[i]
@@ -1167,8 +1167,8 @@ def main():
             # Iterate the time step
             time_passed = time_passed + opts.timestep_duration_yr
             # Print time passed every 10 timesteps for now
-            time_iteration_tracker = 10.0*opts.timestep_duration_yr
-            if time_passed % time_iteration_tracker == 0:
+            time_galaxy_tracker = 10.0*opts.timestep_duration_yr
+            if time_passed % time_galaxy_tracker == 0:
                 print("Time passed=", time_passed)
         # End Loop of Timesteps at Final Time, end all changes & print out results
 
@@ -1258,15 +1258,15 @@ def main():
         if True and number_of_mergers > 0:  # verbose:
             print(merged_bh_array[:, :number_of_mergers].T)
 
-        iteration_save_name = f"run{iteration_zfilled_str}/{opts.fname_output_mergers}"
-        np.savetxt(os.path.join(opts.work_directory, iteration_save_name), merged_bh_array[:, :number_of_mergers].T, header=merger_field_names)
+        galaxy_save_name = f"run{galaxy_zfilled_str}/{opts.fname_output_mergers}"
+        np.savetxt(os.path.join(opts.work_directory, galaxy_save_name), merged_bh_array[:, :number_of_mergers].T, header=merger_field_names)
 
-        # Add mergers to population array including the iteration number 
-        # this line is linebreak between iteration outputs consisting of the repeated iteration number in each column
-        iteration_row = np.repeat(iteration, number_of_mergers)
-        survivor_row = np.repeat(iteration, num_properties_stored)
-        # Append each iteration result to output arrays
-        merged_bh_array_pop.append(np.concatenate((iteration_row[np.newaxis], merged_bh_array[:, :number_of_mergers])).T)
+        # Add mergers to population array including the galaxy number 
+        # this line is linebreak between galaxy outputs consisting of the repeated galaxy number in each column
+        galaxy_row = np.repeat(galaxy, number_of_mergers)
+        survivor_row = np.repeat(galaxy, num_properties_stored)
+        # Append each galaxy result to output arrays
+        merged_bh_array_pop.append(np.concatenate((galaxy_row[np.newaxis], merged_bh_array[:, :number_of_mergers])).T)
         surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived, :])))
 
         if total_emris > 0:
