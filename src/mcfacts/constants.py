@@ -5,8 +5,8 @@ This module defines a collection of global variables used throughout the our cod
 
 
 Global Variables:
-- KgPerMsun (float): number of Kg per Msun
+- mass_per_msun (float): number of Kg per Msun
 
 """
 
-KgPerMsun = 1.99e30
+mass_per_msun = 1.99e30

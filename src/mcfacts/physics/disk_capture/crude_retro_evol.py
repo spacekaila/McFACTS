@@ -283,10 +283,10 @@ def tau_inc_dyn(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_bh_r
     """
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    SI_smbh_mass = smbh_mass * mc_const.KgPerMsun  # kg
+    SI_smbh_mass = smbh_mass * mc_const.mass_per_msun  # kg
     SI_semi_maj_axis = disk_bh_retro_orbs_a * scipy.constants.G * smbh_mass \
                        / (scipy.constants.c) ** 2  # m
-    SI_orbiter_mass = disk_bh_retro_masses * mc_const.KgPerMsun  # kg
+    SI_orbiter_mass = disk_bh_retro_masses * mc_const.mass_per_msun  # kg
     omega = disk_bh_retro_arg_periapse  # radians
     ecc = disk_bh_retro_orbs_ecc  # unitless
     inc = disk_bh_retro_orbs_inc  # radians
@@ -354,10 +354,10 @@ def tau_semi_lat(smbh_mass, retrograde_bh_locations, retrograde_bh_masses, retro
     """
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    smbh_mass = smbh_mass * mc_const.KgPerMsun  # kg
+    smbh_mass = smbh_mass * mc_const.mass_per_msun  # kg
     semi_maj_axis = retrograde_bh_locations * scipy.constants.G * smbh_mass \
                     / (scipy.constants.c) ** 2  # m
-    retro_mass = retrograde_bh_masses * mc_const.KgPerMsun  # kg
+    retro_mass = retrograde_bh_masses * mc_const.mass_per_msun  # kg
     omega = retro_arg_periapse  # radians
     ecc = retrograde_bh_orb_ecc  # unitless
     inc = retrograde_bh_orb_inc  # radians

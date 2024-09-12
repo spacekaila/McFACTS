@@ -1,20 +1,20 @@
 import numpy as np
-
+from mcfacts.physics.binary.merge import tichy08, chieff, tgw
 
 def test_merger():
     #This is a test of the merger 
     #1. Test a merger by calling modules
     print("Test Module merger!")
-    mass_1 = 10.0
-    mass_2 = 15.0
-    spin_1 = 0.1
-    spin_2 = 0.7
-    angle_1 = 1.80
-    angle2 = 0.7
-    bin_ang_mom = 1.0
-    outmass = tichy08.merged_mass(mass_1, mass_2, spin_1, spin_2)
-    outspin = tichy08.merged_spin(mass_1, mass_2, spin_1, spin_2, bin_ang_mom)
-    out_chi = chieff.chi_effective(mass_1, mass_2, spin_1, spin_2, angle_1, angle2, bin_ang_mom)
-    print(outmass,outspin,out_chi)
+    test_bh_mass1 = 10.0
+    test_bh_mass2 = 15.0
+    test_bh_spin1 = 0.1
+    test_bh_spin2 = 0.7
+    test_bh_angle1 = 1.80
+    test_bh_angle2 = 0.7
+    test_bin_bh_ang_mom = 1.0
+    test_bh_merg_mass = tichy08.merged_mass(test_bh_mass1, test_bh_mass2, test_bh_spin1, test_bh_spin2)
+    test_bh_merg_spin = tichy08.merged_spin(test_bh_mass1, test_bh_mass2, test_bh_spin1, test_bh_spin2, test_bin_bh_ang_mom)
+    test_bh_merg_chi = chieff.chi_effective(test_bh_mass1, test_bh_mass2, test_bh_spin1, test_bh_spin2, test_bh_angle1, test_bh_angle2, test_bin_bh_ang_mom)
+    print(test_bh_merg_mass,test_bh_merg_spin,test_bh_merg_chi)
     #Output should always be constant: 23.560384 0.8402299374639024 0.31214563487176167
     return
