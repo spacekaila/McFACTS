@@ -2,6 +2,12 @@ import numpy as np
 import scipy
 from mcfacts.mcfacts_random_state import rng
 
+"""Actual binary creation module
+
+Make binaries using incoming objects, as decided by other functions
+elsewhere in the code, in the hillsphere module.
+"""
+
 def add_to_binary_array2(
         disk_bins_bhbh,
         disk_bh_pro_orbs_a,

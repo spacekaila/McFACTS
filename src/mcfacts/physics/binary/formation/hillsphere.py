@@ -1,5 +1,12 @@
 import numpy as np
 
+"""Actual binary sorting/checking module
+
+Figure out which objects should actually form binaries and
+send that list out (actually make binaries somewhere else,
+hopefully add_new_binary module).
+"""
+
 def binary_check2(
         disk_bh_pro_orbs_a,
         disk_bh_pro_masses,
