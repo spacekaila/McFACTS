@@ -722,7 +722,7 @@ def main():
                             binary_bh_array,
                             time_passed,
                             bin_index,
-                            opts.nsc_bh_imf_powerlaw_index,
+                            opts.nsc_imf_bh_powerlaw_index,
                             opts.delta_energy_strong,
                             opts.nsc_spheroid_normalization
                         )
