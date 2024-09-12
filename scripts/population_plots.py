@@ -226,6 +226,7 @@ def main():
     # and same location for PhenomA.py
     #Also make sure LIGO sensitivity curves are in /vis directory
 
+    #--------------Here we're pulling the LIGO data from the released files and setting them to H1 and L1 values-------------
     # READ LIGO O3 Sensitivity data (from https://git.ligo.org/sensitivity-curves/o3-sensitivity-curves)
     H1 = impresources.files(data) / \
         'O3-H1-C01_CLEAN_SUB60HZ-1262197260.0_sensitivity_strain_asd.txt'  
@@ -239,10 +240,15 @@ def main():
     f_H1 = dfh1[0]
     h_H1 = dfh1[1]
 
+    #H - hanford 
+    #L - Ligvston
+
     # create LISA object
     lisa = li.LISA() 
 
     # Plot LISA's sensitivity curve
+    #-------------- f is the frequency (x-axis) being created -------------
+    #-------------- Sn is the sensitivity curve of LISA -------------
     f  = np.logspace(np.log10(1.0e-5), np.log10(1.0e0), 1000)
     Sn = lisa.Sn(f)
 
@@ -257,18 +263,21 @@ def main():
     ax.set_xlim(1.0e-7, 1.0e+4)
     ax.set_ylim(1.0e-24, 1.0e-15)
 
+    #----------Finding the rows in which EMRIs signals are either identical or zeroes and removing them----------
     identical_rows_emris = np.where( emris[:,5] == emris[:,6])
     zero_rows_emris = np.where(emris[:,6] == 0)    
     emris = np.delete(emris,identical_rows_emris,0)
     #emris = np.delete(emris,zero_rows_emris,0)
     emris[~np.isfinite(emris)] = 1.e-40
 
+    #----------Finding the rows in which LVKs signals are either identical or zeroes and removing them----------
     identical_rows_lvk = np.where(lvk[:,5] == lvk[:,6])
     zero_rows_lvk = np.where(lvk[:,6] == 0)
     lvk = np.delete(lvk,identical_rows_lvk,0)
     #lvk = np.delete(lvk,zero_rows_lvk,0)
     lvk[~np.isfinite(lvk)] = 1.e-40
 
+    #----------Setting the values for the EMRIs and LVKs signals and inverting them----------
     inv_freq_emris = 1/emris[:,6]
     inv_freq_lvk = 1/lvk[:,6]
     #ma_freq_emris = np.ma.where(freq_emris == 0)
