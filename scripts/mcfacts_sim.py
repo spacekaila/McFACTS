@@ -103,7 +103,6 @@ def arg():
     print("variable_inputs", variable_inputs)
     # Hidden variable inputs
     print("_variable_inputs", _variable_inputs)
-    # raise Exception
     # Okay, this is important. The priority of input arguments is:
     # command line > specified inifile > default inifile
     for name in variable_inputs:
@@ -129,7 +128,6 @@ def arg():
         for item in opts.__dict__:
             print(item, getattr(opts, item))
     print("variable_inputs", variable_inputs)
-    # raise Exception
     # Get the user-defined or default working directory / output location
     opts.work_directory = Path(opts.work_directory).resolve()
     if not isdir(opts.work_directory):
@@ -379,7 +377,8 @@ def main():
         merger_array = np.zeros((bin_properties_num, opts.bin_num_max))
 
         # Set up output array (mergerfile)
-        nprop_mergers = len(mergerfile.names_rec)
+        # -1 because galaxy will be concatenated beforehand
+        nprop_mergers = len(mergerfile.names_rec) - 1
         merged_bh_array = np.zeros((nprop_mergers, opts.bin_num_max))
 
         # Multiple AGN episodes:
@@ -926,6 +925,7 @@ def main():
                                 binary_bh_array[7, merger_indices[i]],
                                 binary_bh_array[17, merger_indices[i]]
                             )
+                            '''
                             merged_bh_array[:, bh_mergers_current_num + i] = mergerfile.merged_bh(
                                 merged_bh_array,
                                 binary_bh_array,
@@ -939,6 +939,21 @@ def main():
                                 bh_chi_p_merged,
                                 time_passed
                             )
+                            '''
+                            _temp = merged_bh_array[:, bh_mergers_current_num + i] = mergerfile.merged_bh(
+                                merged_bh_array,
+                                binary_bh_array,
+                                merger_indices,
+                                i,
+                                bh_chi_eff_merged,
+                                bh_mass_merged,
+                                bh_spin_merged,
+                                nprop_mergers,
+                                bh_mergers_current_num,
+                                bh_chi_p_merged,
+                                time_passed
+                            )
+                            print(_temp.T)
                         # do another thing
                         merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
                         # Reset merger marker to zero
@@ -1262,16 +1277,20 @@ def main():
         if True and number_of_mergers > 0:  # verbose:
             print(merged_bh_array[:, :number_of_mergers].T)
 
+        # Add the galaxy number to the beginning of the surviving black hole array
+        survivor_row = np.repeat(galaxy, surviving_bh_array.shape[0])
+        surviving_bh_array = np.concatenate((survivor_row[:,None], surviving_bh_array),axis=1)
+        # Add the galaxy number to the beginning of the merging black hole array
+        mergers_row = np.repeat(galaxy, merged_bh_array.shape[1])
+        merged_bh_array = np.concatenate((mergers_row[None,:], merged_bh_array),axis=0)
+
+        # Save the mergers
         galaxy_save_name = f"run{galaxy_zfilled_str}/{opts.fname_output_mergers}"
         np.savetxt(os.path.join(opts.work_directory, galaxy_save_name), merged_bh_array[:, :number_of_mergers].T, header=merger_field_names)
 
-        # Add mergers to population array including the galaxy number 
-        # this line is linebreak between galaxy outputs consisting of the repeated galaxy number in each column
-        galaxy_row = np.repeat(galaxy, number_of_mergers)
-        survivor_row = np.repeat(galaxy, num_properties_stored)
         # Append each galaxy result to output arrays
-        merged_bh_array_pop.append(np.concatenate((galaxy_row[np.newaxis], merged_bh_array[:, :number_of_mergers])).T)
-        surviving_bh_array_pop.append(np.concatenate((survivor_row[np.newaxis], surviving_bh_array[:total_bh_survived, :])))
+        merged_bh_array_pop.append(merged_bh_array.T)
+        surviving_bh_array_pop.append(surviving_bh_array)
 
         if total_emris > 0:
             emris_array_pop.append(total_emri_array[:total_emris, :])
@@ -1279,17 +1298,50 @@ def main():
         if total_bbh_gws > 0:
             gw_array_pop.append(total_bbh_gw_array[:total_bbh_gws, :])
     # save all mergers from Monte Carlo
-    merger_pop_field_names = "iter " + merger_field_names  # Add "Iter" to field names
-    population_header = f"Initial seed: {opts.seed}\n{merger_pop_field_names}"  # Include initial seed
+    population_header = f"Initial seed: {opts.seed}\n{merger_field_names}"  # Include initial seed
     basename, extension = os.path.splitext(opts.fname_output_mergers)
     population_save_name = f"{basename}_population{extension}"
     survivors_save_name = f"{basename}_survivors{extension}"
     emris_save_name = f"{basename}_emris{extension}"
     gws_save_name = f"{basename}_lvk{extension}"
-    np.savetxt(os.path.join(opts.work_directory, population_save_name), np.vstack(merged_bh_array_pop), header=population_header)
-    np.savetxt(os.path.join(opts.work_directory, survivors_save_name), np.vstack(surviving_bh_array_pop))
-    np.savetxt(os.path.join(opts.work_directory, emris_save_name), np.vstack(emris_array_pop))
-    np.savetxt(os.path.join(opts.work_directory, gws_save_name), np.vstack(gw_array_pop))
+    # Stack arrays
+    merged_bh_array_pop = np.vstack(merged_bh_array_pop)
+    surviving_bh_array_pop = np.vstack(surviving_bh_array_pop)
+    emris_array_pop = np.vstack(emris_array_pop)
+    gw_array_pop = np.vstack(gw_array_pop)
+
+    # Define headers
+    surviving_bh_header = "galaxy orb_a mass spin spin_angle gen"
+    emri_header ="galaxy t_merge semi-major_axis mass_source eccentricity gw_strain gw_frequency"
+    gw_header = "galaxy time_of_merger sep total_mass_source eccentricity gw_strain gw_frequency"
+    # Check arrays
+    assert len(merger_field_names.split(" ")) == merged_bh_array_pop.shape[1]
+    assert len(surviving_bh_header.split(" ")) == surviving_bh_array_pop.shape[1]
+    assert len(emri_header.split(" ")) == emris_array_pop.shape[1]
+    assert len(gw_header.split(" ")) == gw_array_pop.shape[1]
+
+
+    # Save things
+    np.savetxt(
+        os.path.join(opts.work_directory, population_save_name),
+        merged_bh_array_pop,
+        header=population_header,
+    )
+    np.savetxt(
+        os.path.join(opts.work_directory, survivors_save_name),
+        surviving_bh_array_pop,
+        header=surviving_bh_header,
+    )
+    np.savetxt(
+        os.path.join(opts.work_directory, emris_save_name),
+        emris_array_pop,
+        header=emri_header,
+    )
+    np.savetxt(
+        os.path.join(opts.work_directory, gws_save_name),
+        gw_array_pop,
+        header=gw_header,
+    )
 
 
 if __name__ == "__main__":
