@@ -26,9 +26,8 @@ from mcfacts.physics.binary.merge import tichy08, chieff, tgw
 from mcfacts.physics.disk_capture import crude_retro_evol
 from mcfacts.outputs import mergerfile
 
-binary_field_names = "R1 R2 M1 M2 a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
-binary_stars_field_names = "R1 R2 M1 M2 R1_star R2_star a1 a2 theta1 theta2 sep com t_gw merger_flag t_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
-merger_field_names = ' '.join(mergerfile.names_rec)
+binary_field_names = "bin_orb_a1 bin_orb_a2 mass1 mass2 spin1 spin2 theta1 theta2 sep bin_com time_gw merger_flag time_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
+merger_field_names = ' '.join(mergerfile.MERGER_FIELD_NAMES)
 
 # Do not change this line EVER
 DEFAULT_INI = impresources.files(input_data) / "model_choice.ini"
@@ -378,7 +377,7 @@ def main():
 
         # Set up output array (mergerfile)
         # -1 because galaxy will be concatenated beforehand
-        nprop_mergers = len(mergerfile.names_rec) - 1
+        nprop_mergers = len(mergerfile.MERGER_FIELD_NAMES) - 1
         merged_bh_array = np.zeros((nprop_mergers, opts.bin_num_max))
 
         # Multiple AGN episodes:
@@ -927,8 +926,7 @@ def main():
                                 binary_bh_array[16, merger_indices[i]],
                                 binary_bh_array[17, merger_indices[i]]
                             )
-                            '''
-                            merged_bh_array[:, bh_mergers_current_num + i] = mergerfile.merged_bh(
+                            mergerfile.merged_bh(
                                 merged_bh_array,
                                 binary_bh_array,
                                 merger_indices,
@@ -936,26 +934,10 @@ def main():
                                 bh_chi_eff_merged,
                                 bh_mass_merged,
                                 bh_spin_merged,
-                                nprop_mergers,
                                 bh_mergers_current_num,
                                 bh_chi_p_merged,
                                 time_passed
                             )
-                            '''
-                            _temp = merged_bh_array[:, bh_mergers_current_num + i] = mergerfile.merged_bh(
-                                merged_bh_array,
-                                binary_bh_array,
-                                merger_indices,
-                                i,
-                                bh_chi_eff_merged,
-                                bh_mass_merged,
-                                bh_spin_merged,
-                                nprop_mergers,
-                                bh_mergers_current_num,
-                                bh_chi_p_merged,
-                                time_passed
-                            )
-                            print(_temp.T)
                         # do another thing
                         merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
                         # Reset merger marker to zero
@@ -1266,8 +1248,6 @@ def main():
                                       new_gen=np.concatenate([bh_gen_1, bh_gen_2]),
                                       new_id_num=np.arange(blackholes_pro.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + blackholes_pro.id_num.max()+1, 1))
 
-        print(len(blackholes_pro.id_num))
-        print(len(blackholes_pro.mass))
         surviving_bh_array[:, 0] = blackholes_pro.orb_a
         surviving_bh_array[:, 1] = blackholes_pro.mass
         surviving_bh_array[:, 2] = blackholes_pro.spin
@@ -1276,7 +1256,7 @@ def main():
 
         total_emri_array = emri_array
         total_bbh_gw_array = bbh_gw_array
-        if True and number_of_mergers > 0:  # verbose:
+        if opts.verbose and number_of_mergers > 0:  # verbose:
             print(merged_bh_array[:, :number_of_mergers].T)
 
         # Add the galaxy number to the beginning of the surviving black hole array
