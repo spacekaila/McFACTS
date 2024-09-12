@@ -206,8 +206,12 @@ class AGNObject(object):
 
         if new_galaxy is None:
             self.galaxy = np.concatenate([self.galaxy, np.full(obj_num, -1)])
+        else:
+            self.galaxy = np.concatenate([self.galaxy, new_galaxy])
         if new_time_passed is None:
             self.time_passed = np.concatenate([self.time_passed, np.full(obj_num, -1)])
+        else:
+            self.time_passed = np.concatenate([self.time_passed, new_time_passed])
 
     def remove_index(self, idx_remove=None):
         """
@@ -612,8 +616,12 @@ class AGNBlackHole(AGNObject):
 
         if new_gw_freq is None:
             self.gw_freq = np.concatenate([self.gw_freq, np.full(new_mass.size, -1)])
+        else:
+            self.gw_freq = np.concatenate([self.gw_freq, new_gw_freq])
         if new_gw_strain is None:
             self.gw_strain = np.concatenate([self.gw_strain, np.full(new_mass.size, -1)])
+        else:
+            self.gw_strain = np.concatenate([self.gw_strain, new_gw_strain])
 
         super(AGNBlackHole, self).add_objects(obj_num=obj_num, new_mass=new_mass, **kwargs)
 
