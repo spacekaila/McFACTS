@@ -704,46 +704,48 @@ def bin_spheroid_encounter(
         disk_bins_bhbh,
         time_passed,
         bindex,
-        mbh_powerlaw_index,
-        mode_mbh_init,
+        nsc_bh_imf_powerlaw_index,
         delta_energy_strong,
-        sph_norm
+        nsc_spheroid_normalization
         ):
     """Perturb orbits due to encounters with spheroid (NSC) objects
-    
+
+    Warning: the powerlaw index for the mass of perturbers is for BH
+    but should be for stars, and the mode mass is hardcoded inside the fn
+
     Use Leigh+18 to figure out the rate at which spheroid encounters happen to binaries embedded in the disk
     Binaries at small disk radii encounter spheroid objects at high rate, particularly early on in the disk lifetime
     However, orbits at those small radii get captured quickly by the disk.
      
     From Fig.1 in Leigh+18, Rate of sph. encounter = 20/Myr at t=0, normalized to a_bin=1AU, R_disk=10^3r_g or 0.2/10kyr timestep.
-    Introduce a spheroid normalization factor sph_norm=1 (default) allowing for non-ideal NSC (previous episodes; disky populations etc). 
+    Introduce a spheroid normalization factor nsc_spheroid_normalization=1 (default) allowing for non-ideal NSC (previous episodes; disky populations etc). 
     Within 1Myr, for a dense model disk (e.g. Sirko & Goodman), most of those inner stellar orbits have been captured by the disk.
     So rate of sph. encounter ->0/Myr at t=1Myr since those orbits are gone (R<10^3r_g; assuming approx circular orbits!) for SG disk model
     For TQM disk model, rate of encounter slightly lower but non-zero.
 
-    So, inside R_com<10^3r_g: (would be rt of enc =0.2 if sph_norm=1)
-    Assume: Rate of encounter = 0.2 (sph_norm/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
+    So, inside R_com<10^3r_g: (would be rt of enc =0.2 if nsc_spheroid_normalization=1)
+    Assume: Rate of encounter = 0.2 (nsc_spheroid_normalization/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2
     Generate random number from uniform [0,1] distribution and if <0.2 (normalized to above condition) then encounter
     
-    Encounter rt starts at = 0.2 (sph_norm/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 at t=0
-    decreases to          = 0(sph_norm/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 (time_passed/1Myr)
+    Encounter rt starts at = 0.2 (nsc_spheroid_normalization/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 at t=0
+    decreases to          = 0(nsc_spheroid_normalization/1)(timestep/10kyr)^-1 (R_com/10^3r_g)^-1 (a_bin/1r_gM8)^-2 (time_passed/1Myr)
     at R<10^3r_g.
     Outside: R_com>10^3r_g
     Normalize to rate at (R_com/10^4r_g) so that rate is non-zero at R_com=[1e3,1e4]r_g after 1Myr.
     Decrease rate with time, but ensure it goes to zero at R_com<1.e3r_g.
 
     So, rate of sph. encounter = 2/Myr at t=0, normalized to a_bin=1AU, R_disk=10^4r_g which is equivalently
-    Encounter rate = 0.02 (sph_norm/1)(timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2
+    Encounter rate = 0.02 (nsc_spheroid_normalization/1)(timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2
     Drop this by an order of magnitude over 1Myr.
     Encounter rate = 0.02 (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2 (time_passed/10kyr)^-1/2   
     so ->0.002 after a Myr
     For R_com < 10^3r_g:
         if time_passed <=1Myr
-            Encounter rt = 0.02*(sph_norm/0.1)*(1-(1Myr/time_passed))(timestep/10kyr)^{-1}(R_com/10^3r_g)^-1 (a_bin/1r_gM8)^2 ....(1)
+            Encounter rt = 0.02*(nsc_spheroid_normalization/0.1)*(1-(1Myr/time_passed))(timestep/10kyr)^{-1}(R_com/10^3r_g)^-1 (a_bin/1r_gM8)^2 ....(1)
         if time_passed >1Myr
             Encounter rt = 0
     For R_com > 10^3r_g: 
-        Encounter rt = 0.002 *(sph_norm/0.1)* (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2 (time_passed/10kyr)^-1/2 ....(2)
+        Encounter rt = 0.002 *(nsc_spheroid_normalization/0.1)* (timestep/10kyr)^-1 (R_com/10^4r_g)^-1 (a_bin/1r_gM8)^2 (time_passed/10kyr)^-1/2 ....(2)
     
     Return corrected binary with spin angles projected onto new L_bin. So can calculate chi_p (in plane components of spin)
     Return new binary inclination angle w.r.t disk
@@ -824,17 +826,16 @@ def bin_spheroid_encounter(
         properties of binary BBH, see add_to_binary_array2 function for
         complete description
     time_passed : float
-        the current time in the sim?
+        the current time in the sim
     bindex : int
         number of binaries at time of function call
-    mbh_powerlaw_index : 
-        dunno?
-    mode_mbh_init : 
-        dunno?
+    nsc_bh_imf_powerlaw_index : float
+        the powerlaw index of the BH IMF for the NSC
     delta_energy_strong : float
         average energy change per strong encounter
-    sph_norm :
-        dunno?
+    nsc_spheroid_normalization : float
+        Normalization factor determines the departures from sphericity of
+        the initial distribution of perturbers (1.0=spherical)
         
     Returns
     -------
@@ -865,7 +866,6 @@ def bin_spheroid_encounter(
     # Magnitude of energy change to drive binary to merger in ~2 interactions in a strong encounter. Say de_strong=0.9
     de_strong =0.9
     # Spheroid normalization to allow for non-ideal NSC (cored/previous AGN episodes/disky population concentration/whatever)
-    #sph_norm = 1.0
     #Default initial value of i3,i3_rad
     i3 = 0.0
     i3_rad = 0.0
@@ -891,18 +891,15 @@ def bin_spheroid_encounter(
         #Calculate encounter rate for each binary based on com location, binary size and time passed
         if bin_coms[i] < crit_radius:
             if time_passed <= crit_time:
-                enc_rate = 0.02*(sph_norm/0.1)*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e3))
+                enc_rate = 0.02*(nsc_spheroid_normalization/0.1)*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e3))
             if time_passed > crit_time:
                 enc_rate = 0.0
         if bin_coms[i] > crit_radius:
-                enc_rate = 0.002*(sph_norm/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
+                enc_rate = 0.002*(nsc_spheroid_normalization/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
 
         # Based on est encounter rate, calculate if binary actually has a spheroid encounter
         random_uniform_number = rng.random()
         if random_uniform_number < enc_rate:
-            #print("SPHEROID INTERACTION!")
-            # print("Enc rt., Rnd #, bin_com,time_passed:",enc_rate, random_uniform_number, bin_coms[i]/1.e4, bin_separations[i], dist_in_rg_m8, time_passed)  
-
             # Have already generated spheroid interaction, so a_3 is not far off a_bbh (unless super high ecc). 
             # Assume a_3 is similar to a_bbh (within a factor of O(3), so allowing for modest relative eccentricity)    
             # i.e. a_3=[10^-0.5,10^0.5]*a_bbh.
@@ -911,8 +908,8 @@ def bin_spheroid_encounter(
             # Generate random interloper mass from IMF
             # NOTE: Stars should be most common sph component. Switch to BH after some long time.
             mode_star = 2.0
-            mass_3 = (rng.pareto(mbh_powerlaw_index,1)+1)*mode_star
-            #K.E_3 in Joules
+            mass_3 = (rng.pareto(nsc_bh_imf_powerlaw_index,1)+1)*mode_star
+            # K.E_3 in Joules
             # Keplerian velocity of ecc prograde orbiter around SMBH (=c/sqrt(a/r_g))
             v3 = scipy.constants.c/np.sqrt(radius_3)
             rel_vel_ms = abs(bin_velocities[i] - v3)
@@ -948,7 +945,6 @@ def bin_spheroid_encounter(
 
             #Convert i3 to radians
             i3_rad = np.radians(i3)
-            #print("a_bbh,R3,m3,L_ratio,BE_b,BE_3 ",bin_coms[i],radius_3,mass_3,L_ratio,bin_binding_energy[i],ke_3,i3,i3_rad)
             #Now have i3
             #New L_bin
             if i3 < 90.0 or i3> 270.0:
@@ -958,11 +954,9 @@ def bin_spheroid_encounter(
 
             #ionize/Soften/Harden binary if appropriate
             hard = bin_binding_energy[i] - ke_3
-            #print("0 sep,ecc,orb ecc, i=",bin_separations[i],bin_eccentricities[i],bin_orbital_eccentricities[i],bin_orbital_inclinations[i])
             if hard > 0:
                 # Binary is hard w.r.t interloper
                 # Change binary parameters; decr separation, incr ecc around com and orb_ecc
-                # print("HARDEN bin KE3,BEb, dr,dr(1-de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de)", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1-de_strong),bin_eccentricities[i],bin_eccentricities[i]*(1+de_strong),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de))
                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
@@ -970,7 +964,6 @@ def bin_spheroid_encounter(
             if hard < 0:
                 # Binary is soft w.r.t. interloper
                 # Change binary parameters; incr bin separation, decr ecc around com, incr orb_ecc
-                #print("SOFTEN KE3,BEb, bin dr,dr(1+de),e_b,e_b(1+de),e_orb_bin,e_orb_bin(1+de),rel_vel,v_crit", ke_interloper, bin_binding_energy[i], bin_separations[i],bin_separations[i]*(1+de),bin_eccentricities[i],bin_eccentricities[i]*(1-de),bin_orbital_eccentricities[i],bin_orbital_eccentricities[i]*(1+de),rel_vel_kms, v_crit_kms)
                 bin_separations[i] = bin_separations[i]*(1+delta_energy_strong)
                 bin_eccentricities[i] = bin_eccentricities[i]*(1-delta_energy_strong)
                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
@@ -981,25 +974,45 @@ def bin_spheroid_encounter(
             disk_bins_bhbh[13,i] = bin_eccentricities[i]
             disk_bins_bhbh[18,i] = bin_orbital_eccentricities[i]
             
-            #New angle of binary w.r.t disk (in radians)
+            # New angle of binary w.r.t disk (in radians)
             if L_ratio < 1:
                 bin_orbital_inclinations[i] = bin_orbital_inclinations[i] + L_ratio*(i3_rad/2.0)
             if L_ratio > 1:
                 bin_orbital_inclinations[i] = bin_orbital_inclinations[i] + (1/L_ratio)*(i3_rad/2.0)
 
-            #Update bin array with new orbital inclination
+            # Update bin array with new orbital inclination
             disk_bins_bhbh[17,i] = bin_orbital_inclinations[i]
 
             # End encounter
 
     return disk_bins_bhbh
 
-def bin_recapture(bindex,bin_array,timestep):
-    """ Recapture BBH that has orbital inclination >0 post spheroid encounter. 
+def bin_recapture(
+        bindex,
+        disk_bins_bhbh,
+        timestep_duration_yr
+        ):
+    """Recapture BBH that has orbital inclination >0 post spheroid encounter
+
+    Purely bogus scaling does not account for real disk surface density.
     From Fabj+20, if i<5deg (=(5deg/180deg)*pi=0.09rad), time to recapture a BH in SG disk is 1Myr (M_b/10Msun)^-1(R/10^4r_g)
     if i=[5,15]deg =(0.09-0.27rad), time to recapture a BH in SG disk is 50Myrs(M_b/10Msun)^-1 (R/10^4r_g)
     For now, ignore if i>15deg (>0.27rad)
 
+    Parameters
+    ----------
+    bindex : int
+        number of binaries at time of function call
+    disk_bins_bhbh : [21, bindex] mixed array
+        properties of binary BBH, see add_to_binary_array2 function for
+        complete description
+    timestep_duration_yr : float
+        size of timestep in years
+
+    Returns
+    -------
+    disk_bins_bhbh : [21, bindex] mixed array
+        updated version of input after dynamical perturbations
     """
     number_of_binaries = bindex
     # set up 1-d arrays for bin orbital inclinations
@@ -1012,85 +1025,82 @@ def bin_recapture(bindex,bin_array,timestep):
     
     for j in range(0, number_of_binaries-1):
         # Read in bin masses (in units solar masses) and bin orbital inclinations (in units radians)
-        bin_coms[j] = bin_array[9,j]
-        bin_masses[j] = bin_array[2,j] + bin_array[3,j]
-        bin_orbital_inclinations[j] = bin_array[17,j]
+        bin_coms[j] = disk_bins_bhbh[9,j]
+        bin_masses[j] = disk_bins_bhbh[2,j] + disk_bins_bhbh[3,j]
+        bin_orbital_inclinations[j] = disk_bins_bhbh[17,j]
         # Check if bin orbital inclinations are >0    
         if bin_orbital_inclinations[j] > 0:
-            #print("i0", bin_orbital_inclinations[j])
             # is bin orbital inclination <5deg in SG disk?
             if bin_orbital_inclinations[j] <crit_inc1:
-                bin_orbital_inclinations[j] = bin_orbital_inclinations[j]*(1.0 - ((timestep/1.e6)*(bin_masses[j]/10.0)*(bin_coms[j]/1.e4)))
+                bin_orbital_inclinations[j] = bin_orbital_inclinations[j]*(1.0 - ((timestep_duration_yr/1.e6)*(bin_masses[j]/10.0)*(bin_coms[j]/1.e4)))
 
             if bin_orbital_inclinations[j] >crit_inc1 and bin_orbital_inclinations[j] < crit_inc2:
-                bin_orbital_inclinations[j] = bin_orbital_inclinations[j]*(1.0 - ((timestep/5.e7)*(bin_masses[j]/10.0)*(bin_coms[j]/1.e4)))
-            #print("i1", bin_orbital_inclinations[j])
+                bin_orbital_inclinations[j] = bin_orbital_inclinations[j]*(1.0 - ((timestep_duration_yr/5.e7)*(bin_masses[j]/10.0)*(bin_coms[j]/1.e4)))
         #Update bin orbital inclinations
-        bin_array[17,j] = bin_orbital_inclinations[j]
+        disk_bins_bhbh[17,j] = bin_orbital_inclinations[j]
 
-    return bin_array
+    return disk_bins_bhbh
 
-def bh_near_smbh(mass_smbh,prograde_bh_locations,prograde_bh_masses,prograde_bh_orb_ecc,timestep):
-    """Test whether there are any BH near SMBH. Flag if anything within min_safe_distance( default=50r_g) of SMBH.
+def bh_near_smbh(
+        smbh_mass,
+        disk_bh_pro_orbs_a,
+        disk_bh_pro_masses,
+        disk_bh_pro_orbs_ecc,
+        timestep_duration_yr
+        ):
+    """Evolve semi-major axis of single BH near SMBH according to Peters64
+    
+    Test whether there are any BH near SMBH. 
+    Flag if anything within min_safe_distance (default=50r_g) of SMBH.
     Time to decay into SMBH can be parameterized from Peters(1964) as:
     t_gw =38Myr (1-e^2)(7/2) (a/50r_{g})^4 (M_smbh/10^8Msun)^3 (m_bh/10Msun)^{-1}
 
-    Args:
-        mass_smbh (float): Mass of SMBH in units Msun
-        prograde_bh_locations (array): 1-d array of singleton BH locations in disk (in units of r_g)
-        prograde_bh_masses (array): 1-d array of singleton BH masses (in units of Msun)
-        prograde_bh_orb_ecc (array): 1-d array of single BH orbital eccentricities. 
+    Parameters
+    ----------
+    smbh_mass : float 
+        mass of supermassive black hole in units of solar masses
+    disk_bh_pro_orbs_a : float array
+        semi-maj axis of prograde singleton BH at start of timestep in units of
+        gravitational radii (r_g=GM_SMBH/c^2)
+    disk_bh_pro_masses : float array
+        mass of prograde singleton BH at start of timestep in units of solar
+        masses
+    disk_bh_pro_orbs_ecc : float array
+        orbital eccentricity of singleton prograde BH
+    timestep_duration_yr : float
+        size of timestep in years
+
+    Returns
+    -------
+    disk_bh_pro_orbs_a : float array
+        semi-maj axis of prograde singleton BH at end of timestep in units of
+        gravitational radii (r_g=GM_SMBH/c^2) assuming only GW evolution
     """
-    num_bh = prograde_bh_locations.shape[0]
+    num_bh = disk_bh_pro_orbs_a.shape[0]
 
     #Distance that we are interested in (units of r_g), default is 50r_g.
     min_safe_distance = 50.0
 
     for i in range(0,num_bh):
-        if prograde_bh_locations[i] < min_safe_distance:
-            #print("EMRI alert!", prograde_bh_locations[i])
-            ecc_factor = (1.0 - (prograde_bh_orb_ecc[i])**(2.0))**(7/2)
-            dist_factor = (prograde_bh_locations[i]/50.0)**(4)
-            mass_factor = (10.0/prograde_bh_masses[i])
-            smbh_factor = (mass_smbh/1.e8)**(3)
-            #Decay time in units Myrs
+        if disk_bh_pro_orbs_a[i] < min_safe_distance:
+            ecc_factor = (1.0 - (disk_bh_pro_orbs_ecc[i])**(2.0))**(7/2)
+            dist_factor = (disk_bh_pro_orbs_a[i]/50.0)**(4)
+            mass_factor = (10.0/disk_bh_pro_masses[i])
+            smbh_factor = (smbh_mass/1.e8)**(3)
+            # Decay time in units Myrs
             decay_time = 38.0*ecc_factor*dist_factor*mass_factor*smbh_factor
-            #timestep is in units of yrs, so ratio decay_time*1.e6 (yrs)/timestep(yrs) = no. of timesteps to decay into SMBH
-            decay_time_factor = decay_time*1.e6/timestep
+            # timestep is in units of yrs, so ratio decay_time*1.e6 (yrs)/timestep(yrs) = no. of timesteps to decay into SMBH
+            decay_time_factor = decay_time*1.e6/timestep_duration_yr
             # catch issues when decay_time_factor = 0 with an if statement here (if location already=0)
             if decay_time_factor == 0.0:
                 decrement = 0.0
             else:
                 decrement = (1.0-(1/decay_time_factor))
-            #if decrement < 0.9:
-            #    print("EMRI DECREMENT!!", decrement)
             # So drop prograde_bh_location[i] by value (1/decay_time_factor) on this timestep
-            new_location = decrement*prograde_bh_locations[i]
-            #print(new_location)
+            new_location = decrement*disk_bh_pro_orbs_a[i]
             if new_location <1.0:
                 new_location = 1.0
 
-            prograde_bh_locations[i] = new_location
+            disk_bh_pro_orbs_a[i] = new_location
 
-    return prograde_bh_locations
-
-def bbh_near_smbh(mass_smbh,bindex, binary_bh_array):
-    """Test whether there are any BH near SMBH. Flag if anything within min_safe_distance( default=50r_g) of SMBH.
-
-    Args:
-        mass_smbh (float): Mass of SMBH in units Msun
-        bindex (int): Number of binaries
-        binary_bh_array (array): n x m array of binary BH properies (including BBH c.o.m [8,:]) 
-    """
-    num_bbh = bindex
-
-    #Distance that we are interested in (units of r_g), default is 50r_g.
-    min_safe_distance = 50.0
-    
-    for j in range(0,num_bbh):
-        if binary_bh_array[9,j] < min_safe_distance:
-            print("BBH EMRI alert!", binary_bh_array[9,j])
-
-    #Maybe do something to the binary array (depending on how close the BBH is to SMBH)
-
-    return binary_bh_array
+    return disk_bh_pro_orbs_a

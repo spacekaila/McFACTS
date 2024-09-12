@@ -715,7 +715,6 @@ def main():
                             time_passed,
                             bin_index,
                             opts.nsc_bh_imf_powerlaw_index,
-                            opts.nsc_bh_imf_mode,
                             opts.delta_energy_strong,
                             opts.nsc_spheroid_normalization
                         )
