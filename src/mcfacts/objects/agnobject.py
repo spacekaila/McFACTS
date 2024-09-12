@@ -254,7 +254,7 @@ class AGNObject(object):
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[keep_mask])
 
-    def at(self, id_num, attr):
+    def at_id_num(self, id_num, attr):
         """
         Returns the attribute at the specified ID numbers
 
@@ -966,11 +966,11 @@ class AGNBinaryBlackHole(AGNObject):
 
 
 obj_types = {0 : "single black hole",
-             1 : "single star",
-             2 : "binary black hole",
-             3 : "binary star",
-             4 : "exploded star"
-            }
+             1 : "single star",}
+             #2 : "binary black hole",
+             #3 : "binary star",
+             #4 : "exploded star"
+             #} # Other types are not in use yet
 
 obj_direction = {0 : "orbit direction undetermined",
                  1 : "prograde orbiter",
