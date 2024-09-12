@@ -9,7 +9,7 @@ import scipy
 import mcfacts.constants as mc_const
 
 
-def orb_inc_damping(smbh_mass, disk_bh_retro_orbs, disk_bh_retro_masses, disk_bh_retro_orbs_ecc,
+def orb_inc_damping(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_bh_retro_orbs_ecc,
                     disk_bh_retro_orbs_inc, disk_bh_retro_arg_periapse, timestep_duration_yr, disk_surf_density_func):
     """Calculates how fast the inclination angle of an arbitrary single orbiter changes due to dynamical friction.
      
@@ -36,7 +36,7 @@ def orb_inc_damping(smbh_mass, disk_bh_retro_orbs, disk_bh_retro_masses, disk_bh
     ----------
     smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    disk_bh_retro_orbs : float array
+    disk_bh_retro_orbs_a : float array
         locations of retrograde singleton BH at start of a timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
         (actually we assume this is the same as the semi-major axis)
     disk_bh_retro_masses : float array
@@ -61,7 +61,7 @@ def orb_inc_damping(smbh_mass, disk_bh_retro_orbs, disk_bh_retro_masses, disk_bh
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
     smbh_mass = smbh_mass * mc_const.mass_per_msun  # kg
-    semi_maj_axis = disk_bh_retro_orbs * scipy.constants.G * smbh_mass \
+    semi_maj_axis = disk_bh_retro_orbs_a * scipy.constants.G * smbh_mass \
                     / (scipy.constants.c) ** 2  # m
     retro_mass = disk_bh_retro_masses * mc_const.mass_per_msun  # kg
     omega = disk_bh_retro_arg_periapse  # radians
@@ -84,11 +84,11 @@ def orb_inc_damping(smbh_mass, disk_bh_retro_orbs, disk_bh_retro_masses, disk_bh
     # WZL Eqn 30
     delta = 0.5 * (sigma_plus / eta_plus ** 2 + sigma_minus / eta_minus ** 2)
     # WZL Eqn 71
-    #   NOTE: preserved disk_bh_retro_orbs in r_g to feed to disk_surf_density_func function
+    #   NOTE: preserved disk_bh_retro_orbs_a in r_g to feed to disk_surf_density_func function
     #   tau in units of sec
     tau_i_dyn = np.sqrt(2.0) * inc * (delta - np.cos(inc)) ** 1.5 \
                 * smbh_mass ** 2 * period / (
-                            retro_mass * disk_surf_density_func(disk_bh_retro_orbs) * np.pi * semi_lat_rec ** 2) \
+                            retro_mass * disk_surf_density_func(disk_bh_retro_orbs_a) * np.pi * semi_lat_rec ** 2) \
                 / kappa
 
     # assume the fractional change in inclination is the fraction

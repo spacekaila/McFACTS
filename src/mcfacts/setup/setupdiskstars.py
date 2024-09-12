@@ -310,7 +310,7 @@ def setup_disk_stars_circularized(star_num, crit_ecc):
     """
     Return an array of BH orbital inclinations
     Return an initial distribution of inclination angles that are 0.0
-    
+
     To do: initialize inclinations so random draw with i <h (so will need to input bh_locations and disk_aspect_ratio)
     and then damp inclination.
     To do: calculate v_kick for each merger and then the (i,e) orbital elements for the newly merged BH. 
@@ -332,7 +332,7 @@ def setup_disk_stars_circularized(star_num, crit_ecc):
     integer_nstars = int(star_num)
     # For now, inclinations are zeros
     # Try zero eccentricities
-    stars_initial_orb_ecc = crit_ecc*np.zeros((integer_nstars,),dtype = float)
+    stars_initial_orb_ecc = crit_ecc*np.zeros((integer_nstars,), dtype = float)
     return (stars_initial_orb_ecc)
 
 
@@ -347,7 +347,8 @@ def setup_disk_star_num(nsc_mass,
                         nsc_radius_crit,
                         nsc_density_index_inner):
     """
-    Return the integer number of stars in the AGN disk as calculated from NSC inputs assuming isotropic distribution of NSC orbits
+    Return the integer number of stars in the AGN disk as calculated from NSC
+    inputs assuming isotropic distribution of NSC orbits
     To do: Calculate when R_disk_outer is not equal to the nsc_radius_crit
     To do: Calculate when disky NSC population of BH in plane/out of plane.
 
@@ -373,7 +374,6 @@ def setup_disk_star_num(nsc_mass,
     nsc_radius_crit : float
         critical radius of the NSC
     nsc_density_index_inner : float
-        ????
 
     Returns
     -------
@@ -381,29 +381,27 @@ def setup_disk_star_num(nsc_mass,
         number of stars in the disk in total
     """
     # Housekeeping:
-    # Convert outer disk radius in r_g to units of pc. 1r_g =1AU (M_smbh/10^8Msun) and 1pc =2e5AU =2e5 r_g(M/10^8Msun)^-1
-    pc_dist = 2.e5*((smbh_mass/1.e8)**(-1.0))
-    critical_disk_radius_pc = disk_radius_outer/pc_dist
-    #Total average mass of stars in NSC
-    M_stars_nsc = nsc_mass * (1./nsc_ratio_bh_num_star_num) * (1./nsc_ratio_bh_mass_star_mass)
-    #print("M_bh_nsc",M_bh_nsc)
-    #Total number of stars in NSC
-    N_stars_nsc = M_stars_nsc * nsc_ratio_bh_mass_star_mass
-    #print("N_bh_nsc",N_bh_nsc)
-    #Relative volumes:
+    # Convert disk_radius_outer in r_g to units of pc. 1r_g =1AU (M_smbh/10^8Msun)
+    # 1pc =2e5AU =2e5 r_g(M/10^8Msun)^-1
+    disk_radius_outer_pc = 2.e5*((smbh_mass/1.e8)**(-1.0))
+    critical_disk_radius_pc = disk_radius_outer/disk_radius_outer_pc
+    # Total average mass of stars in NSC
+    nsc_star_mass = nsc_mass * (1./nsc_ratio_bh_num_star_num) * (1./nsc_ratio_bh_mass_star_mass)
+    # Total number of stars in NSC
+    nsc_star_num = nsc_star_mass * nsc_ratio_bh_mass_star_mass
+    # Relative volumes:
     #   of central 1 pc^3 to size of NSC
     relative_volumes_at1pc = (1.0/nsc_radius_outer)**(3.0)
     #   of nsc_radius_crit^3 to size of NSC
     relative_volumes_at_r_nsc_crit = (nsc_radius_crit/nsc_radius_outer)**(3.0)
-    #print(relative_volumes_at1pc)
-    #Total number of stars 
+    # Total number of stars
     #   at R<1pc (should be about 10^4 for Milky Way parameters; 3x10^7Msun, 5pc, r^-5/2 in outskirts)
-    N_stars_nsc_pc = N_stars_nsc * relative_volumes_at1pc * (1.0/nsc_radius_outer)**(-nsc_density_index_outer)
+    N_stars_nsc_pc = nsc_star_num * relative_volumes_at1pc * (1.0/nsc_radius_outer)**(-nsc_density_index_outer)
     #   at nsc_radius_crit
-    N_stars_nsc_crit = N_stars_nsc * relative_volumes_at_r_nsc_crit * (nsc_radius_crit/nsc_radius_outer)**(-nsc_density_index_outer)
-    #print("Normalized N_bh at 1pc",N_bh_nsc_pc)
+    N_stars_nsc_crit = nsc_star_num * relative_volumes_at_r_nsc_crit * (nsc_radius_crit/nsc_radius_outer)**(-nsc_density_index_outer)
 
-    #Calculate Total number of stars in volume R < disk_radius_outer, assuming disk_radius_outer<=1pc.
+    # Calculate Total number of stars in volume R < disk_radius_outer,
+    # assuming disk_radius_outer<=1pc.
 
     if critical_disk_radius_pc >= nsc_radius_crit:
         relative_volumes_at_disk_outer_radius = (critical_disk_radius_pc/1.0)**(3.0)
@@ -414,6 +412,4 @@ def setup_disk_star_num(nsc_mass,
 
     # Total number of BH in disk
     Nstars_disk_total = np.rint(Nstars_disk_volume * disk_aspect_ratio_avg)
-    #print("Nbh_disk_total",Nbh_disk_total)  
     return np.int64(Nstars_disk_total)
-

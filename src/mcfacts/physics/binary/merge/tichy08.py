@@ -46,7 +46,7 @@ def merged_mass(masses_1, masses_2, spins_1, spins_2):
     return merged_masses
 
 
-def merged_spin(masses_1, masses_2, spins_1, spins_2, bin_ang_mom):
+def merged_spin(masses_1, masses_2, spins_1, spins_2):
     """Calculate the spin magnitude of a merged binary.
 
     Only depends on M1,M2,a1,a2 and the binary ang mom around its center of mass.
@@ -64,8 +64,6 @@ def merged_spin(masses_1, masses_2, spins_1, spins_2, bin_ang_mom):
         Spin magnitudes of objects 1.
     spins_2 : float/ndarray
         Spin magnitudes of objects 2.
-    bin_ang_mom : float/ndarray
-        Angular momentum magnitudes of the binaries.
 
     Returns
     -------
