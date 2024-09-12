@@ -36,13 +36,13 @@ Inifile
         Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
     "nsc_spheroid_normalization"    : float
         Spheroid normalization
-    "nsc_bh_imf_mode"               : float
+    "nsc_imf_bh_mode"               : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--mode of initial mass dist (M_sun)
-    "nsc_bh_imf_powerlaw_index"     : float
+    "nsc_imf_bh_powerlaw_index"     : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--powerlaw index for Pareto dist
-    "nsc_bh_imf_mass_max"           : float
+    "nsc_imf_bh_mass_max"           : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--mass of cutoff (M_sun)
     "nsc_bh_spin_dist_mu"           : float
@@ -66,6 +66,8 @@ Inifile
         Initial mass distribution for stars is assumed Salpeter
     "nsc_imf_star_powerlaw_index"   : float
         Initial mass distribution for stars is assumed Salpeter, disk_alpha_viscosity = 2.35
+    "nsc_imf_star_mass_modex"       : float
+        Mass mode for star IMF
     "nsc_star_spin_dist_mu"         : float
         Initial spin distribution for stars is assumed to be Gaussian
     "nsc_star_spin_dist_sigma"      : float
@@ -115,6 +117,14 @@ Inifile
     "delta_energy_strong"           : float
         Average energy change per strong interaction.
         de can be 20% in cluster interactions. May be 10% on average (with gas)
+    "agn_redshift"                  : float
+        Redshift of AGN activity
+    "inner_disk_outer_radius"       : float
+        Outer radius of the inner disk (Rg)
+    "disk_inner_stable_circ_orb"    : float
+        Innermost Stable Circular Orbit around SMBH
+    "mass_pile_up"                  : float
+        Pile-up of masses caused by cutoff (M_sun)
 """
 # Things everyone needs
 import configparser as ConfigParser
@@ -148,9 +158,9 @@ INPUT_TYPES = {
     "nsc_density_index_outer"       : float,
     "disk_aspect_ratio_avg"         : float,
     "nsc_spheroid_normalization"    : float,
-    "nsc_bh_imf_mode"               : float,
-    "nsc_bh_imf_powerlaw_index"     : float,
-    "nsc_bh_imf_mass_max"           : float,
+    "nsc_imf_bh_mode"               : float,
+    "nsc_imf_bh_powerlaw_index"     : float,
+    "nsc_imf_bh_mass_max"           : float,
     "nsc_bh_spin_dist_mu"           : float,
     "nsc_bh_spin_dist_sigma"        : float,
     "disk_bh_torque_condition"      : float,
@@ -159,6 +169,7 @@ INPUT_TYPES = {
     "disk_star_mass_max_init"       : float,
     "disk_star_mass_min_init"       : float,
     "nsc_imf_star_powerlaw_index"   : float,
+    "nsc_imf_star_mass_mode"        : float,
     "nsc_star_spin_dist_mu"         : float,
     "nsc_star_spin_dist_sigma"      : float,
     "disk_star_torque_condition"    : float,
@@ -179,6 +190,10 @@ INPUT_TYPES = {
     "disk_bh_pro_orb_ecc_crit"      : float,
     "flag_dynamic_enc"              : int,
     "delta_energy_strong"           : float,
+    "agn_redshift"                  : float,
+    "inner_disk_outer_radius"       : float,
+    "disk_inner_stable_circ_orb"    : float,
+    "mass_pile_up"                  : float,
 }
 
 
