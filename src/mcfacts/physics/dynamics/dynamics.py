@@ -3,6 +3,15 @@ import scipy
 
 from mcfacts.mcfacts_random_state import rng
 
+"""Module for handling dynamical interactions
+
+Contains multiple functions which are each mocked up versions of a
+dynamical mechanism. Of varying fidelity to reality. Also contains
+GW orbital evolution for BH in the inner disk, which should probably
+move elsewhere.
+"""
+
+
 def circular_singles_encounters_prograde(
         smbh_mass,
         disk_bh_pro_orbs_a,
