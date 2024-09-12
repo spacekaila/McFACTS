@@ -58,7 +58,7 @@ def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, 
     bh_new_orb_ecc : float array
         updated orbital eccentricities damped by AGN gas
     """
-    
+
     # get surface density function, or deal with it if only a float
     if isinstance(disk_surf_density_func, float):
         disk_surface_density = disk_surf_density_func
@@ -69,7 +69,7 @@ def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, 
         disk_aspect_ratio = disk_aspect_ratio_func
     else:
         disk_aspect_ratio = disk_aspect_ratio_func(disk_bh_pro_orbs_a)
-        
+
     # Set up new_disk_bh_pro_orbs_ecc
     new_disk_bh_pro_orbs_ecc = np.empty_like(disk_bh_pro_orbs_ecc)
 
@@ -93,28 +93,28 @@ def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, 
     prograde_bh_modest_ecc = np.ma.masked_where(
         prograde_disk_bh_pro_orbs_ecc > 2.0 * disk_aspect_ratio_func(disk_bh_pro_orbs_a),
         prograde_disk_bh_pro_orbs_ecc)
-    
+
     # Large orb eccentricities: e > 2h (experience more complicated damping)
     prograde_bh_large_ecc = np.ma.masked_where(
         prograde_disk_bh_pro_orbs_ecc < 2.0 * disk_aspect_ratio_func(disk_bh_pro_orbs_a),
         prograde_disk_bh_pro_orbs_ecc)
-    
+
     # Indices of orb eccentricities where e<2h
     modest_ecc_prograde_indices = np.ma.nonzero(prograde_bh_modest_ecc)
-    
+
     # Indices of orb eccentricities where e>2h
     large_ecc_prograde_indices = np.ma.nonzero(prograde_bh_large_ecc)
-    
+
     # print('modest ecc indices', modest_ecc_prograde_indices)
     # print('large ecc indices', large_ecc_prograde_indices)
     # Calculate the 1-d array of damping times at all locations since we need t_damp for both modest & large ecc
     # (see eqns above)
     t_damp = 1.e5 * (1.0 / normalized_mass_ratio) * (normalized_aspect_ratio ** 4) * (
             1.0 / normalized_disk_surf_density_func) * (1.0 / np.sqrt(normalized_bh_locations))
-    
+
     # timescale ratio for modest ecc damping
     modest_timescale_ratio = timestep_duration_yr / t_damp
-    
+
     # timescale for large ecc damping from eqn. 2 above
     t_ecc = (t_damp / 0.78) * (1 - (0.14 * (e_h_ratio) ** (2.0)) + (0.06 * (e_h_ratio) ** (3.0)))
     large_timescale_ratio = timestep_duration_yr / t_ecc
@@ -126,7 +126,7 @@ def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, 
         -modest_timescale_ratio[modest_ecc_prograde_indices])
     new_disk_bh_pro_orbs_ecc[large_ecc_prograde_indices] = disk_bh_pro_orbs_ecc[large_ecc_prograde_indices] * np.exp(
         -large_timescale_ratio[large_ecc_prograde_indices])
-    
+
     new_disk_bh_pro_orbs_ecc = np.where(new_disk_bh_pro_orbs_ecc < disk_bh_pro_orb_ecc_crit,
                                         disk_bh_pro_orb_ecc_crit, new_disk_bh_pro_orbs_ecc)
 
