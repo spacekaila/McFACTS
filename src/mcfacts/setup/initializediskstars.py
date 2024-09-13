@@ -7,7 +7,7 @@ import numpy as np
 def init_single_stars(opts, id_start_val=None):
 
     # Generate initial number of stars
-    star_num_initial = setupdiskstars.setup_disk_star_num(
+    star_num_initial = setupdiskstars.setup_disk_stars_num(
             opts.nsc_mass,
             opts.nsc_ratio_bh_num_star_num,
             opts.nsc_ratio_bh_mass_star_mass,
@@ -23,7 +23,7 @@ def init_single_stars(opts, id_start_val=None):
     star_num_initial = 1_000_000
 
     # Generate initial masses for the initial number of stars, pre-Hill sphere mergers
-    masses_initial = setupdiskstars.setup_disk_star_masses(star_num=star_num_initial,
+    masses_initial = setupdiskstars.setup_disk_stars_masses(star_num=star_num_initial,
                                                             disk_star_mass_min_init=opts.disk_star_mass_min_init,
                                                             disk_star_mass_max_init=opts.disk_star_mass_max_init,
                                                             nsc_imf_star_powerlaw_index=opts.nsc_imf_star_powerlaw_index)
@@ -48,7 +48,7 @@ def init_single_stars(opts, id_start_val=None):
                                                                                      P_r=1.)
     star_num = len(masses_stars)
 
-    star_radius = setupdiskstars.setup_disk_stars_radii(masses_stars)
+    star_radius = setupdiskstars.setup_disk_stars_radius(masses_stars)
     star_spin = setupdiskstars.setup_disk_stars_spins(star_num, opts.nsc_star_spin_dist_mu, opts.nsc_star_spin_dist_sigma)
     star_spin_angle = setupdiskstars.setup_disk_stars_spin_angles(star_num, star_spin)
     star_orb_inc = setupdiskstars.setup_disk_stars_inclination(star_num)
