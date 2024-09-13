@@ -259,7 +259,7 @@ def main():
                                   orb_ecc=bh_orb_ecc_initial,
                                   orb_arg_periapse=bh_orb_arg_periapse_initial,
                                   smbh_mass=opts.smbh_mass,
-                                  obj_num=disk_bh_num,
+                                  bh_num=disk_bh_num,
                                   galaxy=np.zeros(disk_bh_num),
                                   time_passed=np.zeros(disk_bh_num))
 
@@ -626,7 +626,7 @@ def main():
             #   note this is dyn friction only, not true 'migration'
             # change retrograde eccentricity (some damping, some pumping)
             # damp orbital inclination
-            
+
             # This is not working for retrograde stars, just says parameters are unreliable
             # stars_retro.orb_ecc, stars_retro.orb_a, stars_retro.orb_inc = crude_retro_evol.crude_retro_bh(
             #     opts.smbh_mass,
@@ -897,6 +897,8 @@ def main():
                                                       new_orb_inc=np.array([bh_orb_inc_1, bh_orb_inc_2]),
                                                       new_orb_ang_mom=np.array([1, 1]),
                                                       new_orb_arg_periapse=np.array([1.0, 1.0]),
+                                                      new_galaxy=np.full(2,galaxy),
+                                                      new_time_passed=np.full(2,time_passed),
                                                       new_id_num=np.array([blackholes_pro.id_num.max()+1, blackholes_pro.id_num.max()+2])
                                                       )
 
@@ -978,12 +980,12 @@ def main():
                         # Reset merger marker to zero
                         # Remove merged binary from binary array. Delete column where merger_indices is the label.
                         binary_bh_array = np.delete(binary_bh_array, merger_indices, 1)
-                
+
                         # Reduce number of binaries by number of mergers
                         bin_index = bin_index - len(merger_indices)
                         # Find relevant properties of merged BH to add to single BH arrays
                         mergers_this_timestep_num = len(merger_indices)
-                
+
                         for i in range(0, mergers_this_timestep_num):
                             bh_orb_a_merged = merged_bh_array[0, bh_mergers_current_num + i]
                             bh_mass_merged = merged_bh_array[1, bh_mergers_current_num + i]
@@ -1007,6 +1009,8 @@ def main():
                                                       new_orb_ecc=np.array([0.01]),
                                                       new_gen=np.array([bh_gen_merged]),
                                                       new_orb_arg_periapse=np.array([1.]),
+                                                      new_galaxy=np.array([galaxy]),
+                                                      new_time_passed=np.array([time_passed]),
                                                       new_id_num=np.array([blackholes_pro.id_num.max()+1]))
                         if opts.verbose:
                             print("New BH locations", blackholes_pro.orb_a)
@@ -1084,6 +1088,8 @@ def main():
                                               new_orb_ecc=bh_orb_ecc_captured,
                                               new_orb_arg_periapse=np.ones(bh_mass_captured.size),
                                               new_gen=bh_gen_captured,
+                                              new_galaxy=np.full(len(bh_mass_captured),galaxy),
+                                              new_time_passed=np.full(len(bh_mass_captured),time_passed),
                                               new_id_num=np.arange(blackholes_pro.id_num.max()+1, len(bh_mass_captured) + blackholes_pro.id_num.max()+1,1))
 
             # Test if any BH or BBH are in the danger-zone (<mininum_safe_distance, default =50r_g) from SMBH.
@@ -1263,6 +1269,8 @@ def main():
                                               new_orb_ang_mom=np.ones(bh_id_num_flip_to_pro.size),
                                               new_orb_ecc=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_ecc"),
                                               new_orb_arg_periapse=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_arg_periapse"),
+                                              new_galaxy=blackholes_retro.at_id_num(bh_id_num_flip_to_pro,"galaxy"),
+                                              new_time_passed=blackholes_retro.at_id_num(bh_id_num_flip_to_pro,"time_passed"),
                                               new_gen=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "gen"),
                                               new_id_num=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "id_num"))
                 # delete from retro arrays
@@ -1346,6 +1354,8 @@ def main():
                                       new_orb_ang_mom=np.ones(len(bh_mass_1) + len(bh_mass_2)),
                                       new_orb_ecc=np.zeros(len(bh_mass_1) + len(bh_mass_2)),
                                       new_orb_arg_periapse=(np.ones(len(bh_mass_1) + len(bh_mass_1))),
+                                      new_galaxy=np.full(len(bh_mass_1) + len(bh_mass_1), galaxy),
+                                      new_time_passed=np.full(len(bh_mass_1) + len(bh_mass_1), time_passed),
                                       new_gen=np.concatenate([bh_gen_1, bh_gen_2]),
                                       new_id_num=np.arange(blackholes_pro.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + blackholes_pro.id_num.max()+1, 1))
 
