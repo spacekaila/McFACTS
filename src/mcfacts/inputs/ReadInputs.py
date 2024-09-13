@@ -299,6 +299,8 @@ def load_disk_arrays(
     # Load data from the surface density file
     disk_density_data = np.loadtxt(fname_disk_density)
     disk_model_radii = disk_density_data[:,1]
+    print(disk_model_radii)
+    print(disk_radius_outer)
     disk_surface_densities = disk_density_data[:,0]
     # truncate disk at outer radius
     truncated_disk_radii = np.extract(
@@ -356,6 +358,7 @@ def construct_disk_direct(
         disk_model_name,
         disk_radius_outer,
         )
+    print(disk_model_radii)
     # Now geenerate interpolating functions
     # create surface density & aspect ratio functions from input arrays
     disk_surf_dens_func_log = scipy.interpolate.CubicSpline(

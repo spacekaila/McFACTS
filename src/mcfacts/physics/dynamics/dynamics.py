@@ -903,6 +903,7 @@ def bin_spheroid_encounter(
                 enc_rate = 0.02*(nsc_spheroid_normalization/0.1)*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e3))
             if time_passed > crit_time:
                 enc_rate = 0.0
+
         if bin_coms[i] > crit_radius:
                 enc_rate = 0.002*(nsc_spheroid_normalization/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
 
