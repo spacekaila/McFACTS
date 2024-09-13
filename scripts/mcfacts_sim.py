@@ -259,7 +259,9 @@ def main():
                                   orb_ecc=bh_orb_ecc_initial,
                                   orb_arg_periapse=bh_orb_arg_periapse_initial,
                                   smbh_mass=opts.smbh_mass,
-                                  obj_num=disk_bh_num)
+                                  obj_num=disk_bh_num,
+                                  galaxy=np.zeros(disk_bh_num),
+                                  time_passed=np.zeros(disk_bh_num))
 
         # Initialize stars
         stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=blackholes.id_num.max()+1)

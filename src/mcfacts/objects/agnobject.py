@@ -21,6 +21,9 @@ def check_1d_length(arr_list):
 # TODO: issue: right now you can pass AGNStar arrays that are 8-elements long for the star parameters and 10-elements long 
 #       for the AGNObject parameters and it doesn't complain.
 
+# Empty array to pass
+empty_arr = np.array([])
+
 
 class AGNObject(object):
     """
@@ -36,19 +39,19 @@ class AGNObject(object):
     """
 
     def __init__(self,
-                 mass=None,
-                 spin=None,  # internal quantity. total J for a binary
-                 spin_angle=None,  # angle between J and orbit around SMBH for binary
-                 orb_a=None,  # location
-                 orb_inc=None,  # of CoM for binary around SMBH
+                 mass=empty_arr,
+                 spin=empty_arr,  # internal quantity. total J for a binary
+                 spin_angle=empty_arr,  # angle between J and orbit around SMBH for binary
+                 orb_a=empty_arr,  # location
+                 orb_inc=empty_arr,  # of CoM for binary around SMBH
                  # orb_ang_mom = None,  # redundant, should be computed from keplerian orbit formula for L in terms of mass, a, eccentricity
-                 orb_ecc=None,
-                 orb_arg_periapse=None,
-                 galaxy=None,
-                 time_passed=None,
-                 smbh_mass=None,
-                 obj_num=None,
-                 id_start_val=None):
+                 orb_ecc=empty_arr,
+                 orb_arg_periapse=empty_arr,
+                 galaxy=empty_arr,
+                 time_passed=empty_arr,
+                 smbh_mass=empty_arr,
+                 obj_num=0,
+                 id_start_val=0):
         """
         Creates an instance of the AGNObject class.
 
@@ -69,9 +72,9 @@ class AGNObject(object):
         orb_arg_periapse : numpy array
             argument of the orbital periapse with respect to the SMBH
         galaxy : numpy array
-            galaxy iteration, set to -1 if not passed
+            galaxy iteration
         time_passed : numpy array
-            time passed, set to -1 if not passed
+            time passed
         smbh_mass : numpy array
             mass of the SMBH in Msun
         obj_num : int, optional
@@ -79,15 +82,6 @@ class AGNObject(object):
         id_start_val : numpy array
             ID numbers for the objects, by default None
         """
-
-        # Make sure all inputs are included
-        """ if mass is None: raise AttributeError("mass is not included in inputs")
-        if spin is None: raise AttributeError('spin is not included in inputs')
-        if spin_angle is None: raise AttributeError('spin_angle is not included in inputs')
-        if orb_a is None: raise AttributeError('orb_a is not included in inputs')
-        if orb_inc is None: raise AttributeError('orb_inc is not included in inputs')
-        #if orb_ang_mom is None: raise AttributeError('orb_ang_mom is not included in inputs')
-        if orb_ecc is None: raise AttributeError('orb_ecc is not included in inputs') """
 
         """
 
@@ -99,19 +93,6 @@ class AGNObject(object):
         #assert orb_ang_mom.shape == (obj_num,),"orb_ang_mom: all arrays must be 1d and the same length"
         assert orb_ecc.shape == (obj_num,),"orb_ecc: all arrays must be 1d and the same length" """
 
-        if mass is None:
-            # creating an empty object
-            # i know this is a terrible way to do things
-            self.gen = None
-            self.id_num = None
-        else:
-            if obj_num is None: obj_num = mass.size
-            self.gen = np.full(obj_num, 1)
-            if id_start_val is None:
-                self.id_num = np.arange(0, len(mass))  # creates ID numbers sequentially from 0
-            else:  # if we have an id_start_val aka these aren't the first objects in the disk
-                self.id_num = np.arange(id_start_val, id_start_val + len(mass), 1)
-
         self.mass = mass
         self.spin = spin
         self.spin_angle = spin_angle
@@ -119,15 +100,11 @@ class AGNObject(object):
         self.orb_inc = orb_inc
         self.orb_ecc = orb_ecc
         self.orb_arg_periapse = orb_arg_periapse
+        self.gen = np.full(obj_num, 1)
+        self.id_num = np.arange(id_start_val, id_start_val + obj_num, 1)
+        self.galaxy = galaxy
+        self.time_passed = time_passed
 
-        if galaxy is None:
-            self.galaxy = np.full(obj_num, -1)
-        else:
-            self.galaxy = galaxy
-        if time_passed is None:
-            self.time_passed = np.full(obj_num, -1)
-        else:
-            self.time_passed = time_passed
 
     def add_objects(self,
                     new_mass=None,
