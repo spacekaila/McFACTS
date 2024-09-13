@@ -1,9 +1,15 @@
+""" The module provides methods for calculating the eccentricity and semi major latus of retrograde orbiters."""
 import numpy as np
 import scipy
+import mcfacts.constants as mc_const
 
-def retro_semi_lat(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_bh_orb_ecc,retrograde_bh_orb_inc,retro_arg_periapse,disk_surf_model):
-    """This function calculates how fast the semi-latus rectum of a retrograde single orbiter
-    changes due to dynamical friction (appropriate for BH, NS, maaaybe WD?--check) using
+
+def retro_semi_lat(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_bh_retro_orbs_ecc,
+                   disk_bh_retro_orbs_inc, disk_bh_retro_arg_periapse, disk_surf_density_func):
+    """This function calculates how fast the semi-latus rectum of a retrograde single orbiter changes
+    due to dynamical friction.
+
+    Appropriate for BH, NS, maaaybe WD?--check using
     Wang, Zhu & Lin 2024, MNRAS, 528, 4958 (WZL). It returns the timescale for the retrograde
     orbiters to change their semi-latus rectum (eqn 70). Note we have assumed the masses of 
     the orbiters are negligible compared to the SMBH (<1% should be fine).
@@ -16,19 +22,19 @@ def retro_semi_lat(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrog
 
     Parameters
     ----------
-    mass_smbh : float
+    smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    retrograde_bh_locations : float array
+    disk_bh_retro_orbs_a : float array
         locations of retrograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
-    retrograde_bh_masses : float array
+    disk_bh_retro_masses : float array
         mass of retrograde singleton BH at start of timestep in units of solar masses
-    retrograde_bh_orb_ecc : float array
+    disk_bh_retro_orbs_ecc : float array
         orbital eccentricity of retrograde singleton BH at start of timestep.
-    retrograde_bh_orb_inc : float array
+    disk_bh_retro_orbs_inc : float array
         orbital inclination of retrograde singleton BH at start of timestep.
-    retro_arg_periapse : float array
+    disk_bh_retro_arg_periapse : float array
         argument of periapse of retrograde singleton BH at start of timestep.
-    disk_surf_model : function
+    disk_surf_density_func : function
         returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
 
     Returns
@@ -36,49 +42,50 @@ def retro_semi_lat(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrog
     tau_p_dyn : float array
         timescales for the evolution of the semi-latus rectum of each object
     """
-    # This should probably be set somewhere for the whole code? But...
-    KgPerMsun = 1.99e30
 
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    mass_smbh = mass_smbh * KgPerMsun  # kg
-    semi_maj_axis = retrograde_bh_locations * scipy.constants.G * mass_smbh \
-                    / (scipy.constants.c)**2  # m
-    retro_mass = retrograde_bh_masses * KgPerMsun  # kg
-    omega = retro_arg_periapse  # radians
-    ecc = retrograde_bh_orb_ecc  # unitless
-    inc = retrograde_bh_orb_inc  # radians
+    smbh_mass = smbh_mass * mc_const.KgPerMsun  # kg
+    semi_maj_axis = disk_bh_retro_orbs_a * scipy.constants.G * smbh_mass / (scipy.constants.c) ** 2  # m
+    retro_mass = disk_bh_retro_masses * mc_const.KgPerMsun  # kg
+    omega = disk_bh_retro_arg_periapse  # radians
+    ecc = disk_bh_retro_orbs_ecc  # unitless
+    inc = disk_bh_retro_orbs_inc  # radians
 
     # period in units of sec
-    period = 2.0 * np.pi * np.sqrt(semi_maj_axis**3/(scipy.constants.G * mass_smbh))
+    period = 2.0 * np.pi * np.sqrt(semi_maj_axis ** 3 / (scipy.constants.G * smbh_mass))
     # semi-latus rectum in units of meters
-    semi_lat_rec = semi_maj_axis * (1.0-ecc**2)
+    semi_lat_rec = semi_maj_axis * (1.0 - ecc ** 2)
     # WZL Eqn 7 (sigma+/-)
-    sigma_plus = np.sqrt(1.0 + ecc**2 + 2.0*ecc*np.cos(omega))
-    sigma_minus = np.sqrt(1.0 + ecc**2 - 2.0*ecc*np.cos(omega))
+    sigma_plus = np.sqrt(1.0 + ecc ** 2 + 2.0 * ecc * np.cos(omega))
+    sigma_minus = np.sqrt(1.0 + ecc ** 2 - 2.0 * ecc * np.cos(omega))
     # WZL Eqn 8 (eta+/-)
-    eta_plus = np.sqrt(1.0 + ecc*np.cos(omega))
-    eta_minus = np.sqrt(1.0 - ecc*np.cos(omega))
+    eta_plus = np.sqrt(1.0 + ecc * np.cos(omega))
+    eta_minus = np.sqrt(1.0 - ecc * np.cos(omega))
     # WZL Eqn 62
-    kappa = 0.5 * (np.sqrt(1.0/eta_plus**15) + np.sqrt(1.0/eta_minus**15))
+    kappa = 0.5 * (np.sqrt(1.0 / eta_plus ** 15) + np.sqrt(1.0 / eta_minus ** 15))
     # WZL Eqn 63
-    xi = 0.5 * (np.sqrt(1.0/eta_plus**13) + np.sqrt(1.0/eta_minus**13))
+    xi = 0.5 * (np.sqrt(1.0 / eta_plus ** 13) + np.sqrt(1.0 / eta_minus ** 13))
     # WZL Eqn 64
     zeta = xi / kappa
     # WZL Eqn 30
-    delta = 0.5 * (sigma_plus/eta_plus**2 + sigma_minus/eta_minus**2)
+    delta = 0.5 * (sigma_plus / eta_plus ** 2 + sigma_minus / eta_minus ** 2)
     # WZL Eqn 70
-    #   NOTE: preserved retrograde_bh_locations in r_g to feed to disk_surf_model function
+    #   NOTE: preserved disk_bh_retro_orbs_a in r_g to feed to disk_surf_density_func function
     #   tau in units of sec
-    tau_p_dyn = np.sin(inc) * (delta - np.cos(inc))**1.5 \
-                * mass_smbh**2 * period / (retro_mass*disk_surf_model(retrograde_bh_locations)*np.pi*semi_lat_rec**2) \
-                / (np.sqrt(2)) * kappa * np.abs(np.cos(inc) - zeta)
+    tau_p_dyn = np.sin(inc) * (delta - np.cos(inc)) ** 1.5 * smbh_mass ** 2 * period / (
+                retro_mass * disk_surf_density_func(disk_bh_retro_orbs_a) * np.pi * semi_lat_rec ** 2) / (
+                    np.sqrt(2)) * kappa * np.abs(np.cos(inc) - zeta)
 
     return tau_p_dyn
 
-def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_bh_orb_ecc,retrograde_bh_orb_inc,retro_arg_periapse,timestep,disk_surf_model):
+
+def retro_ecc(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_bh_retro_orbs_ecc, disk_bh_retro_orbs_inc,
+              disk_bh_retro_arg_periapse, timestep_duration_yr, disk_surf_density_func):
     """This function calculates how fast the eccentricity of a retrograde single orbiter
-    changes due to dynamical friction (appropriate for BH, NS, maaaybe WD?--check) using
+    changes due to dynamical friction.
+
+    Appropriate for BH, NS, maaaybe WD?--check using
     Wang, Zhu & Lin 2024, MNRAS, 528, 4958 (WZL). It returns the new eccentricities of the retrograde
     orbiters after 1 timestep. Note we have assumed the masses of the orbiters are
     negligible compared to the SMBH (<1% should be fine).
@@ -101,23 +108,22 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
 
     Parameters
     ----------
-    mass_smbh : float
+    smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    retrograde_bh_locations : float array
+    disk_bh_retro_orbs_a : float array
         locations of retrograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
-    retrograde_bh_masses : float array
+    disk_bh_retro_masses : float array
         mass of retrograde singleton BH at start of timestep in units of solar masses
-    retrograde_bh_orb_ecc : float array
+    disk_bh_retro_orbs_ecc : float array
         orbital eccentricity of retrograde singleton BH at start of timestep.
-    retrograde_bh_orb_inc : float array
+    disk_bh_retro_orbs_inc : float array
         orbital inclination of retrograde singleton BH at start of timestep.
-    retro_arg_periapse : float array
+    disk_bh_retro_arg_periapse : float array
         argument of periapse of retrograde singleton BH at start of timestep.
-    timestep : float
-        size of timestep in years
-    disk_surf_model : function
+    timestep_duration_yr : float
+        size of disk_surf_density_func in years
+    disk_surf_density_func : function
         returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
-
 
     Returns
     -------
@@ -127,51 +133,54 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
 
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    omega = retro_arg_periapse  # radians
-    ecc = retrograde_bh_orb_ecc  # unitless
-    inc = retrograde_bh_orb_inc  # radians
-    timestep = timestep * scipy.constants.Julian_year # sec
+    omega = disk_bh_retro_arg_periapse  # radians
+    ecc = disk_bh_retro_orbs_ecc  # unitless
+    inc = disk_bh_retro_orbs_inc  # radians
+    disk_surf_density_func = disk_surf_density_func * scipy.constants.Julian_year  # sec
 
     # WZL Eqn 7 (sigma+/-)
-    sigma_plus = np.sqrt(1.0 + ecc**2 + 2.0*ecc*np.cos(omega))
-    sigma_minus = np.sqrt(1.0 + ecc**2 - 2.0*ecc*np.cos(omega))
+    sigma_plus = np.sqrt(1.0 + ecc ** 2 + 2.0 * ecc * np.cos(omega))
+    sigma_minus = np.sqrt(1.0 + ecc ** 2 - 2.0 * ecc * np.cos(omega))
     # WZL Eqn 8 (eta+/-)
-    eta_plus = np.sqrt(1.0 + ecc*np.cos(omega))
-    eta_minus = np.sqrt(1.0 - ecc*np.cos(omega))
+    eta_plus = np.sqrt(1.0 + ecc * np.cos(omega))
+    eta_minus = np.sqrt(1.0 - ecc * np.cos(omega))
     # WZL Eqn 62
-    kappa = 0.5 * (np.sqrt(1.0/eta_plus**15) + np.sqrt(1.0/eta_minus**15))
+    kappa = 0.5 * (np.sqrt(1.0 / eta_plus ** 15) + np.sqrt(1.0 / eta_minus ** 15))
     # WZL Eqn 63
-    xi = 0.5 * (np.sqrt(1.0/eta_plus**13) + np.sqrt(1.0/eta_minus**13))
+    xi = 0.5 * (np.sqrt(1.0 / eta_plus ** 13) + np.sqrt(1.0 / eta_minus ** 13))
     # WZL Eqn 64
     zeta = xi / kappa
     # WZL Eqn 65
-    kappa_bar = 0.5 * (np.sqrt(1.0/eta_plus**7) + np.sqrt(1.0/eta_minus**7))
+    kappa_bar = 0.5 * (np.sqrt(1.0 / eta_plus ** 7) + np.sqrt(1.0 / eta_minus ** 7))
     # WZL Eqn 66
-    xi_bar = 0.5 * (np.sqrt(sigma_plus**4/eta_plus**13) + np.sqrt(sigma_minus**4/eta_minus**13))
+    xi_bar = 0.5 * (np.sqrt(sigma_plus ** 4 / eta_plus ** 13) + np.sqrt(sigma_minus ** 4 / eta_minus ** 13))
     # WZL Eqn 67
     zeta_bar = xi_bar / kappa_bar
 
     # call function for tau_p_dyn (WZL Eqn 70)
-    tau_p_dyn = retro_semi_lat(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_bh_orb_ecc,retrograde_bh_orb_inc,retro_arg_periapse,disk_surf_model)
+    tau_p_dyn = retro_semi_lat(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_bh_retro_orbs_ecc,
+                               disk_bh_retro_orbs_inc, disk_bh_retro_arg_periapse, disk_surf_density_func)
     # retro_mig function actually comuptes change in a, so need to find tau_a_dyn again, but
     #   fortunately it's a few factors off of tau_p_dyn (this may be a dumb way to handle it)
-    tau_a_dyn = tau_p_dyn * (1.0 - ecc**2) * kappa * np.abs(np.cos(inc) - zeta)/(kappa_bar * np.abs(np.cos(inc) - zeta_bar))
+    tau_a_dyn = tau_p_dyn * (1.0 - ecc ** 2) * kappa * np.abs(np.cos(inc) - zeta) / (
+                kappa_bar * np.abs(np.cos(inc) - zeta_bar))
+    
     # WZL Eqn 73
-    tau_e_dyn = (2.0 * ecc**2 / (1.0 - ecc**2)) * 1.0 / np.abs(1.0/tau_a_dyn - 1.0/tau_p_dyn)
+    tau_e_dyn = (2.0 * ecc ** 2 / (1.0 - ecc ** 2)) * 1.0 / np.abs(1.0 / tau_a_dyn - 1.0 / tau_p_dyn)
 
     # assume the fractional change in eccentricity is the fraction
     #   of tau_e_dyn represented by one timestep
-    frac_change = timestep / tau_e_dyn
+    frac_change = timestep_duration_yr / tau_e_dyn
 
     # Unlike in the retro_mig function I have not set up a check for when
-    #   tau_e_dyn < timestep because direction matters. I have a fix for 
+    #   tau_e_dyn < disk_surf_density_func because direction matters. I have a fix for
     #   when the orbit should go to circular just before the return, but
-    #   if timescale is fast compared to timestep and we expect eccentricity
+    #   if timescale is fast compared to disk_surf_density_func and we expect eccentricity
     #   excitation... should probably keep an eye out for that?
 
     # need to figure out which way the eccentricity is going; use
     #   Eqn 69 in WZL for cosine of critical inclination
-    cos_inc_crit = (xi_bar - (1.0 - ecc**2) * xi)/(kappa_bar - (1.0 - ecc**2) * kappa)
+    cos_inc_crit = (xi_bar - (1.0 - ecc ** 2) * xi) / (kappa_bar - (1.0 - ecc ** 2) * kappa)
     print("cos_inc_crit")
     print(cos_inc_crit)
     inc_crit = np.arccos(cos_inc_crit)
@@ -180,12 +189,11 @@ def retro_ecc(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     # if the inc < inc_crit, ecc is excited, else it is damped
     # WZL has a fucking typo: should be inc<inc_crit, not cos(inc)<cos(inc_crit)!!!
     frac_change[inc > inc_crit] = -frac_change[inc > inc_crit]
-    
-    # accounting for poss increase OR decrease in ecc by flipping sign 
+
+    # accounting for poss increase OR decrease in ecc by flipping sign
     #   on frac_change above (where appropriate)
-    retrograde_bh_new_ecc = retrograde_bh_orb_ecc * (1.0 - frac_change)
+    retrograde_bh_new_ecc = disk_bh_retro_orbs_ecc * (1.0 - frac_change)
     # if extremely strong circularization effect, set ecc to 0.0
     retrograde_bh_new_ecc[retrograde_bh_new_ecc < 0.0] = 0.0
 
     return retrograde_bh_new_ecc
-

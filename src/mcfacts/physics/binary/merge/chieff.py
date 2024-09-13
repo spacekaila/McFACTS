@@ -59,7 +59,7 @@ def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angl
 
     return chi_eff
 
-def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_momenta, bin_incs_wrt_disk):
+def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_incs_wrt_disk):
     """Calculate the precessing spin component :math:`\chi_p` associated with a merger.
     
     chi_p = max[spin_1_perp, (q(4q+3)/(4+3q))* spin_2_perp]
@@ -87,10 +87,6 @@ def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bi
         Dimensionless spin angle of object 1.
     spin_angles_2 : float/ndarray
         Dimensionless spin angle of object 2.
-    bin_ang_momenta : int/ndarray
-        Direction of the binary's mutual angular momentum. If 1, the binary
-        is prograde (aligned with disk angular momentum). If -1, the binary
-        is retrograde (anti-aligned with disk angular momentum).
     bin_incs_wrt_disk : float/ndarray
         Angle of inclination of the binary with respect to the disk.
 

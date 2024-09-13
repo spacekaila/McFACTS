@@ -1,9 +1,13 @@
 import numpy as np
 import scipy
+from astropy.constants import M_sun
 
-
-def retro_mig(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_bh_orb_ecc,retrograde_bh_orb_inc,retro_arg_periapse,timestep,disk_surf_model):
-    """This function calculates how fast the semi-major axis of a retrograde single orbiter
+def retro_mig(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses,
+              disk_bh_retro_orbs_e, disk_bh_retro_orbs_inc, disk_bh_retro_arg_periapse,
+              timestep_duration_yr, disk_surf_density_func):
+    """Apply change to retrograde orbiters' semi-major axes (migration) due to dynamical friction.
+    
+    This function calculates how fast the semi-major axis of a retrograde single orbiter
     changes due to dynamical friction (appropriate for BH, NS, maaaybe WD?--check) using
     Wang, Zhu & Lin 2024, MNRAS, 528, 4958 (WZL). It returns the new locations of the retrograde
     orbiters after 1 timestep. Note we have assumed the masses of the orbiters are
@@ -18,48 +22,47 @@ def retro_mig(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     
     Parameters
     ----------
-    mass_smbh : float
-        mass of supermassive black hole in units of solar masses
-    retrograde_bh_locations : float array
-        locations of retrograde singleton BH at start of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
-    retrograde_bh_masses : float array
-        mass of retrograde singleton BH at start of timestep in units of solar masses
-    retrograde_bh_orb_ecc : float array
-        orbital eccentricity of retrograde singleton BH at start of timestep.
-    retrograde_bh_orb_inc : float array
-        orbital inclination of retrograde singleton BH at start of timestep.
-    retro_arg_periapse : float array
-        argument of periapse of retrograde singleton BH at start of timestep.
-    timestep : float
-        size of timestep in years
-    disk_surf_model : function
-        returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
+    smbh_mass : float/ndarray
+        Mass of supermassive black hole in units of solar masses.
+    disk_bh_retro_orbs_a : float/ndarray
+        Semi-major axes of retrograde singleton BH at start of timestep in units of
+        gravitational radii (r_g=GM_SMBH/c^2).
+    disk_bh_retro_masses : float/ndarray
+        Mass of retrograde singleton BH at start of timestep in units of solar masses.
+    disk_bh_retro_orbs_e : float/ndarray
+        Orbital eccentricity of retrograde singleton BH at start of timestep.
+    disk_bh_retro_orbs_inc : float/ndarray
+        Orbital inclination of retrograde singleton BH at start of timestep.
+    disk_bh_retro_arg_periapse : float/ndarray
+        Argument of periapse of retrograde singleton BH at start of timestep.
+    timestep_duration_yr : float
+        Size of timestep in years
+    disk_surf_density_func : function
+        Returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
 
     Returns
     -------
-    retrograde_bh_new_locations : float array
-        locations of retrograde singleton BH at end of timestep in units of gravitational radii (r_g=GM_SMBH/c^2)
+    disk_bh_retro_orbs_a_new : float array
+        locations of retrograde singleton BH at end of timestep in units of
+        gravitational radii (r_g=GM_SMBH/c^2)
 
     """
 
-    # This should probably be set somewhere for the whole code? But...
-    KgPerMsun = 1.99e30
-
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    mass_smbh = mass_smbh * KgPerMsun  # kg
-    semi_maj_axis = retrograde_bh_locations * scipy.constants.G * mass_smbh \
+    smbh_mass_kg = smbh_mass * M_sun.si.value
+    semi_maj_axis = disk_bh_retro_orbs_a * scipy.constants.G * smbh_mass_kg \
                     / (scipy.constants.c)**2  # m
-    retro_mass = retrograde_bh_masses * KgPerMsun  # kg
-    omega = retro_arg_periapse  # radians
-    ecc = retrograde_bh_orb_ecc  # unitless
-    inc = retrograde_bh_orb_inc  # radians
-    timestep = timestep * scipy.constants.Julian_year # sec
+    retro_mass = disk_bh_retro_masses * M_sun.si.value  # kg
+    omega = disk_bh_retro_arg_periapse  # radians
+    ecc = disk_bh_retro_orbs_e  # unitless
+    inc = disk_bh_retro_orbs_inc  # radians
+    timestep_duration_yr = timestep_duration_yr * scipy.constants.Julian_year # sec
 
     # period in units of sec
-    period = 2.0 * np.pi * np.sqrt(semi_maj_axis**3/(scipy.constants.G * mass_smbh))
+    period = 2.0 * np.pi * np.sqrt(semi_maj_axis**3/(scipy.constants.G * smbh_mass_kg))
     # semi-latus rectum in units of meters
-    semi_lat_rec = semi_maj_axis * (1.0-ecc**2)
+    semi_lat_rec = semi_maj_axis * (1.0 - ecc**2)
     # WZL Eqn 7 (sigma+/-)
     sigma_plus = np.sqrt(1.0 + ecc**2 + 2.0*ecc*np.cos(omega))
     sigma_minus = np.sqrt(1.0 + ecc**2 - 2.0*ecc*np.cos(omega))
@@ -78,13 +81,14 @@ def retro_mig(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     #   NOTE: preserved retrograde_bh_locations in r_g to feed to disk_surf_model function
     #   tau in units of sec
     tau_a_dyn = (1.0-ecc**2) * np.sin(inc) * (delta - np.cos(inc))**1.5 \
-                * mass_smbh**2 * period / (retro_mass*disk_surf_model(retrograde_bh_locations)*np.pi*semi_lat_rec**2) \
+                * smbh_mass_kg**2 * period \
+                / (retro_mass*disk_surf_density_func(disk_bh_retro_orbs_a)*np.pi*semi_lat_rec**2) \
                 / (np.sqrt(2)) * kappa_bar * np.abs(np.cos(inc) - zeta_bar)
 
     # assume the fractional change in semi-major axis is the fraction
     #   of tau_a_dyn represented by one timestep; in case of semi-maj axis
     #   always moving inwards (because drag)
-    frac_change = timestep / tau_a_dyn
+    frac_change = timestep_duration_yr / tau_a_dyn
 
     # if the timescale for change of semi-major axis is larger than the timestep
     #    send the new location to zero (btw we should probably have a special
@@ -93,6 +97,6 @@ def retro_mig(mass_smbh,retrograde_bh_locations,retrograde_bh_masses,retrograde_
     #    issues not handled here at very small a_0 or very large timesteps)
     frac_change[frac_change>1.0] = 1.0
 
-    retrograde_bh_new_locations = retrograde_bh_locations * (1.0 - frac_change)
+    disk_bh_retro_orbs_a_new = disk_bh_retro_orbs_a * (1.0 - frac_change)
 
-    return retrograde_bh_new_locations
+    return disk_bh_retro_orbs_a_new
