@@ -122,8 +122,12 @@ class AGNObject(object):
 
         if galaxy is None:
             self.galaxy = np.full(obj_num, -1)
+        else:
+            self.galaxy = galaxy
         if time_passed is None:
             self.time_passed = np.full(obj_num, -1)
+        else:
+            self.time_passed = time_passed
 
     def add_objects(self,
                     new_mass=None,
@@ -568,7 +572,7 @@ class AGNBlackHole(AGNObject):
     EMRIs and BBH, so if a value is not passed these attributes are set to -1.
     AGNBlackHole also calculates orbital angular momentum for black holes.
     """
-    def __init__(self, mass=None, gw_freq=None, gw_strain=None, **kwargs):
+    def __init__(self, mass=None, orb_ang_mom=None, gw_freq=None, gw_strain=None, **kwargs):
         """Creates an instance of AGNStar object.
 
         Parameters
@@ -581,7 +585,10 @@ class AGNBlackHole(AGNObject):
             gravitational wave strain [unitless]
         """
 
-        self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh=mass.size)
+        if orb_ang_mom is None:
+            self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh=mass.size)
+        else:
+            self.orb_ang_mom = orb_ang_mom
 
         if gw_freq is None:
             self.gw_freq = np.full(mass.size, -1)

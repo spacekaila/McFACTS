@@ -299,36 +299,36 @@ def main():
         disk_radius_safe_min = 50.0
 
         # Find inner disk BH (potential EMRI)
-        bh_indices_inner_disk = np.where(blackholes.orb_a < disk_radius_safe_min)
-        blackholes_inner_disk = blackholes.copy()
-        blackholes_inner_disk.keep_index(bh_indices_inner_disk)
+        #bh_indices_inner_disk = np.where(blackholes.orb_a < disk_radius_safe_min)
+        #blackholes_inner_disk = blackholes.copy()
+        #blackholes_inner_disk.keep_index(bh_indices_inner_disk)
 
         # Remove inner disk BHs from blackholes and update filing cabinet
-        blackholes.remove_id_num(blackholes_inner_disk.id_num)
-        filing_cabinet.update(id_num=blackholes_inner_disk.id_num,
-                              attr="disk_inner_outer",
-                              new_info=np.full(blackholes_inner_disk.id_num.size, -1))
-        filing_cabinet.update(id_num=blackholes.id_num,
-                              attr="disk_inner_outer",
-                              new_info=np.ones(blackholes.id_num.size))
+        #blackholes.remove_id_num(blackholes_inner_disk.id_num)
+        #filing_cabinet.update(id_num=blackholes_inner_disk.id_num,
+        #                      attr="disk_inner_outer",
+        #                      new_info=np.full(blackholes_inner_disk.id_num.size, -1))
+        #filing_cabinet.update(id_num=blackholes.id_num,
+        #                      attr="disk_inner_outer",
+        #                      new_info=np.ones(blackholes.id_num.size))
 
         # Create empty BH EMRI object
-        blackholes_emri = blackholes_inner_disk.copy()
-        blackholes_emri.remove_id_num(blackholes_inner_disk.id_num)
+        #blackholes_emri = blackholes_inner_disk.copy()
+        #blackholes_emri.remove_id_num(blackholes_inner_disk.id_num)
 
         # Find inner disk stars (potential TDEs)
-        star_indices_inner_disk = np.where(stars.orb_a < disk_radius_safe_min)
-        stars_inner_disk = stars.copy()
-        stars_inner_disk.keep_index(star_indices_inner_disk)
+        #star_indices_inner_disk = np.where(stars.orb_a < disk_radius_safe_min)
+        #stars_inner_disk = stars.copy()
+        #stars_inner_disk.keep_index(star_indices_inner_disk)
 
         # Remove inner disk stars from stars and update filing cabinet
-        stars.remove_id_num(stars_inner_disk.id_num)
-        filing_cabinet.update(id_num=stars_inner_disk.id_num,
-                              attr="disk_inner_outer",
-                              new_info=np.full(stars_inner_disk.id_num.size, -1))
-        filing_cabinet.update(id_num=stars.id_num,
-                              attr="disk_inner_outer",
-                              new_info=np.ones(stars.id_num.size))
+        #stars.remove_id_num(stars_inner_disk.id_num)
+        #filing_cabinet.update(id_num=stars_inner_disk.id_num,
+        #                      attr="disk_inner_outer",
+        #                      new_info=np.full(stars_inner_disk.id_num.size, -1))
+        #filing_cabinet.update(id_num=stars.id_num,
+        #                      attr="disk_inner_outer",
+        #                      new_info=np.ones(stars.id_num.size))
 
         bh_orb_a_inner_disk = []
         bh_mass_inner_disk = []
@@ -1097,24 +1097,24 @@ def main():
             # e.g at 25R_g, decay time is only 2.3Myr.
 
             # Check if any prograde BHs are in the inner disk
-            bh_id_num_pro_inner_disk = blackholes_pro.id_num[blackholes_pro.orb_a < disk_radius_safe_min]
-            if (bh_id_num_pro_inner_disk.size > 0):
-                blackholes_inner_disk.add_blackholes(new_mass=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "mass"),
-                                                     new_spin=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin"),
-                                                     new_spin_angle=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin_angle"),
-                                                     new_orb_a=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_a"),
-                                                     new_orb_inc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_inc"),
-                                                     new_orb_ang_mom=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ang_mom"),
-                                                     new_orb_ecc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ecc"),
-                                                     new_orb_arg_periapse=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_arg_periapse"),
-                                                     new_gen=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "gen"),
-                                                     new_id_num=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "id_num"))
+            # bh_id_num_pro_inner_disk = blackholes_pro.id_num[blackholes_pro.orb_a < disk_radius_safe_min]
+            # if (bh_id_num_pro_inner_disk.size > 0):
+            #     blackholes_inner_disk.add_blackholes(new_mass=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "mass"),
+            #                                          new_spin=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin"),
+            #                                          new_spin_angle=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin_angle"),
+            #                                          new_orb_a=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_a"),
+            #                                          new_orb_inc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_inc"),
+            #                                          new_orb_ang_mom=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ang_mom"),
+            #                                          new_orb_ecc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ecc"),
+            #                                          new_orb_arg_periapse=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_arg_periapse"),
+            #                                          new_gen=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "gen"),
+            #                                          new_id_num=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "id_num"))
 
-            # Remove from blackholes_pro and update filing_cabinet
-            blackholes_pro.remove_id_num(bh_id_num_pro_inner_disk)
-            filing_cabinet.update(id_num=bh_id_num_pro_inner_disk,
-                                  attr="disk_inner_outer",
-                                  new_info=np.full(len(bh_id_num_pro_inner_disk), -1))
+            # # Remove from blackholes_pro and update filing_cabinet
+            # blackholes_pro.remove_id_num(bh_id_num_pro_inner_disk)
+            # filing_cabinet.update(id_num=bh_id_num_pro_inner_disk,
+            #                       attr="disk_inner_outer",
+            #                       new_info=np.full(len(bh_id_num_pro_inner_disk), -1))
 
             bh_indices_inner_disk = np.where(blackholes_pro.orb_a < disk_radius_safe_min)
             if np.size(bh_indices_inner_disk) > 0:
@@ -1129,26 +1129,26 @@ def main():
                 # Remove BH from prograde_disk_arrays
                 blackholes_pro.remove_index(idx_remove=bh_indices_inner_disk)
                 # Empty disk_indices array
-                # empty = []
-                # bh_indices_inner_disk = np.array(empty)
+                empty = []
+                bh_indices_inner_disk = np.array(empty)
 
             # Check if any retrograde BHs are in the inner disk
-            bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < disk_radius_safe_min]
-            if (bh_id_num_retro_inner_disk.size > 0):
-                blackholes_inner_disk.add_blackholes(new_mass=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "mass"),
-                                                     new_spin=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin"),
-                                                     new_spin_angle=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin_angle"),
-                                                     new_orb_a=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_a"),
-                                                     new_orb_inc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_inc"),
-                                                     new_orb_ang_mom=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ang_mom"),
-                                                     new_orb_ecc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ecc"),
-                                                     new_orb_arg_periapse=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_arg_periapse"),
-                                                     new_gen=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "gen"),
-                                                     new_id_num=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "id_num"))
-            # blackholes_retro.remove_id_num(bh_id_num_retro_inner_disk)
-            filing_cabinet.update(id_num=bh_id_num_retro_inner_disk,
-                                  attr="disk_inner_outer",
-                                  new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
+            # bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < disk_radius_safe_min]
+            # if (bh_id_num_retro_inner_disk.size > 0):
+            #     blackholes_inner_disk.add_blackholes(new_mass=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "mass"),
+            #                                          new_spin=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin"),
+            #                                          new_spin_angle=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin_angle"),
+            #                                          new_orb_a=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_a"),
+            #                                          new_orb_inc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_inc"),
+            #                                          new_orb_ang_mom=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ang_mom"),
+            #                                          new_orb_ecc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ecc"),
+            #                                          new_orb_arg_periapse=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_arg_periapse"),
+            #                                          new_gen=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "gen"),
+            #                                          new_id_num=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "id_num"))
+            # # blackholes_retro.remove_id_num(bh_id_num_retro_inner_disk)
+            # filing_cabinet.update(id_num=bh_id_num_retro_inner_disk,
+            #                       attr="disk_inner_outer",
+            #                       new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
 
             # adding retros too
             inner_disk_retro_indices = np.where(blackholes_retro.orb_a < disk_radius_safe_min)
@@ -1168,12 +1168,12 @@ def main():
                 empty = []
                 inner_disk_retro_indices = np.array(empty)
 
-            if (np.size(blackholes_inner_disk.orb_a) > 0):
-                blackholes_inner_disk.orb_a = dynamics.bh_near_smbh(opts.smbh_mass,
-                                                                    blackholes_inner_disk.orb_a,
-                                                                    blackholes_inner_disk.mass,
-                                                                    blackholes_inner_disk.orb_ecc,
-                                                                    opts.timestep_duration_yr)
+            # if (np.size(blackholes_inner_disk.orb_a) > 0):
+            #     blackholes_inner_disk.orb_a = dynamics.bh_near_smbh(opts.smbh_mass,
+            #                                                         blackholes_inner_disk.orb_a,
+            #                                                         blackholes_inner_disk.mass,
+            #                                                         blackholes_inner_disk.orb_ecc,
+            #                                                         opts.timestep_duration_yr)
             if np.size(bh_orb_a_inner_disk) > 0:
                 bh_orb_a_inner_disk = dynamics.bh_near_smbh(opts.smbh_mass,
                                                             bh_orb_a_inner_disk,
@@ -1185,10 +1185,10 @@ def main():
                 # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
                 if nemri == 0:
                     old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
-                    old_gw_freq_obj = 9.e-7*np.ones(num_in_inner_disk)
+                    #old_gw_freq_obj = 9.e-7*np.ones(num_in_inner_disk)
                 if nemri > 0:
                     old_gw_freq = emri_gw_freq
-                    old_gw_freq_obj = emri_gw_freq_obj
+                    #old_gw_freq_obj = emri_gw_freq_obj
                 # Now update emris & generate NEW frequency & evolve   
                 emri_gw_strain, emri_gw_freq = evolve.evolve_emri_gw(bh_orb_a_inner_disk,
                                                                      bh_mass_inner_disk, 
@@ -1196,14 +1196,14 @@ def main():
                                                                      opts.timestep_duration_yr,
                                                                      old_gw_freq)
                 
-                emri_gw_strain_obj, emri_gw_freq_obj = evolve.evolve_emri_gw(blackholes_inner_disk.orb_a,
-                                                                             blackholes_inner_disk.mass, 
-                                                                             opts.smbh_mass,
-                                                                             opts.timestep_duration_yr,
-                                                                             old_gw_freq_obj)
+                # emri_gw_strain_obj, emri_gw_freq_obj = evolve.evolve_emri_gw(blackholes_inner_disk.orb_a,
+                #                                                              blackholes_inner_disk.mass, 
+                #                                                              opts.smbh_mass,
+                #                                                              opts.timestep_duration_yr,
+                #                                                              old_gw_freq_obj)
             num_in_inner_disk = np.size(bh_orb_a_inner_disk)
-            num_in_inner_disk_obj = blackholes_inner_disk.orb_a.size
-            print(num_in_inner_disk, num_in_inner_disk_obj)
+            #num_in_inner_disk_obj = blackholes_inner_disk.orb_a.size
+            #print(num_in_inner_disk, num_in_inner_disk_obj)
             nemri = nemri + num_in_inner_disk
             if num_in_inner_disk > 0:
                 for i in range(0, num_in_inner_disk):
@@ -1217,20 +1217,20 @@ def main():
 
                     emri_array = np.vstack((emri_array, temp_emri_array))
 
-                blackholes_emri.add_blackholes(new_mass=blackholes_inner_disk.mass,
-                                            new_spin=blackholes_inner_disk.spin,
-                                            new_spin_angle=blackholes_inner_disk.spin_angle,
-                                            new_orb_a=blackholes_inner_disk.orb_a,
-                                            new_orb_inc=blackholes_inner_disk.orb_inc,
-                                            new_orb_ang_mom=blackholes_inner_disk.orb_ang_mom,
-                                            new_orb_ecc=blackholes_inner_disk.orb_ecc,
-                                            new_orb_arg_periapse=blackholes_inner_disk.orb_arg_periapse,
-                                            new_gw_freq=emri_gw_freq_obj,
-                                            new_gw_strain=emri_gw_strain_obj,
-                                            new_gen=blackholes_inner_disk.gen,
-                                            new_galaxy=np.full(emri_gw_freq_obj.size, galaxy),
-                                            new_time_passed=np.full(emri_gw_freq_obj.size, time_passed),
-                                            new_id_num=blackholes_inner_disk.id_num)
+                # blackholes_emri.add_blackholes(new_mass=blackholes_inner_disk.mass,
+                #                             new_spin=blackholes_inner_disk.spin,
+                #                             new_spin_angle=blackholes_inner_disk.spin_angle,
+                #                             new_orb_a=blackholes_inner_disk.orb_a,
+                #                             new_orb_inc=blackholes_inner_disk.orb_inc,
+                #                             new_orb_ang_mom=blackholes_inner_disk.orb_ang_mom,
+                #                             new_orb_ecc=blackholes_inner_disk.orb_ecc,
+                #                             new_orb_arg_periapse=blackholes_inner_disk.orb_arg_periapse,
+                #                             new_gw_freq=emri_gw_freq_obj,
+                #                             new_gw_strain=emri_gw_strain_obj,
+                #                             new_gen=blackholes_inner_disk.gen,
+                #                             new_galaxy=np.full(emri_gw_freq_obj.size, galaxy),
+                #                             new_time_passed=np.full(emri_gw_freq_obj.size, time_passed),
+                #                             new_id_num=blackholes_inner_disk.id_num)
             
             merger_dist = 1.0
             emri_merger_indices = np.where(bh_orb_a_inner_disk <= merger_dist)
@@ -1250,8 +1250,8 @@ def main():
             empty = []
             emri_merger_indices = np.array(empty)
 
-            bh_id_num_emri = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
-            blackholes_inner_disk.remove_id_num(bh_id_num_emri)
+            #bh_id_num_emri = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
+            #blackholes_inner_disk.remove_id_num(bh_id_num_emri)
 
             # Here is where we need to move retro to prograde if they've flipped in this timestep
             # If they're IN the disk prograde, OR if they've circularized:
@@ -1386,9 +1386,9 @@ def main():
         # If there are non-zero elements in total_bbh_gw_array
         if total_bbh_gws > 0:
             gw_array_pop.append(total_bbh_gw_array[:total_bbh_gws, :])
-    
+
     print('AGNBlackHole EMRIs')
-    print(blackholes_emri.mass.size)
+    #print(blackholes_emri.mass.size)
     print('array EMRIs')
     print(total_emris)
     #print(emris_array_pop)
