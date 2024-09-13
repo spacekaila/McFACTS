@@ -1,8 +1,3 @@
-.. McFacts documentation master file, created by
-   sphinx-quickstart on Fri Sep 13 13:36:54 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 McFacts documentation
 =====================
 
@@ -15,3 +10,16 @@ documentation for details.
    :maxdepth: 2
    :caption: Contents:
 
+.. autosummary::
+   :toctree: _autosummary
+   :template: custom-module-template.rst
+   :recursive:
+
+   mcfacts
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
