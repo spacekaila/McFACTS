@@ -878,9 +878,10 @@ def bin_spheroid_encounter(rng, mass_smbh, timestep, bin_array, time_passed, bin
                 enc_rate = 0.02*(sph_norm/0.1)*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e3))
             if time_passed > crit_time:
                 enc_rate = 0.0
-        if bin_coms[i] > crit_radius:
-                enc_rate = 0.002*(sph_norm/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
-
+        if bin_coms[i] >= crit_radius:
+                enc_rate = 0.002*(sph_norm/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))    
+        #print("bin_coms[i]",bin_coms[i])
+        #print("enc_rate",enc_rate)
         # Based on est encounter rate, calculate if binary actually has a spheroid encounter
         random_uniform_number = rng.random()
         if random_uniform_number < enc_rate:

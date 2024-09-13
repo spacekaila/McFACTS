@@ -380,7 +380,7 @@ class AGNBlackHole(AGNObject):
     """
     def __init__(self, mass = None, **kwargs):
 
-        self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh = len(mass))
+        self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(disk_bh_num = len(mass))
         
         super(AGNBlackHole,self).__init__(mass = mass, **kwargs) #Calls top level functions
     
