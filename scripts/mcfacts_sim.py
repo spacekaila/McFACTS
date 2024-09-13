@@ -427,7 +427,7 @@ def main():
         # If you want to use the output of a previous AGN simulation as an input to another AGN phase
         # Make sure you have a file 'recipes/prior_model_name_population.dat' so that ReadInputs can take it in
         # and in your .ini file set switch prior_agn = 1.0.
-        # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
+        # Initial orb ecc is modified uniform using setup_disk_bh_orb_ecc_uniform(bh_pro_num,opts.disk_bh_orb_ecc_max_init)
         # SF: No promises this handles retrograde orbiters correctly yet
         '''
         if opts.flag_prior_agn == 1.0:
@@ -444,8 +444,7 @@ def main():
             print("prior indices", prior_indices)
             print("prior locations", blackholes_pro.orb_a)
             print("prior gens", blackholes_pro.gen)
-            prior_ecc_factor = 0.3
-            blackholes_pro.orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(prior_ecc_factor, bh_pro_num)
+            blackholes_pro.orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(bh_pro_num, opts.disk_bh_orb_ecc_max_init)
             print("prior ecc", blackholes_pro.orb_ecc)
         '''
 
@@ -668,17 +667,18 @@ def main():
             
             # Do things to the binaries--first check if there are any:
             if bin_index > 0:
+
                 # First check that binaries are real. Discard any columns where the location or the mass is 0.
                 # SF: I believe this step is handling an error checking thing that may have been
                 #     set up in the previous timeloop if e.g. a binary either merged or was ionized?
                 #     Please explain what this is and how it works right here?
                 flag_orb_a_mass_gtr_zero = evolve.reality_check(binary_bh_array, bin_index, bin_properties_num)
                 if flag_orb_a_mass_gtr_zero >= 0:
+
                     # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
                     binary_bh_array = np.delete(binary_bh_array, flag_orb_a_mass_gtr_zero, 1)
                     bin_index = bin_index - 1
                 else:
-                    # If there are still binaries after this, evolve them.
                     # If there are binaries, evolve them
                     # Damp binary orbital eccentricity
                     binary_bh_array = orbital_ecc.orbital_bin_ecc_damping(
@@ -734,7 +734,6 @@ def main():
                         opts.disk_bh_eddington_ratio,
                         disk_bh_eddington_mass_growth_rate,
                         opts.timestep_duration_yr,
-                        bin_properties_num,
                         bin_index
                     )
                     # Spin up binary components
@@ -743,7 +742,6 @@ def main():
                         opts.disk_bh_eddington_ratio,
                         opts.disk_bh_torque_condition,
                         opts.timestep_duration_yr,
-                        bin_properties_num,
                         bin_index
                     )
                     # Torque angle of binary spin components
@@ -753,7 +751,6 @@ def main():
                         opts.disk_bh_torque_condition,
                         disk_bh_spin_resolution_min,
                         opts.timestep_duration_yr,
-                        bin_properties_num,
                         bin_index
                     )
 
@@ -866,9 +863,6 @@ def main():
                         opts.smbh_mass
                     )
 
-                    # Check and see if merger flagged during hardening (row 11, if negative)
-                    merger_flags = binary_bh_array[11, :]
-                    any_merger = np.count_nonzero(merger_flags)
 
                     # Check and see if binary ionization flag raised. 
                     ionization_flag = evolve.ionization_check(binary_bh_array, bin_index, opts.smbh_mass)
@@ -911,6 +905,9 @@ def main():
                         # Reduce number of binaries
                         bin_index = bin_index - 1
 
+                    # Check and see if merger flagged during hardening (row 11, if negative)
+                    merger_flags = binary_bh_array[11, :]
+                    any_merger = np.count_nonzero(merger_flags)
                     # Test dynamics of encounters between binaries and eccentric singleton orbiters
                     # dynamics_binary_array = dynamics.circular_binaries_encounters_prograde(rng,opts.smbh_mass, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, opts.disk_bh_pro_orb_ecc_crit, opts.delta_energy_strong,norm_tgw,bin_array,bindex,bin_properties_num)         
 
@@ -923,6 +920,13 @@ def main():
                         print(merger_indices)
                     if any_merger > 0:
                         for i in range(any_merger):
+                            #Check if merger is real
+                            #temp_bin_bhbh_pro_array = binary_bh_array[:,merger_indices[i]]
+                            #reality_flag = evolve.reality_check(temp_bin_bhbh_pro_array, bin_index, bin_properties_num)
+                            #if reality_flag >= 0:
+                                # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
+                            #   binary_bh_array = np.delete(binary_bh_array, reality_flag, 1)
+                            #   bin_index = bin_index - 1
                             if time_passed <= opts.timestep_duration_yr:
                                 print("time_passed,loc1,loc2", time_passed, binary_bh_array[0, merger_indices[i]], binary_bh_array[1, merger_indices[i]])
 
@@ -1182,17 +1186,15 @@ def main():
                     old_gw_freq = emri_gw_freq
                     #old_gw_freq_obj = emri_gw_freq_obj
                 # Now update emris & generate NEW frequency & evolve   
-                emri_gw_strain, emri_gw_freq = evolve.evolve_emri_gw(bh_orb_a_inner_disk,
-                                                                     bh_mass_inner_disk, 
-                                                                     opts.smbh_mass,
-                                                                     opts.timestep_duration_yr,
-                                                                     old_gw_freq)
-                
-                # emri_gw_strain_obj, emri_gw_freq_obj = evolve.evolve_emri_gw(blackholes_inner_disk.orb_a,
-                #                                                              blackholes_inner_disk.mass, 
-                #                                                              opts.smbh_mass,
-                #                                                              opts.timestep_duration_yr,
-                #                                                              old_gw_freq_obj)
+
+                emri_gw_strain, emri_gw_freq = evolve.evolve_emri_gw(
+                    bh_orb_a_inner_disk,
+                    bh_mass_inner_disk, 
+                    opts.smbh_mass,
+                    opts.timestep_duration_yr,
+                    old_gw_freq,
+                )
+
             num_in_inner_disk = np.size(bh_orb_a_inner_disk)
             #num_in_inner_disk_obj = blackholes_inner_disk.orb_a.size
             #print(num_in_inner_disk, num_in_inner_disk_obj)

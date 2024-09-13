@@ -545,7 +545,7 @@ class AGNBlackHole(AGNObject):
         """
 
         if orb_ang_mom is None:
-            self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh=mass.size)
+            self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(mass.size)
         else:
             self.orb_ang_mom = orb_ang_mom
 
@@ -555,7 +555,7 @@ class AGNBlackHole(AGNObject):
             self.gw_strain = np.full(mass.size, -1)
 
         super(AGNBlackHole, self).__init__(mass=mass, **kwargs)
-
+    
     def __repr__(self):
         """
         Creates a string representation of AGNBlackHole. Prints out
