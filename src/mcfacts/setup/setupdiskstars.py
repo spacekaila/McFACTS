@@ -83,7 +83,6 @@ def setup_disk_stars_radius(masses):
 
 def setup_disk_stars_comp(star_num,
                           star_ZAMS_metallicity,
-                          star_ZAMS_hydrogen,
                           star_ZAMS_helium):
     """
     Set the initial chemical composition. For now all stars have
@@ -112,6 +111,9 @@ def setup_disk_stars_comp(star_num,
     # For now the numbers are set in the input file. Maybe we want to
     # just set 2 of them (X and Y?) and calculate the final so it adds to 1?
     # Distribution function option at some point?
+
+    star_ZAMS_hydrogen = 1. - star_ZAMS_helium - star_ZAMS_metallicity
+
     star_Z_initial = np.full(star_num, star_ZAMS_metallicity)
     star_X_initial = np.full(star_num, star_ZAMS_hydrogen)
     star_Y_initial = np.full(star_num, star_ZAMS_helium)

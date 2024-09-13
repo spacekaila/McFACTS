@@ -58,8 +58,10 @@ def init_single_stars(opts, id_start_val=None):
         star_orb_ecc = setupdiskstars.setup_disk_stars_eccentricity_uniform(star_num)
     else:
         star_orb_ecc = setupdiskstars.setup_disk_stars_circularized(star_num, opts.disk_bh_pro_orb_ecc_crit)
-    star_Y = opts.nsc_star_metallicity_y_init
-    star_Z = opts.nsc_star_metallicity_z_init
+
+    star_X, star_Y, star_Z = setupdiskstars.setup_disk_stars_comp(star_num=star_num,
+                                                                  star_ZAMS_metallicity=opts.nsc_star_metallicity_z_init,
+                                                                  star_ZAMS_helium=opts.nsc_star_metallicity_y_init)
 
     stars = AGNStar(mass=masses_stars,
                     spin=star_spin,
@@ -70,6 +72,7 @@ def init_single_stars(opts, id_start_val=None):
                     #orb_ang_mom= star_orb_ang_mom,
                     orb_arg_periapse=star_orb_arg_periapse,
                     radius=star_radius,
+                    star_X=star_X,
                     star_Y=star_Y,
                     star_Z=star_Z,
                     smbh_mass=opts.smbh_mass,
