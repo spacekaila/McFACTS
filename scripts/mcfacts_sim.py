@@ -380,7 +380,7 @@ def main():
         # If you want to use the output of a previous AGN simulation as an input to another AGN phase
         # Make sure you have a file 'recipes/prior_model_name_population.dat' so that ReadInputs can take it in
         # and in your .ini file set switch prior_agn = 1.0.
-        # Initial orb ecc is prior_ecc_factor*uniform[0,0.99]=[0,0.33] for prior_ecc_factor=0.3 (default)
+        # Initial orb ecc is modified uniform using setup_disk_bh_orb_ecc_uniform(bh_pro_num,opts.disk_bh_orb_ecc_max_init)
         # SF: No promises this handles retrograde orbiters correctly yet
         if opts.flag_prior_agn == 1.0:
 
@@ -396,8 +396,7 @@ def main():
             print("prior indices", prior_indices)
             print("prior locations", blackholes_pro.orb_a)
             print("prior gens", blackholes_pro.gen)
-            prior_ecc_factor = 0.3
-            blackholes_pro.orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform_modified(prior_ecc_factor, bh_pro_num)
+            blackholes_pro.orb_ecc = setupdiskblackholes.setup_disk_blackholes_eccentricity_uniform(bh_pro_num, opts.disk_bh_orb_ecc_max_init)
             print("prior ecc", blackholes_pro.orb_ecc)
 
         # Start Loop of Timesteps
