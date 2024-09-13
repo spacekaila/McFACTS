@@ -36,13 +36,13 @@ Inifile
         Average disk scale height (e.g. about 3% in Sirko & Goodman 2003 out to ~0.3pc)
     "nsc_spheroid_normalization"    : float
         Spheroid normalization
-    "nsc_bh_imf_mode"               : float
+    "nsc_imf_bh_mode"               : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--mode of initial mass dist (M_sun)
-    "nsc_bh_imf_powerlaw_index"     : float
+    "nsc_imf_bh_powerlaw_index"     : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--powerlaw index for Pareto dist
-    "nsc_bh_imf_mass_max"           : float
+    "nsc_imf_bh_mass_max"           : float
         Initial mass distribution for stellar bh is assumed to be Pareto
         with high mass cutoff--mass of cutoff (M_sun)
     "nsc_bh_spin_dist_mu"           : float
@@ -66,6 +66,8 @@ Inifile
         Initial mass distribution for stars is assumed Salpeter
     "nsc_imf_star_powerlaw_index"   : float
         Initial mass distribution for stars is assumed Salpeter, disk_alpha_viscosity = 2.35
+    "nsc_imf_star_mass_modex"       : float
+        Mass mode for star IMF
     "nsc_star_spin_dist_mu"         : float
         Initial spin distribution for stars is assumed to be Gaussian
     "nsc_star_spin_dist_sigma"      : float
@@ -91,8 +93,8 @@ Inifile
         How long is your timestep in years?
     "timestep_num"                  : int
         How many timesteps are you taking (timestep*number_of_timesteps = disk_lifetime)
-    "iteration_num"                 : int
-        Number of iterations of code run (e.g. 1 for testing, 30 for a quick run)
+    "galaxy_num"                    : int
+        Number of galaxies of code run (e.g. 1 for testing, 30 for a quick run)
     "fraction_retro"                : float
         Fraction of BBH that form retrograde to test (q,X_eff) relation.
         Default retro=0.1. Possibly overwritten by initial retro population
@@ -115,8 +117,14 @@ Inifile
     "delta_energy_strong"           : float
         Average energy change per strong interaction.
         de can be 20% in cluster interactions. May be 10% on average (with gas)
-    "flag_prior_agn"                : int
-        Prior AGN sims BH output used as input
+    "agn_redshift"                  : float
+        Redshift of AGN activity
+    "inner_disk_outer_radius"       : float
+        Outer radius of the inner disk (Rg)
+    "disk_inner_stable_circ_orb"    : float
+        Innermost Stable Circular Orbit around SMBH
+    "mass_pile_up"                  : float
+        Pile-up of masses caused by cutoff (M_sun)
 """
 # Things everyone needs
 import configparser as ConfigParser
@@ -130,6 +138,7 @@ import pagn.constants as pagn_ct
 # Local imports 
 import mcfacts.external.DiskModelsPAGN as dm_pagn
 from mcfacts.inputs import data as mcfacts_input_data
+from astropy import constants as ct
 
 # Dictionary of types
 INPUT_TYPES = {
@@ -149,9 +158,9 @@ INPUT_TYPES = {
     "nsc_density_index_outer"       : float,
     "disk_aspect_ratio_avg"         : float,
     "nsc_spheroid_normalization"    : float,
-    "nsc_bh_imf_mode"               : float,
-    "nsc_bh_imf_powerlaw_index"     : float,
-    "nsc_bh_imf_mass_max"           : float,
+    "nsc_imf_bh_mode"               : float,
+    "nsc_imf_bh_powerlaw_index"     : float,
+    "nsc_imf_bh_mass_max"           : float,
     "nsc_bh_spin_dist_mu"           : float,
     "nsc_bh_spin_dist_sigma"        : float,
     "disk_bh_torque_condition"      : float,
@@ -160,6 +169,7 @@ INPUT_TYPES = {
     "disk_star_mass_max_init"       : float,
     "disk_star_mass_min_init"       : float,
     "nsc_imf_star_powerlaw_index"   : float,
+    "nsc_imf_star_mass_mode"        : float,
     "nsc_star_spin_dist_mu"         : float,
     "nsc_star_spin_dist_sigma"      : float,
     "disk_star_torque_condition"    : float,
@@ -170,7 +180,7 @@ INPUT_TYPES = {
     "nsc_star_metallicity_z_init"   : float,
     "timestep_duration_yr"          : float,
     "timestep_num"                  : int,
-    "iteration_num"                 : int,
+    "galaxy_num"                    : int,
     "fraction_retro"                : float,
     "fraction_bin_retro"            : float,
     "flag_thermal_feedback"         : int,
@@ -180,11 +190,14 @@ INPUT_TYPES = {
     "disk_bh_pro_orb_ecc_crit"      : float,
     "flag_dynamic_enc"              : int,
     "delta_energy_strong"           : float,
-    "flag_prior_agn"                : int,
+    "agn_redshift"                  : float,
+    "inner_disk_outer_radius"       : float,
+    "disk_inner_stable_circ_orb"    : float,
+    "mass_pile_up"                  : float,
 }
 
 
-def ReadInputs_ini(fname_ini='inputs/model_choice.txt', verbose=False):
+def ReadInputs_ini(fname_ini, verbose=False):
     """Input file parser
 
     This function reads your input choices from a file user specifies or
@@ -397,14 +410,27 @@ def construct_disk_pAGN(
         for pAGN models
     """
     # instead, populate with pagn
-    pagn_name = "Sirko"
-    base_args = { 'Mbh': smbh_mass*pagn_ct.MSun,\
-                  'alpha': disk_alpha_viscosity, \
-                  'le': disk_bh_eddington_ratio,\
-                  'eps': rad_efficiency}
-    if 'thompson' in disk_model_name:
+    if "sirko" in disk_model_name:
+        pagn_name = "Sirko"
+        base_args = {
+            'Mbh': smbh_mass*pagn_ct.MSun,
+            'alpha': disk_alpha_viscosity, 
+            'le': disk_bh_eddington_ratio,
+            'eps': rad_efficiency
+        }
+    elif 'thompson' in disk_model_name:
         pagn_name = 'Thompson'
-        base_args['Rout'] = disk_radius_outer
+        base_args = {
+            'Mbh': smbh_mass*pagn_ct.MSun,
+            'm': disk_alpha_viscosity, 
+        }
+            #'epsilon': rad_efficiency
+            #'le': disk_bh_eddington_ratio,\
+        Rg = smbh_mass * ct.M_sun * ct.G / (ct.c**2)
+        base_args['Rout'] = disk_radius_outer * Rg.to('m').value
+    else:
+        raise RuntimeError("unknown disk model: %s"%(disk_model_name))
+        
     # note Rin default is 3 Rs
 
     # Run pAGN
@@ -550,7 +576,7 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         prior_mergers_file = np.genfromtxt('../recipes/sg1Myrx2_survivors.dat', unpack = True)
 
 
-    #Clean the file of iteration lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
+    #Clean the file of galaxy lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
     cleaned_prior_mergers_file = prior_mergers_file
 
     radius_list = []
@@ -562,7 +588,7 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
     rows_to_be_removed = []
 
     for i in range(0,len_columns):
-        # If 1st and 2nd entries in row i are same, it's an iteration marker, delete row.
+        # If 1st and 2nd entries in row i are same, it's an galaxy marker, delete row.
         if prior_mergers_file[0,i] == prior_mergers_file[1,i]:
             rows_to_be_removed = np.append(rows_to_be_removed,int(i))
 
