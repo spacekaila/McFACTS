@@ -32,7 +32,7 @@ class AGNObject(object):
     if the subclass is a Binary object, then attributes are for the total
     quantities (total mass, etc.), not the binary components.
     No instances of the AGNObject class should be created, it is a superclass
-    to the AGNStar, AGNBlackHole, etc. classes. If the 
+    to the AGNStar, AGNBlackHole, etc. classes.
     """
 
     def __init__(self,
@@ -44,6 +44,8 @@ class AGNObject(object):
                  # orb_ang_mom = None,  # redundant, should be computed from keplerian orbit formula for L in terms of mass, a, eccentricity
                  orb_ecc=None,
                  orb_arg_periapse=None,
+                 galaxy=None,
+                 time_passed=None,
                  smbh_mass=None,
                  obj_num=None,
                  id_start_val=None):
@@ -53,21 +55,25 @@ class AGNObject(object):
         Parameters
         ----------
         mass : numpy array
-            masses
+            masses in Msun
         spin : numpy array
             spins
         spin_angle : numpy array
-            spin angles
+            spin angles in radians
         orb_a : numpy array
-            orbital semi-major axis with respect to the SMBH
+            orbital semi-major axis with respect to the SMBH in R_g
         orb_inc : numpy array
             orbital inclination with respect to the SMBH
         orb_ecc : numpy array
             orbital eccentricity with respect to the SMBH
         orb_arg_periapse : numpy array
             argument of the orbital periapse with respect to the SMBH
+        galaxy : numpy array
+            galaxy iteration, set to -1 if not passed
+        time_passed : numpy array
+            time passed, set to -1 if not passed
         smbh_mass : numpy array
-            mass of the SMBH
+            mass of the SMBH in Msun
         obj_num : int, optional
             number of objects, by default None
         id_start_val : numpy array
@@ -114,6 +120,15 @@ class AGNObject(object):
         self.orb_ecc = orb_ecc
         self.orb_arg_periapse = orb_arg_periapse
 
+        if galaxy is None:
+            self.galaxy = np.full(obj_num, -1)
+        else:
+            self.galaxy = galaxy
+        if time_passed is None:
+            self.time_passed = np.full(obj_num, -1)
+        else:
+            self.time_passed = time_passed
+
     def add_objects(self,
                     new_mass=None,
                     new_spin=None,
@@ -124,6 +139,8 @@ class AGNObject(object):
                     new_orb_ecc=None,
                     new_orb_arg_periapse=None,
                     new_gen=None,
+                    new_galaxy=None,
+                    new_time_passed=None,
                     new_id_num=None,
                     obj_num=None):
         """
@@ -150,6 +167,10 @@ class AGNObject(object):
             orbital arguments of the periapse to be added
         new_gen : numpy array
             generations to be added
+        new_galaxy : numpy array
+            galaxy iteration to be added, set to -1 if not passed
+        new_time_passed : numpy array
+            time passed to be added, set to -1 if not passed
         new_id_num : numpy array,optional
             ID numbers to be added
         obj_num : int, optional
@@ -165,7 +186,6 @@ class AGNObject(object):
         #if new_orb_ang_mom is None: raise AttributeError('new_orb_ang_mom is not included in inputs')
         if new_e is None: raise AttributeError('new_e is not included in inputs')
 
-        if obj_num is None: obj_num = new_mass.size
 
         assert new_mass.shape == (obj_num,),"new mass: all arrays must be 1d and the same length"
         assert new_spin.shape == (obj_num,),"new_spin: all arrays must be 1d and the same length"
@@ -174,6 +194,8 @@ class AGNObject(object):
         assert new_inc.shape == (obj_num,),"new_inc: all arrays must be 1d and the same length"
         #assert new_orb_ang_mom.shape == (obj_num,),"new_orb_ang_mom: all arrays must be 1d and the same length"
         assert new_e.shape == (obj_num,),"new_e: all arrays must be 1d and the same length" """
+
+        if obj_num is None: obj_num = new_mass.size
 
         self.mass = np.concatenate([self.mass, new_mass])
         self.spin = np.concatenate([self.spin, new_spin])
@@ -186,7 +208,16 @@ class AGNObject(object):
         self.gen = np.concatenate([self.gen, new_gen])
         self.id_num = np.concatenate([self.id_num, new_id_num])
 
-    def remove_objects(self, idx_remove=None):
+        if new_galaxy is None:
+            self.galaxy = np.concatenate([self.galaxy, np.full(obj_num, -1)])
+        else:
+            self.galaxy = np.concatenate([self.galaxy, new_galaxy])
+        if new_time_passed is None:
+            self.time_passed = np.concatenate([self.time_passed, np.full(obj_num, -1)])
+        else:
+            self.time_passed = np.concatenate([self.time_passed, new_time_passed])
+
+    def remove_index(self, idx_remove=None):
         """
         Removes objects at specified indices.
 
@@ -201,13 +232,26 @@ class AGNObject(object):
 
         if idx_remove is None:
             return None
-        
+
         idx_change = np.ones(len(self.mass), dtype=bool)
         idx_change[idx_remove] = False
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[idx_change])
-   
-    def keep_objects(self, idx_keep=None):
+
+    def remove_id_num(self, id_num_remove=None):
+        """
+        Filters AGNObject to remove the objects at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num_keep : numpy array
+            ID numbers to keep, others are removed
+        """
+        keep_mask = ~(np.isin(getattr(self, "id_num"), id_num_remove))
+        for attr in vars(self).keys():
+            setattr(self, attr, getattr(self, attr)[keep_mask])
+
+    def keep_index(self, idx_keep):
         """
         Filters AGNObject to only keep the objects at the specified indices.
 
@@ -227,6 +271,44 @@ class AGNObject(object):
         idx_change[idx_keep] = True
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[idx_change])
+
+    def keep_id_num(self, id_num_keep):
+        """
+        Filters AGNObject to only keep the objects at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num_keep : numpy array
+            ID numbers to keep, others are removed
+        """
+        keep_mask = (np.isin(getattr(self, "id_num"), id_num_keep))
+        for attr in vars(self).keys():
+            setattr(self, attr, getattr(self, attr)[keep_mask])
+
+    def at_id_num(self, id_num, attr):
+        """
+        Returns the attribute at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num : numpy array
+            ID numbers of objects to return
+        attr : str
+            attribute to return
+
+        Returns
+        -------
+        val : numpy array
+            specified attribute at specified ID numbers
+        """
+        id_mask = (np.isin(getattr(self, "id_num"), id_num))
+
+        try:
+            val = getattr(self, attr)[id_mask]
+        except:
+            raise AttributeError("{} is not an attribute of the AGNObject".format(attr))
+
+        return (val)
 
     def copy(self):
         """
@@ -354,6 +436,7 @@ class AGNStar(AGNObject):
                  radius=None,
                  orb_a=None,
                  orb_inc=None,
+                 star_X=None,
                  star_Y=None,
                  star_Z=None,
                  star_num=None,
@@ -398,25 +481,12 @@ class AGNStar(AGNObject):
             assert isinstance(radius, np.ndarray),"radius is not a numpy array"
             self.radius = radius
 
-        if (np.any(star_Y + star_Z > 1.)):
-            raise ValueError("star_Y and star_Z must sum to 1 or less.")
-
-        if ((isinstance(star_Y, float) and (isinstance(star_Z, float)))):
-            self.star_X = np.ones(len(radius)) - np.full(len(radius),star_Y) - np.full(len(radius),star_Z)
-            self.star_Y = np.full(len(radius), star_Y)
-            self.star_Z = np.full(len(radius), star_Z)
-
-        elif ((isinstance(star_Y, np.ndarray) and isinstance(star_Z, np.ndarray))):
-            assert radius.shape == (star_num,), "radius: all arrays must be 1d and the same length"
-            assert star_Y.shape == (star_num,), "star_Y, array: all arrays must be 1d and the same length"
-            assert star_Z.shape == (star_num,), "star_Z, array: all arrays must be 1d and the same length"
-
-            self.star_X = 1. - star_Y - star_Z
-            self.star_Y = star_Y
-            self.star_Z = star_Z
-
-        else:
-            raise TypeError("star_Y and star_Z must be either both floats or numpy arrays")
+        if (np.any(star_X + star_Y + star_Z > 1.)):
+            raise ValueError("star_X, star_Y, and star_Z must sum to 1 or less.")
+        
+        self.star_X = star_X
+        self.star_Y = star_Y
+        self.star_Z = star_Z
 
         mass_total = mass + smbh_mass
         mass_reduced = mass*smbh_mass/mass_total
@@ -441,7 +511,7 @@ class AGNStar(AGNObject):
         totals = 'AGNStar(): {} single stars'.format(len(self.mass))
         return (totals)
 
-    def add_stars(self, new_radius=None, new_Y=None, new_Z=None, obj_num=None, **kwargs):
+    def add_stars(self, new_radius=None, new_X=None, new_Y=None, new_Z=None, obj_num=None, **kwargs):
         """
         Append new stars to the end of AGNStar. This method updates the star
         specific parameters and then sends the rest to the AGNObject
@@ -469,35 +539,43 @@ class AGNStar(AGNObject):
         assert new_radius.shape == (obj_num,), "new_radius: all arrays must be 1d and the same length"
         self.radius = np.concatenate([self.radius, new_radius])
 
-        if (np.any(new_Y + new_Z) > 1.) : raise ValueError("new_Y and new_Z must sum to 1 or less")
+        if (np.any(new_X + new_Y + new_Z) > 1.): raise ValueError("new_Y and new_Z must sum to 1 or less")
 
-        if ((isinstance(new_Y, float)) and (isinstance(new_Z, float))):
-            self.star_X = np.concatenate(self.star_X, np.full(obj_num, 1.-new_Y-new_Z))
-            self.star_Y = np.concatenate([self.star_Y, np.full(obj_num, new_Y)])
-            self.star_Z = np.concatenate([self.star_Z, np.full(obj_num, new_Z)])
-            
-        if ((isinstance(new_Y, np.ndarray)) and (isinstance(new_Z, np.ndarray))):
-            self.star_X = np.concatenate([self.star_X, np.ones(obj_num) - new_Y - new_Z])
-            self.star_Y = np.concatenate([self.star_Y, new_Y])
-            self.star_Z = np.concatenate([self.star_Z, new_Z])
+        self.star_X = np.concatenate([self.star_X, new_X])
+        self.star_Y = np.concatenate([self.star_Y, new_Y])
+        self.star_Z = np.concatenate([self.star_Z, new_Z])
         super(AGNStar, self).add_objects(obj_num=obj_num, **kwargs)
 
 
 class AGNBlackHole(AGNObject):
     """
-    A subclass of AGNObject for single black holes. It extends AGNObject. It
-    calculates orbital angular momentum for black holes.
+    A subclass of AGNObject for single black holes. It extends AGNObject and
+    adds attributes for GW frequency and strain. This is only relevant for
+    EMRIs and BBH, so if a value is not passed these attributes are set to -1.
+    AGNBlackHole also calculates orbital angular momentum for black holes.
     """
-    def __init__(self, mass=None, **kwargs):
+    def __init__(self, mass=None, orb_ang_mom=None, gw_freq=None, gw_strain=None, **kwargs):
         """Creates an instance of AGNStar object.
 
         Parameters
         ----------
         mass : numpy array
-            black hole masses
+            black hole masses [Msun]
+        gw_freq : numpy array
+            gravitational wave frequency [Hz]
+        gw_strain : numpy array
+            gravitational wave strain [unitless]
         """
 
-        self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh=len(mass))
+        if orb_ang_mom is None:
+            self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh=mass.size)
+        else:
+            self.orb_ang_mom = orb_ang_mom
+
+        if gw_freq is None:
+            self.gw_freq = np.full(mass.size, -1)
+        if gw_strain is None:
+            self.gw_strain = np.full(mass.size, -1)
 
         super(AGNBlackHole, self).__init__(mass=mass, **kwargs)
 
@@ -522,7 +600,7 @@ class AGNBlackHole(AGNObject):
         totals = 'AGNBlackHole(): {} single black holes'.format(len(self.mass))
         return (totals)
 
-    def add_blackholes(self, obj_num=None, **kwargs):
+    def add_blackholes(self, new_mass=None, obj_num=None, new_gw_freq=None, new_gw_strain=None, **kwargs):
         """
         Append black holes to the AGNBlackHole object.
 
@@ -531,7 +609,17 @@ class AGNBlackHole(AGNObject):
         obj_num : int, optional
             number of black holes to be added, by default None
         """
-        super(AGNBlackHole, self).add_objects(obj_num=obj_num, **kwargs)
+
+        if new_gw_freq is None:
+            self.gw_freq = np.concatenate([self.gw_freq, np.full(new_mass.size, -1)])
+        else:
+            self.gw_freq = np.concatenate([self.gw_freq, new_gw_freq])
+        if new_gw_strain is None:
+            self.gw_strain = np.concatenate([self.gw_strain, np.full(new_mass.size, -1)])
+        else:
+            self.gw_strain = np.concatenate([self.gw_strain, new_gw_strain])
+
+        super(AGNBlackHole, self).add_objects(obj_num=obj_num, new_mass=new_mass, **kwargs)
 
 
 class AGNBinaryStar(AGNObject):
@@ -922,11 +1010,11 @@ class AGNBinaryBlackHole(AGNObject):
 
 
 obj_types = {0 : "single black hole",
-             1 : "single star",
-             2 : "binary black hole",
-             3 : "binary star",
-             4 : "exploded star"
-            }
+             1 : "single star",}
+             #2 : "binary black hole",
+             #3 : "binary star",
+             #4 : "exploded star"
+             #} # Other types are not in use yet
 
 obj_direction = {0 : "orbit direction undetermined",
                  1 : "prograde orbiter",
@@ -1040,14 +1128,16 @@ class AGNFilingCabinet(AGNObject):
         if not isinstance(attr, str):
             raise TypeError("`attr` must be passed as a string")
         
-        getattr(self,attr)[np.isin(getattr(self,"id_num"),id_num)] = new_info
+        try:
+            getattr(self,attr)[np.isin(getattr(self,"id_num"),id_num)] = new_info
+        except:
+            raise AttributeError("{} is not an attribute of AGNFilingCabinet".format(attr))
 
 
     def add_objects(self, new_id_num, new_category, new_orb_a,
                     new_mass, new_size, new_direction, new_disk_inner_outer):
         """
-        Append objects to the AGNFilingCabinet. This method appends the category and direction
-        attributes and sends the rest to the AGNObject add_objects() method.
+        Append objects to the AGNFilingCabinet.
 
         Parameters
         ----------
