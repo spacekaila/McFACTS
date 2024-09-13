@@ -25,9 +25,9 @@ def setup_disk_stars_orb_a(star_num, disk_radius_outer):
 
 
 def setup_disk_stars_masses(star_num,
-                           disk_star_mass_min_init,
-                           disk_star_mass_max_init,
-                           nsc_imf_star_powerlaw_index):
+                            disk_star_mass_min_init,
+                            disk_star_mass_max_init,
+                            nsc_imf_star_powerlaw_index):
     """
     Generate star masses using powerlaw IMF.
 
@@ -82,9 +82,9 @@ def setup_disk_stars_radius(masses):
 
 
 def setup_disk_stars_comp(star_num,
-                         star_ZAMS_metallicity,
-                         star_ZAMS_hydrogen,
-                         star_ZAMS_helium):
+                          star_ZAMS_metallicity,
+                          star_ZAMS_hydrogen,
+                          star_ZAMS_helium):
     """
     Set the initial chemical composition. For now all stars have
     the same initial composition.
@@ -109,7 +109,8 @@ def setup_disk_stars_comp(star_num,
     star_Z : numpy array
         array for the metals mass fraction
     """
-    # For now the numbers are set in the input file. Maybe we want to just set 2 of them (X and Y?) and calculate the final so it adds to 1?
+    # For now the numbers are set in the input file. Maybe we want to
+    # just set 2 of them (X and Y?) and calculate the final so it adds to 1?
     # Distribution function option at some point?
     star_Z_initial = np.full(star_num, star_ZAMS_metallicity)
     star_X_initial = np.full(star_num, star_ZAMS_hydrogen)
@@ -117,7 +118,8 @@ def setup_disk_stars_comp(star_num,
     return (star_X_initial, star_Y_initial, star_Z_initial)
 
 
-def setup_disk_stars_spins(star_num, nsc_star_spin_dist_mu, nsc_star_spin_dist_sigma):
+def setup_disk_stars_spins(star_num,
+                           nsc_star_spin_dist_mu, nsc_star_spin_dist_sigma):
     """
     Generate initial spins for stars.
 
@@ -135,7 +137,9 @@ def setup_disk_stars_spins(star_num, nsc_star_spin_dist_mu, nsc_star_spin_dist_s
     star_spins_initial : numpy array
         initial spins for stars
     """
-    star_spins_initial = rng.normal(nsc_star_spin_dist_mu, nsc_star_spin_dist_sigma, star_num)
+    star_spins_initial = rng.normal(loc=nsc_star_spin_dist_mu,
+                                    scale=nsc_star_spin_dist_sigma,
+                                    size=star_num)
     return (star_spins_initial)
 
 
@@ -166,7 +170,9 @@ def setup_disk_stars_spin_angles(star_num, star_spins_initial):
     return (star_spin_angles_initial)
 
 
-def setup_disk_stars_orb_ang_mom(star_num, mass_reduced, mass_total, orb_a, orb_inc,):
+def setup_disk_stars_orb_ang_mom(star_num,
+                                 mass_reduced, mass_total,
+                                 orb_a, orb_inc,):
     """
     Calculate initial orbital angular momentum from Keplerian orbit formula
     for L and add a random direction (+ or -) for prograde vs retrograde
@@ -204,7 +210,7 @@ def setup_disk_stars_arg_periapse(star_num):
     Someday we should probably pick all the orbital variables
       to be consistent with a thermal distribution or something
       otherwise physically well-motivated...
-    
+
     Hahahaha, actually, no, for now everything will be at 0.0 or pi/2
     For now, bc crude retro evol only treats arg periapse = (0.0, pi) or pi/2
     and intermediate values are fucking up evolution
@@ -231,11 +237,14 @@ def setup_disk_stars_arg_periapse(star_num):
 def setup_disk_stars_eccentricity_thermal(star_num):
     """
     Return an array of star orbital eccentricities
-    For a thermal initial distribution of eccentricities, select from a uniform distribution in e^2.
-    Thus (e=0.7)^2 is 0.49 (half the eccentricities are <0.7). 
-    And (e=0.9)^2=0.81 (about 1/5th eccentricities are >0.9)
-    So rnd= draw from a uniform [0,1] distribution, allows ecc=sqrt(rnd) for thermal distribution.
-    Thermal distribution in limit of equipartition of energy after multiple dynamical encounters
+    For a thermal initial distribution of eccentricities, select from a
+    uniform distribution in e^2.
+    Thus (e=0.7)^2 is 0.49 (half the eccentricities are <0.7) and
+    (e=0.9)^2=0.81(about 1/5th eccentricities are >0.9)
+    So rnd= draw from a uniform [0,1] distribution, allows ecc=sqrt(rnd) for
+    thermal distribution.
+    Thermal distribution in limit of equipartition of energy after multiple
+    dynamical encounters
 
 
     Parameters
@@ -256,11 +265,14 @@ def setup_disk_stars_eccentricity_thermal(star_num):
 def setup_disk_stars_eccentricity_uniform(star_num):
     """
     Return an array of star orbital eccentricities
-    For a uniform initial distribution of eccentricities, select from a uniform distribution in e.
-    Thus half the eccentricities are <0.5
-    And about 1/10th eccentricities are >0.9
-    So rnd = draw from a uniform [0,1] distribution, allows ecc = rnd for uniform distribution
-    Most real clusters/binaries lie between thermal & uniform (e.g. Geller et al. 2019, ApJ, 872, 165)
+    For a uniform initial distribution of eccentricities, select from
+    a uniform distribution in e.
+    Thus half the eccentricities are <0.5 and about 1/10th eccentricities
+    are >0.9
+    So rnd = draw from a uniform [0,1] distribution,
+    allows ecc = rnd for uniform distribution
+    Most real clusters/binaries lie between thermal & uniform
+    (e.g. Geller et al. 2019, ApJ, 872, 165)
 
 
     Parameters
@@ -278,15 +290,20 @@ def setup_disk_stars_eccentricity_uniform(star_num):
     return (star_orb_ecc_initial)
 
 
-def setup_disk_stars_inclination_toinclude(star_num, star_orb_a, star_orb_ang_mom, disk_aspect_ratio):
+def setup_disk_stars_inclination_toinclude(star_num,
+                                           star_orb_a,
+                                           star_orb_ang_mom,
+                                           disk_aspect_ratio):
     """
     NEED TO UPDATE STAR FUNCTIONS TO CALL THS INSTEAD
     Return an array of star orbital inclinations
     Return an initial distribution of inclination angles that are 0.0
 
-    To do: initialize inclinations so random draw with i <h (so will need to input star locations and disk_aspect_ratio)
+    To do: initialize inclinations so random draw with i <h (so will need to
+    input star locations and disk_aspect_ratio)
     and then damp inclination.
-    To do: calculate v_kick for each merger and then the (i,e) orbital elements for the newly merged star. 
+    To do: calculate v_kick for each merger and then the (i,e) orbital elements
+    for the newly merged star.
     Then damp (i,e) as appropriate
 
     Parameters
@@ -330,9 +347,11 @@ def setup_disk_stars_inclination(star_num):
     Return an array of star orbital inclinations
     Return an initial distribution of inclination angles that are 0.0
 
-    To do: initialize inclinations so random draw with i <h (so will need to input star locations and disk_aspect_ratio)
+    To do: initialize inclinations so random draw with i <h (so will need to
+    input star locations and disk_aspect_ratio)
     and then damp inclination.
-    To do: calculate v_kick for each merger and then the (i,e) orbital elements for the newly merged star. 
+    To do: calculate v_kick for each merger and then the (i,e) orbital elements
+    for the newly merged star.
     Then damp (i,e) as appropriate
 
     Parameters
@@ -356,9 +375,11 @@ def setup_disk_stars_circularized(star_num, crit_ecc):
     Return an array of BH orbital inclinations
     Return an initial distribution of inclination angles that are 0.0
 
-    To do: initialize inclinations so random draw with i <h (so will need to input star_orb_as and disk_aspect_ratio)
+    To do: initialize inclinations so random draw with i <h (so will need to
+    input star_orb_as and disk_aspect_ratio)
     and then damp inclination.
-    To do: calculate v_kick for each merger and then the (i,e) orbital elements for the newly merged BH. 
+    To do: calculate v_kick for each merger and then the (i,e) orbital elements
+    for the newly merged BH.
     Then damp (i,e) as appropriate
 
     Parameters
@@ -376,7 +397,7 @@ def setup_disk_stars_circularized(star_num, crit_ecc):
 
     # For now, inclinations are zeros
     # Try zero eccentricities
-    star_orb_ecc_initial = crit_ecc*np.zeros(shape=star_num, dtype = float)
+    star_orb_ecc_initial = crit_ecc*np.zeros(shape=star_num, dtype=float)
     return (star_orb_ecc_initial)
 
 
