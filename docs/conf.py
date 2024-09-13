@@ -16,8 +16,8 @@ import inspect
 sys.path.insert(0, os.path.abspath('.'))
 
 # HACKS - credit to "https://github.com/rodluger/starry_process"
-sys.path.insert(1, os.path.dirname(os.path.abspath(__file__)))
-import hacks
+# sys.path.insert(1, os.path.dirname(os.path.abspath(__file__)))
+# import hacks
 
 # -- Project information -----------------------------------------------------
 
