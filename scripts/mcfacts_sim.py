@@ -823,9 +823,6 @@ def main():
                         opts.smbh_mass
                     )
 
-                    # Check and see if merger flagged during hardening (row 11, if negative)
-                    merger_flags = binary_bh_array[11, :]
-                    any_merger = np.count_nonzero(merger_flags)
 
                     # Check and see if binary ionization flag raised. 
                     ionization_flag = evolve.ionization_check(binary_bh_array, bin_index, opts.smbh_mass)
@@ -868,6 +865,9 @@ def main():
                         # Reduce number of binaries
                         bin_index = bin_index - 1
 
+                    # Check and see if merger flagged during hardening (row 11, if negative)
+                    merger_flags = binary_bh_array[11, :]
+                    any_merger = np.count_nonzero(merger_flags)
                     # Test dynamics of encounters between binaries and eccentric singleton orbiters
                     # dynamics_binary_array = dynamics.circular_binaries_encounters_prograde(rng,opts.smbh_mass, prograde_bh_locations, prograde_bh_masses, disk_surf_model, disk_aspect_ratio_model, bh_orb_ecc, timestep, opts.disk_bh_pro_orb_ecc_crit, opts.delta_energy_strong,norm_tgw,bin_array,bindex,bin_properties_num)         
 
@@ -1092,11 +1092,13 @@ def main():
                 if nemri > 0:
                     old_gw_freq = emri_gw_freq
                 # Now update emris & generate NEW frequency & evolve   
-                emri_gw_strain, emri_gw_freq = evolve.evolve_emri_gw(bh_orb_a_inner_disk,
-                                                                     bh_mass_inner_disk, 
-                                                                     opts.smbh_mass,
-                                                                     opts.timestep_duration_yr,
-                                                                     old_gw_freq)
+                emri_gw_strain, emri_gw_freq = evolve.evolve_emri_gw(
+                    bh_orb_a_inner_disk,
+                    bh_mass_inner_disk, 
+                    opts.smbh_mass,
+                    opts.timestep_duration_yr,
+                    old_gw_freq,
+                )
 
             num_in_inner_disk = np.size(bh_orb_a_inner_disk)
             nemri = nemri + num_in_inner_disk

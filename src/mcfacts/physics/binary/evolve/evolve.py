@@ -605,7 +605,7 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, mass_smbh,timestep,ol
     if num_emris > len(old_gw_freq):
         old_gw_freq = np.append(old_gw_freq,9.e-7)
 
-    for i in range(0,num_emris-1):
+    for i in range(0,num_emris):
         m2 = inner_disk_masses[i]
         temp_bin_mass = m1 + m2
         temp_bin_separation = inner_disk_locations[i]
