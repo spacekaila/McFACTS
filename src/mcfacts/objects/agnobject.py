@@ -501,6 +501,13 @@ class AGNBlackHole(AGNObject):
 
         super(AGNBlackHole, self).__init__(mass=mass, **kwargs)
 
+<<<<<<< HEAD
+        self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(disk_bh_num = len(mass))
+        
+        super(AGNBlackHole,self).__init__(mass = mass, **kwargs) #Calls top level functions
+    
+=======
+>>>>>>> fd32f103cc9c347c01893179e4745e5b9f819194
     def __repr__(self):
         """
         Creates a string representation of AGNBlackHole. Prints out
