@@ -232,7 +232,7 @@ def main():
                 disk_bh_num, opts.disk_radius_outer)
         bh_mass_initial = setupdiskblackholes.setup_disk_blackholes_masses(
                 disk_bh_num,
-                opts.nsc_bh_imf_mode, opts.nsc_bh_imf_mass_max, opts.nsc_bh_imf_powerlaw_index)
+                opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index)
         bh_spin_initial = setupdiskblackholes.setup_disk_blackholes_spins(
                 disk_bh_num,
                 opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
@@ -641,12 +641,9 @@ def main():
             # Perturb eccentricity via dynamical encounters
             if opts.flag_dynamic_enc > 0:
                 bh_orb_a_orb_ecc_pro = dynamics.circular_singles_encounters_prograde(
-                    rng,
                     opts.smbh_mass,
                     blackholes_pro.orb_a,
                     blackholes_pro.mass,
-                    disk_surface_density,
-                    disk_aspect_ratio,
                     blackholes_pro.orb_ecc,
                     opts.timestep_duration_yr,
                     opts.disk_bh_pro_orb_ecc_crit,
@@ -656,12 +653,9 @@ def main():
                 blackholes_pro.orb_ecc = bh_orb_a_orb_ecc_pro[1][0]
                 
                 star_orb_a_orb_ecc_pro = dynamics.circular_singles_encounters_prograde(
-                    rng,
                     opts.smbh_mass,
                     stars_pro.orb_a,
                     stars_pro.mass,
-                    disk_surface_density,
-                    disk_aspect_ratio,
                     stars_pro.orb_ecc,
                     opts.timestep_duration_yr,
                     opts.disk_bh_pro_orb_ecc_crit,
@@ -697,7 +691,6 @@ def main():
                         # Harden/soften binaries via dynamical encounters
                         # Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
                         binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
-                            rng,
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
                             blackholes_pro.mass,
@@ -711,7 +704,6 @@ def main():
 
                         # Soften/ ionize binaries due to encounters with eccentric singletons
                         binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
-                            rng,
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
                             blackholes_pro.mass,
@@ -766,14 +758,12 @@ def main():
                     if (opts.flag_dynamic_enc > 0):
                         # Spheroid encounters
                         binary_bh_array = dynamics.bin_spheroid_encounter(
-                            rng,
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
                             binary_bh_array,
                             time_passed,
                             bin_index,
-                            opts.nsc_bh_imf_powerlaw_index,
-                            opts.nsc_bh_imf_mode,
+                            opts.nsc_imf_bh_powerlaw_index,
                             opts.delta_energy_strong,
                             opts.nsc_spheroid_normalization
                         )
@@ -1070,7 +1060,7 @@ def main():
                 bh_orb_a_captured = setupdiskblackholes.setup_disk_blackholes_location(
                     1, opts.disk_radius_capture_outer)
                 bh_mass_captured = setupdiskblackholes.setup_disk_blackholes_masses(
-                    1, opts.nsc_bh_imf_mode, opts.nsc_bh_imf_mass_max, opts.nsc_bh_imf_powerlaw_index)
+                    1, opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index)
                 bh_spin_captured = setupdiskblackholes.setup_disk_blackholes_spins(
                     1, opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
                 bh_spin_angle_captured = setupdiskblackholes.setup_disk_blackholes_spin_angles(
@@ -1378,8 +1368,8 @@ def main():
         np.savetxt(os.path.join(opts.work_directory, galaxy_save_name), merged_bh_array[:, :number_of_mergers].T, header=merger_field_names)
 
         # Append each galaxy result to output arrays
-        merged_bh_array_pop.append(merged_bh_array.T)
-        surviving_bh_array_pop.append(surviving_bh_array)
+        merged_bh_array_pop.append(merged_bh_array[:,:number_of_mergers].T)
+        surviving_bh_array_pop.append(surviving_bh_array[:total_bh_survived,:])
 
         if total_emris > 0:
             emris_array_pop.append(total_emri_array[:total_emris, :])

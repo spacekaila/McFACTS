@@ -436,6 +436,7 @@ class AGNStar(AGNObject):
                  radius=None,
                  orb_a=None,
                  orb_inc=None,
+                 star_X=None,
                  star_Y=None,
                  star_Z=None,
                  star_num=None,
@@ -480,25 +481,12 @@ class AGNStar(AGNObject):
             assert isinstance(radius, np.ndarray),"radius is not a numpy array"
             self.radius = radius
 
-        if (np.any(star_Y + star_Z > 1.)):
-            raise ValueError("star_Y and star_Z must sum to 1 or less.")
-
-        if ((isinstance(star_Y, float) and (isinstance(star_Z, float)))):
-            self.star_X = np.ones(len(radius)) - np.full(len(radius),star_Y) - np.full(len(radius),star_Z)
-            self.star_Y = np.full(len(radius), star_Y)
-            self.star_Z = np.full(len(radius), star_Z)
-
-        elif ((isinstance(star_Y, np.ndarray) and isinstance(star_Z, np.ndarray))):
-            assert radius.shape == (star_num,), "radius: all arrays must be 1d and the same length"
-            assert star_Y.shape == (star_num,), "star_Y, array: all arrays must be 1d and the same length"
-            assert star_Z.shape == (star_num,), "star_Z, array: all arrays must be 1d and the same length"
-
-            self.star_X = 1. - star_Y - star_Z
-            self.star_Y = star_Y
-            self.star_Z = star_Z
-
-        else:
-            raise TypeError("star_Y and star_Z must be either both floats or numpy arrays")
+        if (np.any(star_X + star_Y + star_Z > 1.)):
+            raise ValueError("star_X, star_Y, and star_Z must sum to 1 or less.")
+        
+        self.star_X = star_X
+        self.star_Y = star_Y
+        self.star_Z = star_Z
 
         mass_total = mass + smbh_mass
         mass_reduced = mass*smbh_mass/mass_total
@@ -523,7 +511,7 @@ class AGNStar(AGNObject):
         totals = 'AGNStar(): {} single stars'.format(len(self.mass))
         return (totals)
 
-    def add_stars(self, new_radius=None, new_Y=None, new_Z=None, obj_num=None, **kwargs):
+    def add_stars(self, new_radius=None, new_X=None, new_Y=None, new_Z=None, obj_num=None, **kwargs):
         """
         Append new stars to the end of AGNStar. This method updates the star
         specific parameters and then sends the rest to the AGNObject
@@ -551,17 +539,11 @@ class AGNStar(AGNObject):
         assert new_radius.shape == (obj_num,), "new_radius: all arrays must be 1d and the same length"
         self.radius = np.concatenate([self.radius, new_radius])
 
-        if (np.any(new_Y + new_Z) > 1.) : raise ValueError("new_Y and new_Z must sum to 1 or less")
+        if (np.any(new_X + new_Y + new_Z) > 1.): raise ValueError("new_Y and new_Z must sum to 1 or less")
 
-        if ((isinstance(new_Y, float)) and (isinstance(new_Z, float))):
-            self.star_X = np.concatenate(self.star_X, np.full(obj_num, 1.-new_Y-new_Z))
-            self.star_Y = np.concatenate([self.star_Y, np.full(obj_num, new_Y)])
-            self.star_Z = np.concatenate([self.star_Z, np.full(obj_num, new_Z)])
-            
-        if ((isinstance(new_Y, np.ndarray)) and (isinstance(new_Z, np.ndarray))):
-            self.star_X = np.concatenate([self.star_X, np.ones(obj_num) - new_Y - new_Z])
-            self.star_Y = np.concatenate([self.star_Y, new_Y])
-            self.star_Z = np.concatenate([self.star_Z, new_Z])
+        self.star_X = np.concatenate([self.star_X, new_X])
+        self.star_Y = np.concatenate([self.star_Y, new_Y])
+        self.star_Z = np.concatenate([self.star_Z, new_Z])
         super(AGNStar, self).add_objects(obj_num=obj_num, **kwargs)
 
 
