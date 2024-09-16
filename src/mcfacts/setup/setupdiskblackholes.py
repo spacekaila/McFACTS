@@ -361,7 +361,7 @@ def setup_disk_nbh(nsc_mass,nsc_ratio_bh_num_star_num,nsc_ratio_mbh_mass_star_ma
         nsc_bh_vol_disk_radius_outer = nsc_bh_num_inside_pc * relative_volumes_at_disk_outer_radius * ((disk_radius_outer_pc/1.0)**(-nsc_density_index_outer))          
     else:
         relative_volumes_at_disk_outer_radius = (disk_radius_outer_pc/nsc_radius_crit)**(3.0)
-        num_bh_vol_disk_radius_outer = nsc_bh_num_inside_radius_crit * relative_volumes_at_disk_outer_radius * ((disk_radius_outer_pc/nsc_radius_crit)**(-nsc_density_index_inner))
+        nsc_bh_vol_disk_radius_outer = nsc_bh_num_inside_radius_crit * relative_volumes_at_disk_outer_radius * ((disk_radius_outer_pc/nsc_radius_crit)**(-nsc_density_index_inner))
      
     # Total number of BH in disk
     disk_bh_num = np.rint(nsc_bh_vol_disk_radius_outer * disk_aspect_ratio_avg)
