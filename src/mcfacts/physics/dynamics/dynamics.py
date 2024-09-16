@@ -937,11 +937,11 @@ def bin_spheroid_encounter(
                     # i3 in units of degrees
                     # where 0 deg = disk mid-plane prograde, 180 deg= disk mid-plane retrograde,
                     # 90deg = aligned with L_disk, 270 deg = anti-aligned with disk)
-                    i3 = rng.integers(excluded_angles,360-(2*excluded_angles))
+                    i3 = rng.integers(excluded_angles,360-(excluded_angles))
                 #Make grind down much slower at >1000r_g (say all captured in 20Myrs for <5.e4r_g)
                 if radius_3 > crit_radius:
                     excluded_angles = 0.05*(time_passed/crit_time)*180
-                    i3 = rng.integers(excluded_angles,360-(2*excluded_angles))
+                    i3 = rng.integers(excluded_angles,360-(excluded_angles))
             
             if time_passed > crit_time:
                 # No encounters inside R<10^3r_g
@@ -951,7 +951,7 @@ def bin_spheroid_encounter(
                 if radius_3 > crit_radius:
                     # All stars captured out to 1.e4r_g after 100Myrs
                     excluded_angles = 0.01*(time_passed/crit_time)*180                
-                    i3 = rng.integers(excluded_angles,360-(2*excluded_angles))
+                    i3 = rng.integers(excluded_angles,360-(excluded_angles))
 
             #Convert i3 to radians
             i3_rad = np.radians(i3)
