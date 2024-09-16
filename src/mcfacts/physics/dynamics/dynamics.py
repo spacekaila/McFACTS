@@ -812,8 +812,8 @@ def bin_spheroid_encounter(
     if time_passed < crit_time
         excluded_angles = (time_passed/crit_time)*180
         if R<10^3r_g
-            #Draw random integer in range [excluded_angles,360-(2*excluded_angles)]
-            i3 = rng.integers(excluded_angles,360-(2*excluded_angles))....(8)
+            #Draw random integer in range [excluded_angles,360-(excluded_angles)]
+            i3 = rng.integers(excluded_angles,360-(excluded_angles))....(8)
     
     Calculate velocity of encounter compared to a_bin. 
     Ignore what happens to m3, since it's a random draw from the NSC and we are not tracking individual NSC components.
@@ -933,7 +933,7 @@ def bin_spheroid_encounter(
             if time_passed < crit_time:
                 if radius_3 < crit_radius:
                     excluded_angles = (time_passed/crit_time)*180
-                    # Draw random integer in range [excluded_angles,360-(2*excluded_angles)]
+                    # Draw random integer in range [excluded_angles,360-(excluded_angles)]
                     # i3 in units of degrees
                     # where 0 deg = disk mid-plane prograde, 180 deg= disk mid-plane retrograde,
                     # 90deg = aligned with L_disk, 270 deg = anti-aligned with disk)
