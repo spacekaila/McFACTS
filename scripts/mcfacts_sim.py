@@ -229,10 +229,10 @@ def main():
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
         bh_orb_a_initial = setupdiskblackholes.setup_disk_blackholes_location(
-                disk_bh_num, opts.disk_radius_outer)
+                disk_bh_num, opts.disk_radius_outer, opts.disk_inner_stable_circ_orb)
         bh_mass_initial = setupdiskblackholes.setup_disk_blackholes_masses(
                 disk_bh_num,
-                opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index)
+                opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index, opts.mass_pile_up)
         bh_spin_initial = setupdiskblackholes.setup_disk_blackholes_spins(
                 disk_bh_num,
                 opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
@@ -1021,9 +1021,9 @@ def main():
             capture = time_passed % opts.capture_time_yr
             if capture == 0:
                 bh_orb_a_captured = setupdiskblackholes.setup_disk_blackholes_location(
-                    1, opts.disk_radius_capture_outer)
+                    1, opts.disk_radius_capture_outer, opts.disk_inner_stable_circ_orb)
                 bh_mass_captured = setupdiskblackholes.setup_disk_blackholes_masses(
-                    1, opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index)
+                    1, opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index, opts.mass_pile_up)
                 bh_spin_captured = setupdiskblackholes.setup_disk_blackholes_spins(
                     1, opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
                 bh_spin_angle_captured = setupdiskblackholes.setup_disk_blackholes_spin_angles(
