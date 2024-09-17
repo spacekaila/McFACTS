@@ -369,7 +369,7 @@ class AGNObject(object):
             dat_out[attr] = getattr(self, attr)
         return (dat_out)
 
-    def to_file(self, fname=None):
+    def to_file(self, fname=None, col_order=None):
         """
         Writes AGNObject to csv file. Header row started with `#` character.
 
@@ -384,6 +384,8 @@ class AGNObject(object):
         import pandas
         samples_out = self.return_record_array()
         dframe = pandas.DataFrame(samples_out)
+        if col_order is not None:
+            dframe = dframe[col_order]
         dframe.to_csv(fname, sep=' ',
                       header=[f"#{x}" if x == dframe.columns[0] else x for x in dframe.columns],
                       index=False)  # `#` is not pre-appended...just boolean
