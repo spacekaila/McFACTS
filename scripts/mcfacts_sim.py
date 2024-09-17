@@ -494,9 +494,11 @@ def main():
                         header=binary_field_names
                     )
 
+                    blackholes_binary.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"))
+
                 timestep_current_num += 1
 
-            # Order of operations:        
+            # Order of operations:
             # No migration until orbital eccentricity damped to e_crit 
             # 1. check orb. eccentricity to see if any prograde_bh_location BH have orb. ecc. <e_crit.
             #    Create array prograde_bh_location_ecrit for those (mask prograde_bh_locations?)
@@ -1482,8 +1484,10 @@ def main():
         header=gw_header,
     )
 
-    emris_pop.to_file(os.path.join(opts.work_directory, emris_save_name),
-                      col_order=emri_cols)
+    #emris_pop.to_file(os.path.join(opts.work_directory, emris_save_name),
+    #                  col_order=emri_cols)
+    emris_pop.to_txt(os.path.join(opts.work_directory, emris_save_name),
+                     cols=emri_cols)
 
     blackholes_surviving_pop.to_file(os.path.join(opts.work_directory, survivors_save_name),
                                      col_order=bh_surviving_cols)
