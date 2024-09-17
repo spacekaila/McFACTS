@@ -386,6 +386,7 @@ class AGNObject(object):
         dframe = pandas.DataFrame(samples_out)
         if col_order is not None:
             dframe = dframe[col_order]
+        dframe = dframe.fillna(value=np.nan)
         dframe.to_csv(fname, sep=' ',
                       header=[f"#{x}" if x == dframe.columns[0] else x for x in dframe.columns],
                       index=False)  # `#` is not pre-appended...just boolean
@@ -1061,10 +1062,11 @@ class AGNBinaryBlackHole(AGNObject):
 
 
 obj_types = {0 : "single black hole",
-             1 : "single star",}
-             #2 : "binary black hole",
+             1 : "single star",
+             2 : "binary black hole",}
              #3 : "binary star",
-             #4 : "exploded star"
+             #4 : "merged EMRI",
+             #5 : "exploded star"
              #} # Other types are not in use yet
 
 obj_direction = {0 : "orbit direction undetermined",
