@@ -349,6 +349,7 @@ def load_disk_arrays(
 def construct_disk_direct(
     disk_model_name,
     disk_radius_outer,
+    verbose=False
     ):
     """Construct a disk interpolation without pAGN
 
@@ -361,6 +362,8 @@ def construct_disk_direct(
         sirko_goodman or thompson_etal
     disk_radius_outer : float
         Outer disk radius we truncate at
+    verbose : bool
+        Print extra things
 
     Returns
     -------
@@ -368,31 +371,42 @@ def construct_disk_direct(
         Surface density (radius)
     disk_aspect_ratio_func : lambda
         Aspect ratio (radius)
+    disk_opacity_func : lambda
+        Opacity (radius)
     disk_model_properties : dict
         Other disk model things we may want
     """
     # Call the load_disk_arrays function
-    disk_model_radii, surface_densities, aspect_ratios = \
+    disk_model_radii, surface_densities, aspect_ratios, opacities = \
         load_disk_arrays(
         disk_model_name,
         disk_radius_outer,
+        verbose=verbose
         )
     print(disk_model_radii)
-    # Now geenerate interpolating functions
-    # create surface density & aspect ratio functions from input arrays
+    # Now generate interpolating functions
+    # Create surface density function from input arrays
     disk_surf_dens_func_log = scipy.interpolate.CubicSpline(
         np.log(disk_model_radii), np.log(surface_densities))
     disk_surf_dens_func = lambda x, f=disk_surf_dens_func_log: np.exp(f(np.log(x)))
 
+    # Create aspect ratio function from input arrays
     disk_aspect_ratio_func_log = scipy.interpolate.CubicSpline(
-            np.log(disk_model_radii), np.log(aspect_ratios))
+        np.log(disk_model_radii), np.log(aspect_ratios))
     disk_aspect_ratio_func = lambda x, f=disk_aspect_ratio_func_log: np.exp(f(np.log(x)))
+
+    # Create opacity function from input arrays
+    disk_opacity_func_log = scipy.interpolate.CubicSpline(
+        np.log(disk_model_radii), np.log(opacities))
+    disk_opacity_func = lambda x, f=disk_opacity_func_log: np.exp(f(np.log(x)))
 
     # Define properties we want to return
     disk_model_properties ={}
     disk_model_properties['Sigma'] = disk_surf_dens_func
     disk_model_properties['h_over_r'] = disk_aspect_ratio_func
-    return disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties
+    disk_model_properties['kappa'] = disk_opacity_func
+
+    return disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, disk_model_properties
 
 def construct_disk_pAGN(
     disk_model_name,
@@ -547,10 +561,11 @@ def construct_disk_interp(
     #   infile = model_surface_density.txt, where model is user choice
     if not(flag_use_pagn):
         # Load interpolators
-        disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties = \
+        disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, disk_model_properties = \
             construct_disk_direct(
                 disk_model_name,
                 disk_radius_outer,
+                verbose=verbose
             )
 
     else:
