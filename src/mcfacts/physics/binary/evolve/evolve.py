@@ -779,25 +779,25 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
 def reality_check(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
     """ This function tests to see if the binary is real. If location = 0 or mass = 0 *and* any other element is NON-ZERO then discard this binary element.
         Returns flag, negative for default, if positive it is the index of the binary column to be deleted.
-        
+
         Parameters
-        ---------- 
+        ----------
         disk_bin_bhbh_pro_array : float array 
             Full binary array.
         bin_index : int
             number of binaries in array
-        smbh_mass : float
-            mass of supermassive black hole in units of solar masses
+        nbin_properties : int
+            number of binary properties
 
         Returns
         -------
-        disk_bin_bhbh_pro_array : float array 
-            Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
+        reality_flag : int
+            -2 if binaries are real, greater than 0 if binaries are not real.
         """
     reality_flag = -2
 
     for j in range(0,bin_index):
-        
+
         #Check other elements in disk_bin_bhbh_pro_array are NON-ZERO
         for i in range(0,nbin_properties):
             #Read in mass 1, mass 2 (units of M_sun)
@@ -812,7 +812,41 @@ def reality_check(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
             if disk_bin_bhbh_pro_array[i,j] > 0:
                 #Check if any of locations or masses is zero
                 if temp_mass_1 == 0 or temp_mass_2 == 0 or temp_location_1 == 0 or temp_location_2 == 0 or np.isnan(temp_bin_com):
-                    #Flag this binary    
-                    reality_flag = j    
-        
-    return reality_flag        
+                    #Flag this binary
+                    reality_flag = j
+
+    return reality_flag
+
+
+def reality_check_obj(blackholes_binary):
+    """ This function tests to see if the binary is real. If location = 0 or mass = 0 *and* any other element is NON-ZERO then discard this binary element.
+        Returns flag, negative for default, if positive it is the index of the binary column to be deleted.
+
+        Parameters
+        ----------
+        disk_bin_bhbh_pro_array : float array 
+            Full binary array.
+        bin_index : int
+            number of binaries in array
+        smbh_mass : float
+            mass of supermassive black hole in units of solar masses
+
+        Returns
+        -------
+        disk_bin_bhbh_pro_array : float array 
+            Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
+        """
+    reality_flag = -2
+
+    mass_1_id_num = blackholes_binary.id_num[blackholes_binary.mass_1 == 0]
+    mass_2_id_num = blackholes_binary.id_num[blackholes_binary.mass_2 == 0]
+    orb_a_1_id_num = blackholes_binary.id_num[blackholes_binary.orb_a_1 == 0]
+    orb_a_2_id_num = blackholes_binary.id_num[blackholes_binary.orb_a_2 == 0]
+
+    id_nums = np.concatenate(mass_1_id_num, mass_2_id_num,
+                             orb_a_1_id_num, orb_a_2_id_num)
+
+    if id_nums.size > 0:
+        return (id_nums)
+    else:
+        return (reality_flag)
