@@ -1119,6 +1119,11 @@ class AGNFilingCabinet(AGNObject):
 
         # Set attributes
         self.id_num = id_num
+        # Set _id_max
+        if len(id_num) > 0:
+            self._id_max = id_num.max()
+        else:
+            self._id_max = 0
         # future: pass an int to category and it fills in the rest
         self.category = category
         self.orb_a = orb_a
@@ -1164,6 +1169,19 @@ class AGNFilingCabinet(AGNObject):
         #         totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
         # totals += f"{len(getattr(self,"category"))} objects total"
         return()
+
+    @property
+    def id_max(self):
+        """Return the maximum id which has been created up to this point
+
+        Returns
+        -------
+        id : int
+            The maximum id created up until now
+        """
+        if len(self.id_num) > 0:
+            self._id_max = max(_id_max, self.id_num.max())
+        return self._id_max
 
     def update(self, id_num, attr, new_info):
         """Update a given attribute in AGNFilingCabinet for the given ID numbers

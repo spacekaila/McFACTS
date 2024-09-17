@@ -277,10 +277,8 @@ def main():
                                   galaxy=np.zeros(disk_bh_num),
                                   time_passed=np.zeros(disk_bh_num))
 
-        # Initialize stars
-        stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=blackholes.id_num.max()+1)
-        print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
 
+        # Initialize filing_cabinet
         filing_cabinet = AGNFilingCabinet(id_num=blackholes.id_num,
                                           category=np.full(blackholes.mass.shape, 0),
                                           orb_a=blackholes.orb_a,
@@ -288,6 +286,10 @@ def main():
                                           size=np.full(blackholes.mass.shape, -1),
                                           )
 
+        # Initialize stars
+
+        stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=blackholes.id_num.max()+1)
+        print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
         filing_cabinet.add_objects(new_id_num=stars.id_num,
                                    new_category=np.full(stars.id_num.size, 1),
                                    new_orb_a=stars.orb_a,
