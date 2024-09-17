@@ -60,8 +60,16 @@ class AGNGasDiskModel(object):
 
         Returns
         -------
-        surf_dens_func :  aspect_func, opacity_func, bonus_structures
-            _description_
+        surf_dens_func : lambda
+            Surface density (radius)
+        aspect_func : lambda
+            Aspect ratio (radius)
+        opacity_func : lambda
+            Opacity (radius)
+        bonus_structures : dict
+            Other disk model things we may want, which are only available
+            for pAGN models
+            
         """
 
         # convert to R_g (=R/( M G/c^2) explicitly, using internal structures
