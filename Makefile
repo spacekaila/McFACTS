@@ -86,9 +86,9 @@ vera_plots: mcfacts_sim
 mstar_runs:
 	python ${MSTAR_RUNS_EXE} \
 		--fname-ini ${FNAME_INI} \
-		--timestep_num 1000 \
+		--timestep_num 50 \
 		--bin_num_max 10000 \
-		--nbins 9 \
+		--nbins 33 \
 		--galaxy_num 3 \
 		--mstar-min 1e9 \
 		--mstar-max 1e13 \
@@ -96,6 +96,7 @@ mstar_runs:
 		--fname-nal ${FNAME_GWTC2_NAL} \
 		--wkdir ${MSTAR_RUNS_WKDIR}
 		#--nbins 33 
+		#--timestep_num 1000 \
 	#python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}
 		
 

@@ -3,7 +3,7 @@ from mcfacts.mcfacts_random_state import rng
 
 
 
-def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius):
+def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius,disk_inner_stable_circ_orb):
     """Returns an array of initial single BH semi-major axes (disk_bh_orb_a) distributed randomly uniformly through disk of radial size disk_outer_radius
 
     Parameters
@@ -12,17 +12,19 @@ def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius):
         Integer number of BH initially embedded in disk
     disk_outer_radius : float
         Outer radius of disk in units of r_g,SMBH
+    disk_inner_stable_circ_orb : float
+        Inner radius of disk in units of r_g,SMBH    
     Returns
     -------
     bh_initial_locations: float array
         Array of initial BH locations in disk (disk_bh_orb_a)
     """
     # ISCO defined here. Need to put this in the .ini file.
-    disk_inner_stable_circ_orbit = 6.0
+    #disk_inner_stable_circ_orbit = 6.0
     integer_nbh = int(disk_bh_num)
     bh_initial_locations = disk_outer_radius*rng.random(integer_nbh)
-    sma_too_small = np.where(bh_initial_locations < disk_inner_stable_circ_orbit)
-    bh_initial_locations[sma_too_small] = disk_inner_stable_circ_orbit
+    sma_too_small = np.where(bh_initial_locations < disk_inner_stable_circ_orb)
+    bh_initial_locations[sma_too_small] = disk_inner_stable_circ_orb
     return bh_initial_locations
 
 def setup_prior_blackholes_indices(prograde_n_bh, prior_bh_locations):
@@ -32,7 +34,7 @@ def setup_prior_blackholes_indices(prograde_n_bh, prior_bh_locations):
     bh_indices = np.rint(len_prior_locations*rng.random(integer_nbh))
     return bh_indices
 
-def setup_disk_blackholes_masses(disk_bh_num,nsc_bh_imf_mode,nsc_bh_imf_max_mass,nsc_bh_imf_powerlaw_index):
+def setup_disk_blackholes_masses(disk_bh_num,nsc_bh_imf_mode,nsc_bh_imf_max_mass,nsc_bh_imf_powerlaw_index,mass_pile_up):
     """Return an array of disk BH initial masses of size disk_bh_num for user defined inputs.
 
     Parameters
@@ -44,7 +46,11 @@ def setup_disk_blackholes_masses(disk_bh_num,nsc_bh_imf_mode,nsc_bh_imf_max_mass
         nsc_bh_inf_max_mass : float
             Nuclear Star Cluster BH IMF, maximum mass. Units of M_sun. User set (default = 40)
         nsc_bh_imf_powerlaw_index : float
-            Nuclear Star Cluster BH IMF (e.g. M^-2). Powerlaw index. Unitless. User set (default = 2) 
+            Nuclear Star Cluster BH IMF (e.g. M^-2). Powerlaw index. Unitless. User set (default = 2)
+        mass_pile_up : float
+            Mass pile up term <nsc_bh_inf_max_mass. Units of M_sun. User set (default =35.) 
+            Used to make a uniform pile up in mass between [mass_pile_up,nsc_bh_inf_max_mass] for masses selected
+            from nsc_bh_imf_powerlaw_index beyond nsc_bh_inf_max_mass. E.g default [35,40] pile up of masses.    
 
     Returns:
         disk_bh_initial_masses: float array
@@ -54,9 +60,9 @@ def setup_disk_blackholes_masses(disk_bh_num,nsc_bh_imf_mode,nsc_bh_imf_max_mass
     integer_nbh = int(disk_bh_num)
     disk_bh_initial_masses = (rng.pareto(nsc_bh_imf_powerlaw_index,integer_nbh)+1)*nsc_bh_imf_mode
     #impose mass pile up condition (should be set in .ini). Default is 35Msun (for max of 40Msun).
-    critical_bh_mass = 35.0
-    mass_diff = nsc_bh_imf_max_mass - critical_bh_mass
-    disk_bh_initial_masses[disk_bh_initial_masses > nsc_bh_imf_max_mass] = critical_bh_mass + np.rint(mass_diff*rng.random())
+    #critical_bh_mass = 35.0
+    mass_diff = nsc_bh_imf_max_mass - mass_pile_up
+    disk_bh_initial_masses[disk_bh_initial_masses > nsc_bh_imf_max_mass] = mass_pile_up + np.rint(mass_diff*rng.random())
     return disk_bh_initial_masses
 
 
@@ -355,7 +361,7 @@ def setup_disk_nbh(nsc_mass,nsc_ratio_bh_num_star_num,nsc_ratio_mbh_mass_star_ma
         nsc_bh_vol_disk_radius_outer = nsc_bh_num_inside_pc * relative_volumes_at_disk_outer_radius * ((disk_radius_outer_pc/1.0)**(-nsc_density_index_outer))          
     else:
         relative_volumes_at_disk_outer_radius = (disk_radius_outer_pc/nsc_radius_crit)**(3.0)
-        num_bh_vol_disk_radius_outer = nsc_bh_num_inside_radius_crit * relative_volumes_at_disk_outer_radius * ((disk_radius_outer_pc/nsc_radius_crit)**(-nsc_density_index_inner))
+        nsc_bh_vol_disk_radius_outer = nsc_bh_num_inside_radius_crit * relative_volumes_at_disk_outer_radius * ((disk_radius_outer_pc/nsc_radius_crit)**(-nsc_density_index_inner))
      
     # Total number of BH in disk
     disk_bh_num = np.rint(nsc_bh_vol_disk_radius_outer * disk_aspect_ratio_avg)
