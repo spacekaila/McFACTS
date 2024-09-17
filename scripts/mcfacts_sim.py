@@ -1168,16 +1168,18 @@ def main():
                                       attr="disk_inner_outer",
                                       new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
 
-
             if (np.size(blackholes_inner_disk.orb_a) > 0):
+                #FIX THIS: Return the new evolved bh_orb_ecc_inner_disk as they decay inwards.
+                #Potentially move inner disk behaviour to module that is not dynamics (e.g inner disk module)
                 blackholes_inner_disk.orb_a = dynamics.bh_near_smbh(opts.smbh_mass,
                                                                     blackholes_inner_disk.orb_a,
                                                                     blackholes_inner_disk.mass,
                                                                     blackholes_inner_disk.orb_ecc,
                                                                     opts.timestep_duration_yr)
-                
+
                 num_in_inner_disk = np.size(blackholes_inner_disk.orb_a)
 
+                # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
                 if (nemri == 0):
                     old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
                 if (nemri > 0):
