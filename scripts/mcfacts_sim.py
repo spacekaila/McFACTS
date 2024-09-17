@@ -898,13 +898,22 @@ def main():
                                                       new_orb_arg_periapse=np.array([1.0, 1.0]),
                                                       new_galaxy=np.full(2, galaxy),
                                                       new_time_passed=np.full(2,time_passed),
-                                                      new_id_num=np.array([blackholes_pro.id_num.max()+1, blackholes_pro.id_num.max()+2])
+                                                      new_id_num=np.array([filing_cabinet.id_num.max()+1, filing_cabinet.id_num.max()+2])
                                                       )
 
                         # Delete binary. Remove column at index = ionization_flag
                         binary_bh_array = np.delete(binary_bh_array, ionization_flag, 1)
                         # Reduce number of binaries
                         bin_index = bin_index - 1
+
+                        # Update filing cabinet
+                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_num.max()+1, filing_cabinet.id_num.max()+2]),
+                                                   new_category=np.array([0,0]),
+                                                   new_orb_a=np.array([bh_orb_a_1, bh_orb_a_2]),
+                                                   new_mass=np.array([bh_mass_1, bh_mass_2]),
+                                                   new_size=np.array([-1,-1]),
+                                                   new_direction=np.array([1,1]),
+                                                   new_disk_inner_outer=np.array([0,0]))
 
                     # Check and see if merger flagged during hardening (row 11, if negative)
                     merger_flags = binary_bh_array[11, :]
@@ -1010,7 +1019,16 @@ def main():
                                                       new_orb_arg_periapse=np.array([1.]),
                                                       new_galaxy=np.array([galaxy]),
                                                       new_time_passed=np.array([time_passed]),
-                                                      new_id_num=np.array([blackholes_pro.id_num.max()+1]))
+                                                      new_id_num=np.array([filing_cabinet.id_num.max()+1]))
+
+                        # Update filing cabinet
+                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_num.max()+1]),
+                                                   new_category=np.array([0.0]),
+                                                   new_orb_a=np.array([bh_orb_a_merged]),
+                                                   new_mass=np.array([bh_mass_merged]),
+                                                   new_size=np.array([-1]),
+                                                   new_direction=np.array([1]),
+                                                   new_disk_inner_outer=np.array([0]))
                         if opts.verbose:
                             print("New BH locations", blackholes_pro.orb_a)
                         if opts.verbose:
@@ -1089,7 +1107,16 @@ def main():
                                               new_gen=bh_gen_captured,
                                               new_galaxy=np.full(len(bh_mass_captured),galaxy),
                                               new_time_passed=np.full(len(bh_mass_captured),time_passed),
-                                              new_id_num=np.arange(blackholes_pro.id_num.max()+1, len(bh_mass_captured) + blackholes_pro.id_num.max()+1,1))
+                                              new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_captured) + filing_cabinet.id_num.max()+1, 1))
+                
+                # Update filing cabinet
+                filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_captured) + filing_cabinet.id_num.max()+1,1),
+                                           new_category=np.array([0.0]),
+                                           new_orb_a=bh_orb_a_captured,
+                                           new_mass=bh_mass_captured,
+                                           new_size=np.array([-1]),
+                                           new_direction=np.array([1.0]),
+                                           new_disk_inner_outer=np.array([0.0]))
 
             # Test if any BH or BBH are in the danger-zone (<mininum_safe_distance, default =50r_g) from SMBH.
             # Potential EMRI/BBH EMRIs.
@@ -1192,6 +1219,8 @@ def main():
 
             if np.size(emri_merger_id_num) > 0:
                 blackholes_inner_disk.remove_id_num(emri_merger_id_num)
+                # Remove merged EMRIs from filing_cabinet
+                filing_cabinet.remove_id_num(emri_merger_id_num)
 
             # Here is where we need to move retro to prograde if they've flipped in this timestep
             # If they're IN the disk prograde, OR if they've circularized:
@@ -1215,6 +1244,10 @@ def main():
                                               new_id_num=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "id_num"))
                 # delete from retro arrays
                 blackholes_retro.remove_id_num(id_num_remove=bh_id_num_flip_to_pro)
+                # Update filing_cabinet
+                filing_cabinet.update(id_num=bh_id_num_flip_to_pro,
+                                      attr="direction",
+                                      new_info=np.ones(bh_id_num_flip_to_pro.size))
 
             # Iterate the time step
             time_passed = time_passed + opts.timestep_duration_yr
@@ -1291,7 +1324,16 @@ def main():
                                       new_galaxy=np.full(len(bh_mass_1) + len(bh_mass_1), galaxy),
                                       new_time_passed=np.full(len(bh_mass_1) + len(bh_mass_1), time_passed),
                                       new_gen=np.concatenate([bh_gen_1, bh_gen_2]),
-                                      new_id_num=np.arange(blackholes_pro.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + blackholes_pro.id_num.max()+1, 1))
+                                      new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_num.max()+1, 1))
+        
+        # Update filing_cabinet
+        filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_num.max()+1, 1),
+                                   new_category=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
+                                   new_orb_a=np.concatenate([bh_orb_a_1, bh_orb_a_2]),
+                                   new_mass=np.concatenate([bh_mass_1, bh_mass_2]),
+                                   new_size=np.array([-1, -1]),
+                                   new_direction=np.array([1, 1]),
+                                   new_disk_inner_outer=np.array([0, 0]))
 
         surviving_bh_array[:, 0] = blackholes_pro.orb_a
         surviving_bh_array[:, 1] = blackholes_pro.mass
@@ -1336,10 +1378,9 @@ def main():
                                  new_time_passed=blackholes_emris.time_passed,
                                  new_gw_freq=blackholes_emris.gw_freq,
                                  new_gw_strain=blackholes_emris.gw_strain)
-        
+
         emris_pop.check_consistency()
 
-    
     # save all mergers from Monte Carlo
     population_header = f"Initial seed: {opts.seed}\n{merger_field_names}"  # Include initial seed
     basename, extension = os.path.splitext(opts.fname_output_mergers)
@@ -1361,7 +1402,6 @@ def main():
     assert len(surviving_bh_header.split(" ")) == surviving_bh_array_pop.shape[1]
     assert len(gw_header.split(" ")) == gw_array_pop.shape[1]
 
-
     # Save things
     np.savetxt(
         os.path.join(opts.work_directory, population_save_name),
@@ -1381,6 +1421,7 @@ def main():
 
     emris_pop.to_file(os.path.join(opts.work_directory, emris_save_name),
                       col_order=["galaxy", "time_passed", "orb_a", "mass", "orb_ecc", "gw_strain", "gw_freq", "orb_ang_mom", "spin", "spin_angle", "orb_inc", "orb_arg_periapse", "gen", "id_num"])
+
 
 if __name__ == "__main__":
     main()
