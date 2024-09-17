@@ -649,6 +649,7 @@ def main():
                     if (opts.flag_dynamic_enc > 0):
                         # Harden/soften binaries via dynamical encounters
                         # Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
+                        #FIX THIS: RETURN perturbed circ singles (orb_a, orb_ecc)
                         binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -662,6 +663,8 @@ def main():
                         )
 
                         # Soften/ ionize binaries due to encounters with eccentric singletons
+                        #FIX THIS!
+                        #Return 3 things: perturbed biary_bh_array, disk_bh_pro_orbs_a, disk_bh_pro_orbs_ecc
                         binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -673,6 +676,10 @@ def main():
                             binary_bh_array,
                             bin_index
                         )
+                        #binary_bh_array = temp_dynamics_array[0][0]
+                        #blackholes_pro.orb_a = temp_dynamics_array[1][0]
+                        #blackholes_pro.orb_ecc = temp_dynamics_array[2][0]
+                        
                     # Harden binaries via gas
                     # Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                     binary_bh_array = baruteau11.bin_harden_baruteau(
@@ -713,6 +720,7 @@ def main():
 
                     if (opts.flag_dynamic_enc > 0):
                         # Spheroid encounters
+                        #FIX THIS: Replace nsc_imf_bh below with nsc_imf_stars_ since pulling from stellar MF
                         binary_bh_array = dynamics.bin_spheroid_encounter(
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
@@ -725,7 +733,8 @@ def main():
                         )
 
                     if (opts.flag_dynamic_enc > 0):
-                        # Recapture bins out of disk plane
+                        # Recapture bins out of disk plane. 
+                        # FIX THIS: Replace this with orb_inc_damping but for binary bhbh OBJECTS (KN)
                         binary_bh_array = dynamics.bin_recapture(
                             bin_index,
                             binary_bh_array,
@@ -859,9 +868,10 @@ def main():
                                                       new_orb_arg_periapse=[1.0, 1.0],
                                                       new_id_num=[blackholes_pro.id_num.max()+1, blackholes_pro.id_num.max()+2]
                                                       )
-
+                        #print("bin_array_pre_ioniz",binary_bh_array)
                         # Delete binary. Remove column at index = ionization_flag
                         binary_bh_array = np.delete(binary_bh_array, ionization_flag, 1)
+                        #print("bin_array_post_ioniz",binary_bh_array)
                         # Reduce number of binaries
                         bin_index = bin_index - 1
 
@@ -875,25 +885,60 @@ def main():
                         merger_indices = merger_indices[0]
                     if opts.verbose:
                         print(merger_indices)
+                    #First run through and see if any mergers are problematic, due to e.g. ionized binary that is mis-counted.
+                    #Delete any mis-counted binaries and re-do any normal mergers.
                     if any_merger > 0:
                         for i in range(any_merger):
-                            #Check if merger is real
-                            #temp_bin_bhbh_pro_array = binary_bh_array[:,merger_indices[i]]
-                            #reality_flag = evolve.reality_check(temp_bin_bhbh_pro_array, bin_index, bin_properties_num)
-                            #if reality_flag >= 0:
+                            #Check primary masses
+                            if binary_bh_array[2,merger_indices[i]] == 0.0:
+                                binary_bh_array = np.delete(binary_bh_array,merger_indices[i],1)
+                                bin_index = bin_index - 1
+                                if bin_index < 0:
+                                    bin_index = 0.0
+                                #This binary is not real. Delete.
+                                any_merger = any_merger - 1 
+                    
+                    if any_merger > 0:
+                        for i in range(any_merger):        
+                            #Check time to merge
+                            if np.isnan(binary_bh_array[11,merger_indices[i]]):
+                                binary_bh_array = np.delete(binary_bh_array,merger_indices[i],1)
+                                bin_index = bin_index - 1
+                                if bin_index < 0:
+                                    bin_index = 0.0
+                                #This binary is not real. Delete. 
+                                any_merger = any_merger - 1
+
+                    if any_merger > 0:
+                        for i in range(any_merger): 
+                            temp_bin_bhbh_pro_array = binary_bh_array
+                            reality_flag = evolve.reality_check(temp_bin_bhbh_pro_array, bin_index, bin_properties_num)
+                            if reality_flag >= 0:
                                 # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
-                            #   binary_bh_array = np.delete(binary_bh_array, reality_flag, 1)
-                            #   bin_index = bin_index - 1
+                                binary_bh_array = np.delete(binary_bh_array, reality_flag, 1)
+                                bin_index = bin_index - 1
+                                if bin_index < 0:
+                                    bin_index = 0.0
+                                any_merger = any_merger - 1
+                    
+                    #if any_merger > 0:
+                    #    for i in range(any_merger):
+                    #        if binary_bh_array[3,merger_indices[i]] == 0 and binary_bh_array
+
+                    if any_merger > 0:
+                        for i in range(any_merger):
+                            
                             if time_passed <= opts.timestep_duration_yr:
                                 print("time_passed,loc1,loc2", time_passed, binary_bh_array[0, merger_indices[i]], binary_bh_array[1, merger_indices[i]])
-
-                        # calculate merger properties
+                            
+                            # calculate merger properties
                             bh_mass_merged = tichy08.merged_mass(
                                 binary_bh_array[2, merger_indices[i]],
                                 binary_bh_array[3, merger_indices[i]],
                                 binary_bh_array[4, merger_indices[i]],
                                 binary_bh_array[5, merger_indices[i]]
                             )
+                            
                             bh_spin_merged = tichy08.merged_spin(
                                 binary_bh_array[2, merger_indices[i]],
                                 binary_bh_array[3, merger_indices[i]],
@@ -909,6 +954,7 @@ def main():
                                 binary_bh_array[7, merger_indices[i]],
                                 binary_bh_array[16, merger_indices[i]]
                             )
+                            
                             bh_chi_p_merged = chieff.chi_p(
                                 binary_bh_array[2, merger_indices[i]],
                                 binary_bh_array[3, merger_indices[i]],
@@ -1084,6 +1130,8 @@ def main():
                 inner_disk_retro_indices = np.array(empty)
             
             if np.size(bh_orb_a_inner_disk) > 0:
+                #FIX THIS: Return the new evolved bh_orb_ecc_inner_disk as they decay inwards.
+                #Potentially move inner disk behaviour to module that is not dynamics (e.g inner disk module)
                 bh_orb_a_inner_disk = dynamics.bh_near_smbh(opts.smbh_mass,
                                                              bh_orb_a_inner_disk,
                                                              bh_mass_inner_disk,
