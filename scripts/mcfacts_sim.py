@@ -226,6 +226,7 @@ def main():
             opts.nsc_radius_crit,
             opts.nsc_density_index_inner,
         )
+        '''
         # Skip the whole galaxy if there are no black holes
         if disk_bh_num < 1:
             # Warn the user once, even if verbose is off
@@ -237,6 +238,7 @@ def main():
             if not "total_emris" in locals():
                 total_emris = 0
             continue
+        '''
 
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
