@@ -270,6 +270,7 @@ def ReadInputs_ini(fname_ini, verbose=False):
 def load_disk_arrays(
     disk_model_name,
     disk_radius_outer,
+    verbose=False
     ):
     """Load the dictionary arrays from file (pAGN_off)
 
@@ -281,6 +282,8 @@ def load_disk_arrays(
         sirko_goodman or thompson_etal
     disk_radius_outer : float
         Outer disk radius we truncate at
+    verbose : bool
+        Print extra things
 
     Returns
     -------
@@ -298,9 +301,14 @@ def load_disk_arrays(
     fname_disk_density = impresources.files(mcfacts_input_data) / fname_disk_density
     # Load data from the surface density file
     disk_density_data = np.loadtxt(fname_disk_density)
+
+    # Get the radii from the data (second column)
     disk_model_radii = disk_density_data[:,1]
-    print(disk_model_radii)
-    print(disk_radius_outer)
+    if verbose:
+        print("disk_radius_outer", disk_radius_outer)
+        print("disk_model_radii", disk_model_radii)
+    
+    # Get the surface densities from the data (first column)
     disk_surface_densities = disk_density_data[:,0]
     # truncate disk at outer radius
     truncated_disk_radii = np.extract(
@@ -320,12 +328,23 @@ def load_disk_arrays(
     fname_disk_aspect_ratio = impresources.files(mcfacts_input_data) / fname_disk_aspect_ratio
     # Load data from the aspect ratio file
     disk_aspect_ratio_data = np.loadtxt(fname_disk_aspect_ratio)
-    aspect_ratios = disk_aspect_ratio_data[:,0]
+    disk_aspect_ratios = disk_aspect_ratio_data[:,0]
     # Truncate the aspect ratio array
-    truncated_aspect_ratios = aspect_ratios[0:len(truncated_disk_radii)]
+    truncated_aspect_ratios = disk_aspect_ratios[0:len(truncated_disk_radii)]
+
+    # Get opacity filename
+    fname_disk_opacity = disk_model_name + '_opacity.txt'
+    # Look in the source data
+    fname_disk_opacity = impresources.files(mcfacts_input_data) / fname_disk_opacity
+    # Load data from opacity file
+    disk_opacity_data = np.loadtxt(fname_disk_opacity)
+    # Get the opacities from the data (first column)
+    disk_opacities = disk_opacity_data[:,0]
+    # Truncate disk at outer radius
+    truncated_opacities = disk_opacities[0:len(truncated_disk_radii)]
 
     # Now redefine arrays used to generate interpolating functions in terms of truncated arrays
-    return truncated_disk_radii, truncated_surface_densities, truncated_aspect_ratios
+    return truncated_disk_radii, truncated_surface_densities, truncated_aspect_ratios, truncated_opacities
 
 def construct_disk_direct(
     disk_model_name,
