@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 
 from mcfacts.mcfacts_random_state import rng
+import mcfacts.constants as mc_const
 
 """Module for handling dynamical interactions
 
@@ -336,8 +337,8 @@ def circular_binaries_encounters_ecc_prograde(
     #Housekeeping
     #Mass of Sun in kg
     #solar_mass = M_sun.value
-    solar_mass = 2.e30
-
+    #solar_mass = 2.e30
+    solar_mass = mc_const.mass_per_msun  # kg
     number_of_binaries = bindex
     # set up 1-d arrays for bin com, masses, separations, velocities of com,
     # orbit time (in yrs), orbits/timestep
@@ -411,10 +412,7 @@ def circular_binaries_encounters_ecc_prograde(
                         if random_uniform_number < prob_enc_per_timestep:
                             #Perturb *this* ith binary depending on how hard it already is.
                             num_encounters = num_encounters + 1
-                            #Line below is key. Right now it say only dynamically perturb bin if its circularized. If not circularized, leave alone.
-                            #If comment out this line then all binaries are perturbed.
-                            #if bin_orbital_eccentricities[i] <= crit_ecc:
-                                # Find relative velocity of interloper in km/s so divide by 1.e3
+                            # Find relative velocity of interloper in km/s so divide by 1.e3
                             rel_vel_kms = abs(bin_velocities[i] - ecc_velocities[j])/1.e3
                             rel_vel_ms = abs(bin_velocities[i] - ecc_velocities[j])
                             # K.E. of interloper
@@ -451,7 +449,9 @@ def circular_binaries_encounters_ecc_prograde(
 
     # TO DO: ALSO return new array of singletons with changed params.
 
-    return disk_bins_bhbh
+    #temp_dynamics_array =[[disk_bins_bhbh],[ecc_prograde_population_locations],[ecc_prograde_population_eccentricities]]
+    #return temp_dynamics_array
+    return disk_bins_bhbh 
 
 def circular_binaries_encounters_circ_prograde(
         smbh_mass,
@@ -587,8 +587,12 @@ def circular_binaries_encounters_circ_prograde(
     """
     # Housekeeping
     # Mass of Sun in kg
-    solar_mass = 2.e30
+    # solar_mass = 2.e30
+    solar_mass = mc_const.mass_per_msun  # kg
     # Magnitude of energy change to drive binary to merger in ~2 interactions in a strong encounter. Say de_strong=0.9
+    # de_strong here refers to the perturbation of the binary around its center of mass
+    # The energy in the exchange is assumed to come from the binary binding energy around its c.o.m.
+    # delta_energy_strong (read into this module) refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
     de_strong =0.9
 
     number_of_binaries = bindex
@@ -662,11 +666,8 @@ def circular_binaries_encounters_circ_prograde(
                         random_uniform_number = rng.random()
                         if random_uniform_number < prob_enc_per_timestep:
                             #Perturb *this* ith binary depending on how hard it already is.
-                            num_encounters = num_encounters + 1                            
-                            #Line below is key. Right now it says only dynamically perturb bin if its circularized. If not circularized, leave alone.
-                            #If comment out this line then all binaries are perturbed.
-                            #if bin_orbital_eccentricities[i] <= crit_ecc:
-                                # Find relative velocity of interloper in km/s so divide by 1.e3
+                            num_encounters = num_encounters + 1                                                        
+                            # Find relative velocity of interloper in km/s so divide by 1.e3
                             rel_vel_kms = abs(bin_velocities[i] - circ_velocities[j])/1.e3
                             rel_vel_ms = abs(bin_velocities[i] - circ_velocities[j])
                                 # K.E. of interloper
@@ -674,7 +675,10 @@ def circular_binaries_encounters_circ_prograde(
                             hard = bin_binding_energy[i] - ke_interloper                                
                             if hard > 0:
                                 # Binary is hard w.r.t interloper
-                                # Change binary parameters; decr separation, incr ecc around com and orb_ecc 
+                                # Change binary parameters; decr separation, incr ecc around com and orb_ecc
+                                #de_strong here refers to the perturbation of the binary around its center of mass
+                                # The energy in the exchange is assumed to come from the binary binding energy around its c.o.m.
+                                #delta_energy_strong refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
                                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
                                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
@@ -871,8 +875,12 @@ def bin_spheroid_encounter(
     #Critical disk radius (in units of r_g,SMBH) where after crit_time, all the spheroid orbits are captured.
     crit_radius = 1.e3
     #Solar mass in units of kg
-    solar_mass = 2.e30
+    #solar_mass = 2.e30
+    solar_mass = mc_const.mass_per_msun  # kg
     # Magnitude of energy change to drive binary to merger in ~2 interactions in a strong encounter. Say de_strong=0.9
+    # de_strong here refers to the perturbation of the binary around its center of mass
+    # The energy in the exchange is assumed to come from the binary binding energy around its c.o.m.
+    # delta_energy_strong refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
     de_strong =0.9
     # Spheroid normalization to allow for non-ideal NSC (cored/previous AGN episodes/disky population concentration/whatever)
     #Default initial value of i3,i3_rad
@@ -1108,6 +1116,7 @@ def bh_near_smbh(
                 decrement = (1.0-(1/decay_time_factor))
             # So drop prograde_bh_location[i] by value (1/decay_time_factor) on this timestep
             new_location = decrement*disk_bh_pro_orbs_a[i]
+            #FIX THIS: Change orb_ecc as appropriate and return with disk_bh_pro_orbs_a.
             if new_location <1.0:
                 new_location = 1.0
 
