@@ -383,7 +383,19 @@ def construct_disk_pAGN(
     disk_bh_eddington_ratio,
     rad_efficiency=0.1,
     ):
-    """
+    """Construct AGN disk model using the pAGN code.
+
+    Get 1d functions of radius for your choice of disk model. Disk model can be
+    Sirko & Goodman (2003) or Thompson, Quataert, & Murray (2005)
+
+    Sirko and Goodman. “Spectral Energy Distributions of Marginally
+    Self-Gravitating Quasi-Stellar Object Discs.” 2003MNRAS.341..501S.
+    [DOI](https://doi.org/10.1046/j.1365-8711.2003.06431.x).
+
+    Thompson, Quataert, & Murray. “Radiation Pressure-Supported
+    Starburst Disks and Active Galactic Nucleus Fueling.” 2005ApJ.630..167.
+    [DOI](https://doi.org/10.1086/431923).
+
     Parameters
     ----------
     disk_model_name : str
@@ -403,6 +415,8 @@ def construct_disk_pAGN(
         Surface density (radius)
     disk_aspect_ratio_func : lambda
         Aspect ratio (radius)
+    disk_opacity_func : lambda
+        Opacity (radius)
     disk_model_properties : dict
         Other disk model things we may want
     bonus_structures : dict
@@ -430,7 +444,7 @@ def construct_disk_pAGN(
         base_args['Rout'] = disk_radius_outer * Rg.to('m').value
     else:
         raise RuntimeError("unknown disk model: %s"%(disk_model_name))
-        
+
     # note Rin default is 3 Rs
 
     # Run pAGN
@@ -444,7 +458,7 @@ def construct_disk_pAGN(
     disk_model_properties['h_over_r'] = disk_aspect_ratio_func
     disk_model_properties['kappa'] = disk_opacity_func
 
-    return  disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, disk_model_properties, bonus_structures
+    return disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, disk_model_properties, bonus_structures
 
 
 def construct_disk_interp(
