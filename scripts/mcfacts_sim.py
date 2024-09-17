@@ -272,15 +272,12 @@ def main():
                                   orb_inc=bh_orb_inc_initial,
                                   orb_ecc=bh_orb_ecc_initial,
                                   orb_arg_periapse=bh_orb_arg_periapse_initial,
-                                  smbh_mass=opts.smbh_mass,
                                   bh_num=disk_bh_num,
                                   galaxy=np.zeros(disk_bh_num),
                                   time_passed=np.zeros(disk_bh_num))
 
-        # Initialize stars
-        stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=blackholes.id_num.max()+1)
-        print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
 
+        # Initialize filing_cabinet
         filing_cabinet = AGNFilingCabinet(id_num=blackholes.id_num,
                                           category=np.full(blackholes.mass.shape, 0),
                                           orb_a=blackholes.orb_a,
@@ -288,6 +285,10 @@ def main():
                                           size=np.full(blackholes.mass.shape, -1),
                                           )
 
+        # Initialize stars
+
+        stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=filing_cabinet.id_max+1)
+        print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
         filing_cabinet.add_objects(new_id_num=stars.id_num,
                                    new_category=np.full(stars.id_num.size, 1),
                                    new_orb_a=stars.orb_a,
@@ -430,7 +431,7 @@ def main():
         print("Scale of t_gw (yrs)=", time_gw_normalization)
 
         # Set up merger array (identical to binary array)
-        merger_array = np.zeros((bin_properties_num, opts.bin_num_max))
+        #merger_array = np.zeros((bin_properties_num, opts.bin_num_max))
 
         # Set up output array (mergerfile)
         # -1 because galaxy will be concatenated beforehand
@@ -706,6 +707,7 @@ def main():
                     if (opts.flag_dynamic_enc > 0):
                         # Harden/soften binaries via dynamical encounters
                         # Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
+                        #FIX THIS: RETURN perturbed circ singles (orb_a, orb_ecc)
                         binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -719,6 +721,8 @@ def main():
                         )
 
                         # Soften/ ionize binaries due to encounters with eccentric singletons
+                        #FIX THIS!
+                        #Return 3 things: perturbed biary_bh_array, disk_bh_pro_orbs_a, disk_bh_pro_orbs_ecc
                         binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -730,6 +734,10 @@ def main():
                             binary_bh_array,
                             bin_index
                         )
+                        #binary_bh_array = temp_dynamics_array[0][0]
+                        #blackholes_pro.orb_a = temp_dynamics_array[1][0]
+                        #blackholes_pro.orb_ecc = temp_dynamics_array[2][0]
+                        
                     # Harden binaries via gas
                     # Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                     binary_bh_array = baruteau11.bin_harden_baruteau(
@@ -770,6 +778,7 @@ def main():
 
                     if (opts.flag_dynamic_enc > 0):
                         # Spheroid encounters
+                        #FIX THIS: Replace nsc_imf_bh below with nsc_imf_stars_ since pulling from stellar MF
                         binary_bh_array = dynamics.bin_spheroid_encounter(
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
@@ -782,7 +791,8 @@ def main():
                         )
 
                     if (opts.flag_dynamic_enc > 0):
-                        # Recapture bins out of disk plane
+                        # Recapture bins out of disk plane. 
+                        # FIX THIS: Replace this with orb_inc_damping but for binary bhbh OBJECTS (KN)
                         binary_bh_array = dynamics.bin_recapture(
                             bin_index,
                             binary_bh_array,
@@ -912,16 +922,17 @@ def main():
                                                       new_orb_arg_periapse=np.array([1.0, 1.0]),
                                                       new_galaxy=np.full(2, galaxy),
                                                       new_time_passed=np.full(2,time_passed),
-                                                      new_id_num=np.array([filing_cabinet.id_num.max()+1, filing_cabinet.id_num.max()+2])
+                                                      new_id_num=np.array([filing_cabinet.id_max+1, filing_cabinet.id_max+2])
                                                       )
-
+                        #print("bin_array_pre_ioniz",binary_bh_array)
                         # Delete binary. Remove column at index = ionization_flag
                         binary_bh_array = np.delete(binary_bh_array, ionization_flag, 1)
+                        #print("bin_array_post_ioniz",binary_bh_array)
                         # Reduce number of binaries
                         bin_index = bin_index - 1
 
                         # Update filing cabinet
-                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_num.max()+1, filing_cabinet.id_num.max()+2]),
+                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_max+1, filing_cabinet.id_max+2]),
                                                    new_category=np.array([0,0]),
                                                    new_orb_a=np.array([bh_orb_a_1, bh_orb_a_2]),
                                                    new_mass=np.array([bh_mass_1, bh_mass_2]),
@@ -942,25 +953,60 @@ def main():
                         merger_indices = merger_indices[0]
                     if opts.verbose:
                         print(merger_indices)
+                    #First run through and see if any mergers are problematic, due to e.g. ionized binary that is mis-counted.
+                    #Delete any mis-counted binaries and re-do any normal mergers.
                     if any_merger > 0:
                         for i in range(any_merger):
-                            #Check if merger is real
-                            #temp_bin_bhbh_pro_array = binary_bh_array[:,merger_indices[i]]
-                            #reality_flag = evolve.reality_check(temp_bin_bhbh_pro_array, bin_index, bin_properties_num)
-                            #if reality_flag >= 0:
+                            #Check primary masses
+                            if binary_bh_array[2,merger_indices[i]] == 0.0:
+                                binary_bh_array = np.delete(binary_bh_array,merger_indices[i],1)
+                                bin_index = bin_index - 1
+                                if bin_index < 0:
+                                    bin_index = 0.0
+                                #This binary is not real. Delete.
+                                any_merger = any_merger - 1 
+                    
+                    if any_merger > 0:
+                        for i in range(any_merger):        
+                            #Check time to merge
+                            if np.isnan(binary_bh_array[11,merger_indices[i]]):
+                                binary_bh_array = np.delete(binary_bh_array,merger_indices[i],1)
+                                bin_index = bin_index - 1
+                                if bin_index < 0:
+                                    bin_index = 0.0
+                                #This binary is not real. Delete. 
+                                any_merger = any_merger - 1
+
+                    if any_merger > 0:
+                        for i in range(any_merger): 
+                            temp_bin_bhbh_pro_array = binary_bh_array
+                            reality_flag = evolve.reality_check(temp_bin_bhbh_pro_array, bin_index, bin_properties_num)
+                            if reality_flag >= 0:
                                 # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
-                            #   binary_bh_array = np.delete(binary_bh_array, reality_flag, 1)
-                            #   bin_index = bin_index - 1
+                                binary_bh_array = np.delete(binary_bh_array, reality_flag, 1)
+                                bin_index = bin_index - 1
+                                if bin_index < 0:
+                                    bin_index = 0.0
+                                any_merger = any_merger - 1
+                    
+                    #if any_merger > 0:
+                    #    for i in range(any_merger):
+                    #        if binary_bh_array[3,merger_indices[i]] == 0 and binary_bh_array
+
+                    if any_merger > 0:
+                        for i in range(any_merger):
+                            
                             if time_passed <= opts.timestep_duration_yr:
                                 print("time_passed,loc1,loc2", time_passed, binary_bh_array[0, merger_indices[i]], binary_bh_array[1, merger_indices[i]])
-
-                        # calculate merger properties
+                            
+                            # calculate merger properties
                             bh_mass_merged = tichy08.merged_mass(
                                 binary_bh_array[2, merger_indices[i]],
                                 binary_bh_array[3, merger_indices[i]],
                                 binary_bh_array[4, merger_indices[i]],
                                 binary_bh_array[5, merger_indices[i]]
                             )
+                            
                             bh_spin_merged = tichy08.merged_spin(
                                 binary_bh_array[2, merger_indices[i]],
                                 binary_bh_array[3, merger_indices[i]],
@@ -976,6 +1022,7 @@ def main():
                                 binary_bh_array[7, merger_indices[i]],
                                 binary_bh_array[16, merger_indices[i]]
                             )
+                            
                             bh_chi_p_merged = chieff.chi_p(
                                 binary_bh_array[2, merger_indices[i]],
                                 binary_bh_array[3, merger_indices[i]],
@@ -998,7 +1045,7 @@ def main():
                                 time_passed
                             )
                         # do another thing
-                        merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
+                        #merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
                         # Reset merger marker to zero
                         # Remove merged binary from binary array. Delete column where merger_indices is the label.
                         binary_bh_array = np.delete(binary_bh_array, merger_indices, 1)
@@ -1033,10 +1080,10 @@ def main():
                                                       new_orb_arg_periapse=np.array([1.]),
                                                       new_galaxy=np.array([galaxy]),
                                                       new_time_passed=np.array([time_passed]),
-                                                      new_id_num=np.array([filing_cabinet.id_num.max()+1]))
+                                                      new_id_num=np.array([filing_cabinet.id_max+1]))
 
                         # Update filing cabinet
-                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_num.max()+1]),
+                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_max+1]),
                                                    new_category=np.array([0.0]),
                                                    new_orb_a=np.array([bh_orb_a_merged]),
                                                    new_mass=np.array([bh_mass_merged]),
@@ -1045,8 +1092,8 @@ def main():
                                                    new_disk_inner_outer=np.array([0]))
                         if opts.verbose:
                             print("New BH locations", blackholes_pro.orb_a)
-                        if opts.verbose:
-                            print(merger_array)
+                        #if opts.verbose:
+                        #    print(merger_array)
                     else:
                         # No merger
                         # do nothing! hardening should happen FIRST (and now it does!)
@@ -1121,10 +1168,10 @@ def main():
                                               new_gen=bh_gen_captured,
                                               new_galaxy=np.full(len(bh_mass_captured),galaxy),
                                               new_time_passed=np.full(len(bh_mass_captured),time_passed),
-                                              new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_captured) + filing_cabinet.id_num.max()+1, 1))
+                                              new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_captured) + filing_cabinet.id_max+1, 1))
                 
                 # Update filing cabinet
-                filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_captured) + filing_cabinet.id_num.max()+1,1),
+                filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_captured) + filing_cabinet.id_max+1,1),
                                            new_category=np.array([0.0]),
                                            new_orb_a=bh_orb_a_captured,
                                            new_mass=bh_mass_captured,
@@ -1183,16 +1230,18 @@ def main():
                                       attr="disk_inner_outer",
                                       new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
 
-
             if (np.size(blackholes_inner_disk.orb_a) > 0):
+                #FIX THIS: Return the new evolved bh_orb_ecc_inner_disk as they decay inwards.
+                #Potentially move inner disk behaviour to module that is not dynamics (e.g inner disk module)
                 blackholes_inner_disk.orb_a = dynamics.bh_near_smbh(opts.smbh_mass,
                                                                     blackholes_inner_disk.orb_a,
                                                                     blackholes_inner_disk.mass,
                                                                     blackholes_inner_disk.orb_ecc,
                                                                     opts.timestep_duration_yr)
-                
+
                 num_in_inner_disk = np.size(blackholes_inner_disk.orb_a)
 
+                # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
                 if (nemri == 0):
                     old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
                 if (nemri > 0):
@@ -1269,6 +1318,7 @@ def main():
             time_galaxy_tracker = 10.0*opts.timestep_duration_yr
             if time_passed % time_galaxy_tracker == 0:
                 print("Time passed=", time_passed)
+
         # End Loop of Timesteps at Final Time, end all changes & print out results
 
         print("End Loop!")
@@ -1338,16 +1388,18 @@ def main():
                                       new_galaxy=np.full(len(bh_mass_1) + len(bh_mass_1), galaxy),
                                       new_time_passed=np.full(len(bh_mass_1) + len(bh_mass_1), time_passed),
                                       new_gen=np.concatenate([bh_gen_1, bh_gen_2]),
-                                      new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_num.max()+1, 1))
+                                      new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_max+1, 1))
         
         # Update filing_cabinet
-        filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_num.max()+1, 1),
-                                   new_category=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
-                                   new_orb_a=np.concatenate([bh_orb_a_1, bh_orb_a_2]),
-                                   new_mass=np.concatenate([bh_mass_1, bh_mass_2]),
-                                   new_size=np.array([-1, -1]),
-                                   new_direction=np.array([1, 1]),
-                                   new_disk_inner_outer=np.array([0, 0]))
+        filing_cabinet.add_objects(
+            new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_max+1, 1),
+            new_category=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
+            new_orb_a=np.concatenate([bh_orb_a_1, bh_orb_a_2]),
+            new_mass=np.concatenate([bh_mass_1, bh_mass_2]),
+            new_size=np.full(len(np.concatenate([bh_mass_1, bh_mass_2])), -1),
+            new_direction=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
+            new_disk_inner_outer=np.zeros(len(np.concatenate([bh_mass_1, bh_mass_2])))
+        )
 
         surviving_bh_array[:, 0] = blackholes_pro.orb_a
         surviving_bh_array[:, 1] = blackholes_pro.mass
