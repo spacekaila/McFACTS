@@ -44,7 +44,7 @@ class AGNGasDiskModel(object):
 
     def return_disk_surf_model(self,no_truncate=True):
         """
-        Returns a disk surface function model in \Sigma = 2 rho H  in  kg/m^2 given distance from SMBH in r_g = r_s/2
+        Returns a disk surface function model in Sigma = 2 rho H  in  kg/m^2 given distance from SMBH in r_g = r_s/2
         Default pagn internal units are SI
         """
         R = self.disk_model.R/(self.disk_model.Rs/2)  # convert to R_g  (=R/( M G/c^2)  explicitly, using internal structures
