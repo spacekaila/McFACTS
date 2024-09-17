@@ -165,7 +165,7 @@ def main():
     opts = arg()
     # Disk surface density (in kg/m^2) is a function of radius, where radius is in r_g
     # Disk aspect ratio is a function of radius, where radius is in r_g
-    disk_surface_density, disk_aspect_ratio = \
+    disk_surface_density, disk_aspect_ratio, disk_opacity = \
         ReadInputs.construct_disk_interp(opts.smbh_mass,
                                          opts.disk_radius_outer,
                                          opts.disk_model_name,
