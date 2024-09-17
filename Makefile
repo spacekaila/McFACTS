@@ -86,10 +86,10 @@ vera_plots: mcfacts_sim
 mstar_runs:
 	python ${MSTAR_RUNS_EXE} \
 		--fname-ini ${FNAME_INI} \
-		--timestep_num 1000 \
+		--timestep_num 20 \
 		--bin_num_max 10000 \
 		--nbins 9 \
-		--galaxy_num 3 \
+		--galaxy_num 5 \
 		--mstar-min 1e9 \
 		--mstar-max 1e13 \
 		--scrub \
