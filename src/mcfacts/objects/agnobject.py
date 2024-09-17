@@ -24,6 +24,37 @@ def check_1d_length(arr_list):
 # Empty array to pass
 empty_arr = np.array([])
 
+attr_bh = ["id_num", "orb_a", "mass", "spin", "spin_angle",
+           "orb_inc", "orb_ecc", "orb_arg_periapse", "orb_ang_mom",
+           "gen", "gw_freq", "gw_strain", "galaxy", "time_passed"]
+attr_star = ["id_num","orb_a", "mass", "spin", "spin_angle", "orb_inc","orb_ecc",
+             "orb_ang_mom", "orb_arg_periapse", "galaxy", "gen", "time_passed",
+             "star_X", "star_Y", "star_Z", "radius"]
+attr_filing_cabinet = ["id_num", "category", "orb_a", "mass", "size",
+                       "direction", "disk_inner_outer"]
+
+
+def get_attr_list(obj):
+    """
+    Returns list of array attributes for each type of AGNObject
+
+    Parameters
+    ----------
+    obj : AGNObject subclass
+        Instance of one of the AGNObject subclasses
+
+    Returns
+    -------
+    attr_$TYPE : array of str
+        array of names of attributes for each object in obj
+    """
+    if isinstance(obj, AGNBlackHole):
+        return (attr_bh)
+    elif isinstance(obj, AGNStar):
+        return (attr_star)
+    elif isinstance(obj, AGNFilingCabinet):
+        return (attr_filing_cabinet)
+
 
 class AGNObject(object):
     """
@@ -182,7 +213,8 @@ class AGNObject(object):
 
         idx_change = np.ones(len(self.mass), dtype=bool)
         idx_change[idx_remove] = False
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[idx_change])
 
         self.check_consistency()
@@ -199,9 +231,11 @@ class AGNObject(object):
 
         if id_num_remove is None:
             return None
-        
+
         keep_mask = ~(np.isin(getattr(self, "id_num"), id_num_remove))
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        #for attr in vars(self).keys():
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[keep_mask])
 
         self.check_consistency()
@@ -221,7 +255,8 @@ class AGNObject(object):
 
         idx_change = np.zeros(len(self.mass), dtype=bool)
         idx_change[idx_keep] = True
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[idx_change])
 
         self.check_consistency()
@@ -240,7 +275,8 @@ class AGNObject(object):
             return None
 
         keep_mask = (np.isin(getattr(self, "id_num"), id_num_keep))
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[keep_mask])
 
         self.check_consistency()
@@ -313,7 +349,8 @@ class AGNObject(object):
         sort_idx = np.argsort(sort_attr)
 
         # Each attribute is then sorted to be in this order
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[sort_idx])
 
     def return_params(self):
@@ -345,10 +382,12 @@ class AGNObject(object):
             dictionary array of all attributes in the AGNObject. Everything
             is written as a float.
         """
-
-        dtype = np.dtype([(attr, 'float') for attr in vars(self).keys()])
+        attr_list = get_attr_list(self)
+        #dtype = np.dtype([(attr, 'float') for attr in vars(self).keys()])
+        dtype = np.dtype([(attr, 'float') for attr in attr_list])
         dat_out = np.empty(len(self.mass), dtype=dtype)
-        for attr in vars(self).keys():
+        #for attr in vars(self).keys():
+        for attr in attr_list:
             dat_out[attr] = getattr(self, attr)
         return (dat_out)
 
@@ -401,16 +440,17 @@ class AGNObject(object):
         consistent. Raises an AttributeError if all arrays do not have
         the same length.
         """
+        attr_list = get_attr_list(self)
 
         # shape of the mass array (arbitrary, just need a comparison value)
         shape = self.mass.shape
         not_consistent = 0
-        for attr in vars(self).keys():
+        for attr in attr_list:
             if (getattr(self, attr).shape != shape):
                 not_consistent += 1
 
         if not_consistent > 0:
-            for attr in vars(self).keys():
+            for attr in attr_list:
                 print(f"{attr}.shape = {getattr(self, attr).shape}")
             raise AttributeError("Attributes are not all the same size")
         #else:
@@ -848,13 +888,13 @@ class AGNBinaryStar(AGNObject):
 
         new_total_mass = new_star_mass1 + new_star_mass2
 
-        super(AGNBinaryStar,self).add_objects(new_mass = new_total_mass,
-                                                   new_spin=None,
-                                                   new_spin_angle=None,
-                                                   new_a = new_cm_orb_a,
-                                                   new_inc=new_cm_orb_inc,
-                                                   new_e=new_cm_orb_ecc,
-                                                   obj_num=obj_num)
+        super(AGNBinaryStar, self).add_objects(new_mass=new_total_mass,
+                                              new_spin=None,
+                                              new_spin_angle=None,
+                                              new_a=new_cm_orb_a,
+                                              new_inc=new_cm_orb_inc,
+                                              new_e=new_cm_orb_ecc,
+                                              obj_num=obj_num)
 
 
 class AGNBinaryBlackHole(AGNObject):
@@ -1041,27 +1081,27 @@ class AGNBinaryBlackHole(AGNObject):
         super(AGNBinaryBlackHole, self).add_objects(new_mass=new_total_mass,
                                                     new_spin=None,
                                                     new_spin_angle=None,
-                                                    new_a = new_cm_orb_a,
+                                                    new_a=new_cm_orb_a,
                                                     new_inc=new_cm_orb_inc,
                                                     new_e=new_cm_orb_ecc,
                                                     obj_num=obj_num)
 
 
-obj_types = {0 : "single black hole",
-             1 : "single star",
-             2 : "binary black hole",}
-             #3 : "binary star",
-             #4 : "merged EMRI",
-             #5 : "exploded star"
+obj_types = {0: "single black hole",
+             1: "single star",
+             2: "binary black hole",}
+             #3: "binary star",
+             #4: "merged EMRI",
+             #5: "exploded star"
              #} # Other types are not in use yet
 
-obj_direction = {0 : "orbit direction undetermined",
-                 1 : "prograde orbiter",
-                -1 : "retrograde orbiter"}
+obj_direction = {0: "orbit direction undetermined",
+                 1: "prograde orbiter",
+                -1: "retrograde orbiter"}
 
-obj_disk_loc = {0 : "disk location undetermined",
-                1 : "outer disk",
-               -1 : "inner disk"}
+obj_disk_loc = {0: "disk location undetermined",
+                1: "outer disk",
+               -1: "inner disk"}
 
 
 class AGNFilingCabinet(AGNObject):
@@ -1101,7 +1141,7 @@ class AGNFilingCabinet(AGNObject):
             direction of the orbit of the objects, optional
         disk_inner_outer : numpy array
             if the object is in the inner or outer disk
-        """ 
+        """
 
         # Set attributes
         self.id_num = id_num
@@ -1120,17 +1160,19 @@ class AGNFilingCabinet(AGNObject):
         # Set direction as 0 (undetermined) if not passed
         # Otherwise set as what is passed
         if direction is None:
-            self.direction = np.full(id_num.shape,0)
+            self.direction = np.full(id_num.shape, 0)
         else:
             self.direction = direction
         
         # Set disk_inner_outer as 0 (undetermined if not passed)
         # Otherwise set as what is passed
         if disk_inner_outer is None:
-            self.disk_inner_outer = np.full(id_num.shape,0)
+            self.disk_inner_outer = np.full(id_num.shape, 0)
         else:
             self.disk_inner_outer = disk_inner_outer
-        
+
+        self.check_consistency()
+
     def __repr__(self):
         """
         Creates a string representation of AGNFilingCabinet. Prints out
@@ -1154,7 +1196,7 @@ class AGNFilingCabinet(AGNObject):
         #     for loc in obj_disk_loc:
         #         totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
         # totals += f"{len(getattr(self,"category"))} objects total"
-        return()
+        return ()
 
     @property
     def id_max(self):
@@ -1184,12 +1226,11 @@ class AGNFilingCabinet(AGNObject):
 
         if not isinstance(attr, str):
             raise TypeError("`attr` must be passed as a string")
-        
+
         try:
-            getattr(self,attr)[np.isin(getattr(self,"id_num"),id_num)] = new_info
+            getattr(self, attr)[np.isin(getattr(self, "id_num"),id_num)] = new_info
         except:
             raise AttributeError("{} is not an attribute of AGNFilingCabinet".format(attr))
-
 
     def add_objects(self, new_id_num, new_category, new_orb_a,
                     new_mass, new_size, new_direction, new_disk_inner_outer):
@@ -1222,3 +1263,5 @@ class AGNFilingCabinet(AGNObject):
         self.size = np.concatenate([self.size, new_size])
         self.direction = np.concatenate([self.direction, new_direction])
         self.disk_inner_outer = np.concatenate([self.disk_inner_outer, new_disk_inner_outer])
+
+        self.check_consistency()
