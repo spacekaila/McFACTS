@@ -440,6 +440,41 @@ class AGNObject(object):
         dframe.to_csv(fname, sep=' ',
                       header=[f"#{x}" if x == dframe.columns[0] else x for x in dframe.columns],
                       index=False)  # `#` is not pre-appended...just boolean
+        
+    def to_txt(self, fname=None, cols=None):
+        """
+        Loads AGNObject into temporary multi-dim numpy array
+        and then uses np.savetxt to save to file. Avoids the
+        issue of pandas writing non-values as blanks instead
+        of NaNs.
+
+        Parameters
+        ----------
+        fname : str
+            filename including path
+        cols : array of str
+            array of header names to re-order or cut out columns, optional
+        """
+
+        assert fname is not None, "Need to pass filename"
+
+        header = " ".join(cols)
+
+        self.check_consistency()
+
+        if cols is not None:
+            attributes = cols
+        else:
+            attributes = get_attr_list(self)
+
+        attrs_list = []
+        for attr in attributes:
+            attrs_list.append(getattr(self, attr))
+
+        temp_array = np.column_stack((tuple(attrs_list)))
+
+        np.savetxt(fname, temp_array, header=header)
+
 
     def init_from_file(self, fname=None):
         """
