@@ -272,7 +272,6 @@ def main():
                                   orb_inc=bh_orb_inc_initial,
                                   orb_ecc=bh_orb_ecc_initial,
                                   orb_arg_periapse=bh_orb_arg_periapse_initial,
-                                  smbh_mass=opts.smbh_mass,
                                   bh_num=disk_bh_num,
                                   galaxy=np.zeros(disk_bh_num),
                                   time_passed=np.zeros(disk_bh_num))
@@ -432,7 +431,7 @@ def main():
         print("Scale of t_gw (yrs)=", time_gw_normalization)
 
         # Set up merger array (identical to binary array)
-        merger_array = np.zeros((bin_properties_num, opts.bin_num_max))
+        #merger_array = np.zeros((bin_properties_num, opts.bin_num_max))
 
         # Set up output array (mergerfile)
         # -1 because galaxy will be concatenated beforehand
@@ -1046,7 +1045,7 @@ def main():
                                 time_passed
                             )
                         # do another thing
-                        merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
+                        #merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
                         # Reset merger marker to zero
                         # Remove merged binary from binary array. Delete column where merger_indices is the label.
                         binary_bh_array = np.delete(binary_bh_array, merger_indices, 1)
@@ -1093,8 +1092,8 @@ def main():
                                                    new_disk_inner_outer=np.array([0]))
                         if opts.verbose:
                             print("New BH locations", blackholes_pro.orb_a)
-                        if opts.verbose:
-                            print(merger_array)
+                        #if opts.verbose:
+                        #    print(merger_array)
                     else:
                         # No merger
                         # do nothing! hardening should happen FIRST (and now it does!)
@@ -1231,7 +1230,6 @@ def main():
                                       attr="disk_inner_outer",
                                       new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
 
-
             if (np.size(blackholes_inner_disk.orb_a) > 0):
                 #FIX THIS: Return the new evolved bh_orb_ecc_inner_disk as they decay inwards.
                 #Potentially move inner disk behaviour to module that is not dynamics (e.g inner disk module)
@@ -1240,10 +1238,10 @@ def main():
                                                                     blackholes_inner_disk.mass,
                                                                     blackholes_inner_disk.orb_ecc,
                                                                     opts.timestep_duration_yr)
-                
+
                 num_in_inner_disk = np.size(blackholes_inner_disk.orb_a)
 
-                 # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
+                # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
                 if (nemri == 0):
                     old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
                 if (nemri > 0):
@@ -1277,7 +1275,6 @@ def main():
 
             merger_dist = 1.0
             emri_merger_id_num = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
-            print(emri_merger_id_num)
 
             # if mergers occurs, remove from inner_disk arrays and stop evolving
             # still getting some nans, but I think that's bc there's retros that should have been
@@ -1321,6 +1318,7 @@ def main():
             time_galaxy_tracker = 10.0*opts.timestep_duration_yr
             if time_passed % time_galaxy_tracker == 0:
                 print("Time passed=", time_passed)
+
         # End Loop of Timesteps at Final Time, end all changes & print out results
 
         print("End Loop!")
