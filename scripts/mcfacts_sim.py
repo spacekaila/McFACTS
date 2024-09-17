@@ -2,6 +2,7 @@
 import os
 from os.path import isfile, isdir
 from pathlib import Path
+import warnings
 
 import numpy as np
 import scipy.interpolate
@@ -187,7 +188,7 @@ def main():
     print("opts.fraction_bin_retro", opts.fraction_bin_retro)
 
     for galaxy in range(opts.galaxy_num):
-        print("Iteration", galaxy)
+        print("Galaxy", galaxy)
         # Set random number generator for this run with incremented seed
         reset_random(opts.seed+galaxy)
 
@@ -225,14 +226,27 @@ def main():
             opts.nsc_radius_crit,
             opts.nsc_density_index_inner,
         )
+        '''
+        # Skip the whole galaxy if there are no black holes
+        if disk_bh_num < 1:
+            # Warn the user once, even if verbose is off
+            warnings.warn("No black holes in the disk. Skipping galaxy %d."%(galaxy))
+            # Warn the user more often if verbose is on
+            if opts.verbose:
+                print("No black holes in the disk. Skipping galaxy %d."%(galaxy))
+            # Set total emris to zero
+            if not "total_emris" in locals():
+                total_emris = 0
+            continue
+        '''
 
         # generate initial BH parameter arrays
         print("Generate initial BH parameter arrays")
         bh_orb_a_initial = setupdiskblackholes.setup_disk_blackholes_location(
-                disk_bh_num, opts.disk_radius_outer)
+                disk_bh_num, opts.disk_radius_outer, opts.disk_inner_stable_circ_orb)
         bh_mass_initial = setupdiskblackholes.setup_disk_blackholes_masses(
                 disk_bh_num,
-                opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index)
+                opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index, opts.mass_pile_up)
         bh_spin_initial = setupdiskblackholes.setup_disk_blackholes_spins(
                 disk_bh_num,
                 opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
@@ -1085,9 +1099,9 @@ def main():
             capture = time_passed % opts.capture_time_yr
             if capture == 0:
                 bh_orb_a_captured = setupdiskblackholes.setup_disk_blackholes_location(
-                    1, opts.disk_radius_capture_outer)
+                    1, opts.disk_radius_capture_outer, opts.disk_inner_stable_circ_orb)
                 bh_mass_captured = setupdiskblackholes.setup_disk_blackholes_masses(
-                    1, opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index)
+                    1, opts.nsc_imf_bh_mode, opts.nsc_imf_bh_mass_max, opts.nsc_imf_bh_powerlaw_index, opts.mass_pile_up)
                 bh_spin_captured = setupdiskblackholes.setup_disk_blackholes_spins(
                     1, opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
                 bh_spin_angle_captured = setupdiskblackholes.setup_disk_blackholes_spin_angles(
@@ -1388,19 +1402,25 @@ def main():
     survivors_save_name = f"{basename}_survivors{extension}"
     emris_save_name = f"{basename}_emris{extension}"
     gws_save_name = f"{basename}_lvk{extension}"
-    # Stack arrays
-    merged_bh_array_pop = np.vstack(merged_bh_array_pop)
-    surviving_bh_array_pop = np.vstack(surviving_bh_array_pop)
-    gw_array_pop = np.vstack(gw_array_pop)
 
     # Define headers
     surviving_bh_header = "galaxy orb_a mass spin spin_angle gen"
     emri_header ="galaxy t_merge semi-major_axis mass_source eccentricity gw_strain gw_frequency"
     gw_header = "galaxy time_of_merger sep total_mass_source eccentricity gw_strain gw_frequency"
-    # Check arrays
-    assert len(merger_field_names.split(" ")) == merged_bh_array_pop.shape[1]
-    assert len(surviving_bh_header.split(" ")) == surviving_bh_array_pop.shape[1]
-    assert len(gw_header.split(" ")) == gw_array_pop.shape[1]
+    
+    # Stack and check arrays
+    if len(merged_bh_array_pop) > 0:
+        merged_bh_array_pop = np.vstack(merged_bh_array_pop)
+        assert len(merger_field_names.split(" ")) == merged_bh_array_pop.shape[1]
+    if len(surviving_bh_array_pop) > 0:
+        surviving_bh_array_pop = np.vstack(surviving_bh_array_pop)
+        assert len(surviving_bh_header.split(" ")) == surviving_bh_array_pop.shape[1]
+    #if len(emris_array_pop) > 0:
+    #    emris_array_pop = np.vstack(emris_array_pop)
+    #    assert len(emri_header.split(" ")) == emris_array_pop.shape[1]
+    if len(gw_array_pop) > 0:
+        gw_array_pop = np.vstack(gw_array_pop)
+        assert len(gw_header.split(" ")) == gw_array_pop.shape[1]
 
     # Save things
     np.savetxt(
