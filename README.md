@@ -1,9 +1,11 @@
 <h1 align="center">
-  <br>
-  <a href="https://github.com/bmckernan/test_mcfacts"><img src="branding/logo/mcfacts_logo.png" alt="Markdownify" width="500"></a>
-  <br>
-  <b>M</b>onte <b>c</b>arlo <b>F</b>or <b>A</b>GN <b>C</b>hannel <b>T</b>esting and <b>S</b>imulations
-  <br>
+    <br>
+    <a href="https://github.com/bmckernan/test_mcfacts"><img src="branding/logo/mcfacts_logo.png" alt="Markdownify" width="500"></a>
+    <br>
+    <span style="font-weight: normal">
+        <b>M</b>onte <b>c</b>arlo <b>F</b>or <b>A</b>GN <b>C</b>hannel <b>T</b>esting and <b>S</b>imulations
+    </span>  
+    <br>
 </h1>
 
 <h4 align="center">A python package that does the AGN channel for you!</h4>
@@ -21,7 +23,7 @@ $ cd test_mcfacts
 
 #### Automated Setup
 
-Contained in `Makefile` are a few make commands to get everything setup and running.
+Contained in the `Makefile` are a few make commands to get everything setup and running.
 
 > **Note:**
 > If you are running on Windows or want to set things up manually, skip to the [manual](#manual-setup) section below.
@@ -33,7 +35,7 @@ $ make setup
 # Activate the conda environment that was created for us
 $ conda activate mcfacts-dev
 
-# Run mcfacts_sim.py with default initial values, the run population_plots.py
+# Run mcfacts_sim.py with default initial values, then run population_plots.py
 $ make plots
 ```
 
@@ -47,10 +49,7 @@ $ make clean
 $ make install
 ```
 
-
 #### Manual Setup
-
-
 
 We recommend that you create a Conda environment for working with McFACTS.
 You can do this by running
@@ -69,7 +68,7 @@ $ python -m pip install --editable .
 $ python mcfacts_sim.py --galaxy_num 10 --fname-ini ./recipes/model_choice_old.ini --fname-log out.log --seed 3456789012
 ```
 
-Our default inputs are located `./recipes/model_choice_old.ini`. Edit this file or create your own `model_choice.ini` file with your own inputs.
+Our default inputs are located at `./recipes/model_choice_old.ini`. Edit this file or create your own `model_choice.ini` file with different inputs.
 
 To use a different ini file, replace the file path after the `--fname-ini` argument.
 
@@ -84,7 +83,7 @@ Output files will appear in `runs`. For each timestep there will be an `output_b
 The entire run will have a single `output_mergers.dat` file, which gives the details of every merger throughout the run. If you are trying to get distributions of merger properties, you probably only need `output_mergers.dat`, but if you are trying to track the history of individual mergers or want to know e.g. the state of the nuclear star cluster after an AGN of some duration, you will want the larger output suite.
 
 ### Documentation
-You can find documentation on our code and different modules on our [Read the Docs](https://mcfacts.readthedocs.io).
+You can find documentation for our code and modules at our [Read the Docs](https://mcfacts.readthedocs.io).
 
 Input and outputs are documented in `IOdocumentation.txt`. 
 
