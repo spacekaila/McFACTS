@@ -1415,9 +1415,9 @@ def main():
     if len(surviving_bh_array_pop) > 0:
         surviving_bh_array_pop = np.vstack(surviving_bh_array_pop)
         assert len(surviving_bh_header.split(" ")) == surviving_bh_array_pop.shape[1]
-    if len(emris_array_pop) > 0:
-        emris_array_pop = np.vstack(emris_array_pop)
-        assert len(emri_header.split(" ")) == emris_array_pop.shape[1]
+    #if len(emris_array_pop) > 0:
+    #    emris_array_pop = np.vstack(emris_array_pop)
+    #    assert len(emri_header.split(" ")) == emris_array_pop.shape[1]
     if len(gw_array_pop) > 0:
         gw_array_pop = np.vstack(gw_array_pop)
         assert len(gw_header.split(" ")) == gw_array_pop.shape[1]
