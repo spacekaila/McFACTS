@@ -436,7 +436,6 @@ class AGNStar(AGNObject):
 
     def __init__(self,
                  mass=empty_arr,
-                 radius=empty_arr,
                  orb_a=empty_arr,
                  orb_inc=empty_arr,
                  star_X=empty_arr,
@@ -454,8 +453,6 @@ class AGNStar(AGNObject):
         ----------
         mass : numpy array
             star mass
-        radius : numpy array
-            star radius
         orb_a : numpy array
             star orbital semi-major axis with respect to the SMBH
         orb_inc : numpy array

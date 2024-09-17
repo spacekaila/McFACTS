@@ -48,7 +48,7 @@ def init_single_stars(opts, id_start_val=None):
                                                                                      P_r=1.)
     star_num = len(masses_stars)
 
-    star_radius = setupdiskstars.setup_disk_stars_radius(masses_stars)
+    #star_radius = setupdiskstars.setup_disk_stars_radius(masses_stars)
     star_spin = setupdiskstars.setup_disk_stars_spins(star_num, opts.nsc_star_spin_dist_mu, opts.nsc_star_spin_dist_sigma)
     star_spin_angle = setupdiskstars.setup_disk_stars_spin_angles(star_num, star_spin)
     star_orb_inc = setupdiskstars.setup_disk_stars_inclination(star_num)
@@ -71,7 +71,7 @@ def init_single_stars(opts, id_start_val=None):
                     orb_ecc=star_orb_ecc,
                     #orb_ang_mom= star_orb_ang_mom,
                     orb_arg_periapse=star_orb_arg_periapse,
-                    radius=star_radius,
+                    #radius=star_radius,
                     star_X=star_X,
                     star_Y=star_Y,
                     star_Z=star_Z,
