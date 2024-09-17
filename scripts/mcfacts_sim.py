@@ -288,7 +288,7 @@ def main():
 
         # Initialize stars
 
-        stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=blackholes.id_num.max()+1)
+        stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=filing_cabinet.id_max+1)
         print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
         filing_cabinet.add_objects(new_id_num=stars.id_num,
                                    new_category=np.full(stars.id_num.size, 1),
@@ -923,7 +923,7 @@ def main():
                                                       new_orb_arg_periapse=np.array([1.0, 1.0]),
                                                       new_galaxy=np.full(2, galaxy),
                                                       new_time_passed=np.full(2,time_passed),
-                                                      new_id_num=np.array([filing_cabinet.id_num.max()+1, filing_cabinet.id_num.max()+2])
+                                                      new_id_num=np.array([filing_cabinet.id_max+1, filing_cabinet.id_max+2])
                                                       )
                         #print("bin_array_pre_ioniz",binary_bh_array)
                         # Delete binary. Remove column at index = ionization_flag
@@ -933,7 +933,7 @@ def main():
                         bin_index = bin_index - 1
 
                         # Update filing cabinet
-                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_num.max()+1, filing_cabinet.id_num.max()+2]),
+                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_max+1, filing_cabinet.id_max+2]),
                                                    new_category=np.array([0,0]),
                                                    new_orb_a=np.array([bh_orb_a_1, bh_orb_a_2]),
                                                    new_mass=np.array([bh_mass_1, bh_mass_2]),
@@ -1081,10 +1081,10 @@ def main():
                                                       new_orb_arg_periapse=np.array([1.]),
                                                       new_galaxy=np.array([galaxy]),
                                                       new_time_passed=np.array([time_passed]),
-                                                      new_id_num=np.array([filing_cabinet.id_num.max()+1]))
+                                                      new_id_num=np.array([filing_cabinet.id_max+1]))
 
                         # Update filing cabinet
-                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_num.max()+1]),
+                        filing_cabinet.add_objects(new_id_num=np.array([filing_cabinet.id_max+1]),
                                                    new_category=np.array([0.0]),
                                                    new_orb_a=np.array([bh_orb_a_merged]),
                                                    new_mass=np.array([bh_mass_merged]),
@@ -1169,10 +1169,10 @@ def main():
                                               new_gen=bh_gen_captured,
                                               new_galaxy=np.full(len(bh_mass_captured),galaxy),
                                               new_time_passed=np.full(len(bh_mass_captured),time_passed),
-                                              new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_captured) + filing_cabinet.id_num.max()+1, 1))
+                                              new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_captured) + filing_cabinet.id_max+1, 1))
                 
                 # Update filing cabinet
-                filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_captured) + filing_cabinet.id_num.max()+1,1),
+                filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_captured) + filing_cabinet.id_max+1,1),
                                            new_category=np.array([0.0]),
                                            new_orb_a=bh_orb_a_captured,
                                            new_mass=bh_mass_captured,
@@ -1277,6 +1277,7 @@ def main():
 
             merger_dist = 1.0
             emri_merger_id_num = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
+            print(emri_merger_id_num)
 
             # if mergers occurs, remove from inner_disk arrays and stop evolving
             # still getting some nans, but I think that's bc there's retros that should have been
@@ -1389,10 +1390,10 @@ def main():
                                       new_galaxy=np.full(len(bh_mass_1) + len(bh_mass_1), galaxy),
                                       new_time_passed=np.full(len(bh_mass_1) + len(bh_mass_1), time_passed),
                                       new_gen=np.concatenate([bh_gen_1, bh_gen_2]),
-                                      new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_num.max()+1, 1))
+                                      new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_max+1, 1))
         
         # Update filing_cabinet
-        filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_num.max()+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_num.max()+1, 1),
+        filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_max+1, 1),
                                    new_category=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
                                    new_orb_a=np.concatenate([bh_orb_a_1, bh_orb_a_2]),
                                    new_mass=np.concatenate([bh_mass_1, bh_mass_2]),

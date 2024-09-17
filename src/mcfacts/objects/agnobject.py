@@ -1180,7 +1180,7 @@ class AGNFilingCabinet(AGNObject):
             The maximum id created up until now
         """
         if len(self.id_num) > 0:
-            self._id_max = max(_id_max, self.id_num.max())
+            self._id_max = max(self._id_max, self.id_num.max())
         return self._id_max
 
     def update(self, id_num, attr, new_info):
