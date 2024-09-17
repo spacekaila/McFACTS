@@ -1151,9 +1151,9 @@ def main():
             #print(np.size(bh_indices_inner_disk), np.size(bh_id_num_pro_inner_disk))
             if(np.size(bh_indices_inner_disk) != np.size(bh_id_num_pro_inner_disk)):
                 print(ff)
-            print('orb a')
-            print(bh_orb_a_inner_disk)
-            print(blackholes_inner_disk.orb_a)
+            #print('orb a')
+            #print(bh_orb_a_inner_disk)
+            #print(blackholes_inner_disk.orb_a)
             if np.size(bh_indices_inner_disk) > 0:
                 # Add BH to inner_disk_arrays
                 bh_orb_a_inner_disk = np.append(bh_orb_a_inner_disk, blackholes_pro.orb_a[bh_indices_inner_disk])
@@ -1360,29 +1360,31 @@ def main():
             nemri_obj = nemri_obj + num_in_inner_disk_obj
             if num_in_inner_disk > 0:
                 for i in range(0, num_in_inner_disk):
-                    if(galaxy%1 != 0):
-                        print(galaxy,ff)
-                    if i == 0:
-                        emri_array[0] = galaxy
-                        emri_array[1] = time_passed
-                        emri_array[2] = bh_orb_a_inner_disk[i]
-                        emri_array[3] = bh_mass_inner_disk[i]
-                        emri_array[4] = bh_orb_ecc_inner_disk[i]
-                        emri_array[5] = emri_gw_strain[i]
-                        emri_array[6] = emri_gw_freq[i]
+                    # if i == 0:
+                    #     emri_array[0] = galaxy
+                    #     emri_array[1] = time_passed
+                    #     emri_array[2] = bh_orb_a_inner_disk[i]
+                    #     emri_array[3] = bh_mass_inner_disk[i]
+                    #     emri_array[4] = bh_orb_ecc_inner_disk[i]
+                    #     emri_array[5] = emri_gw_strain[i]
+                    #     emri_array[6] = emri_gw_freq[i]
 
-                        #emri_array = np.vstack((emri_array, emri_array))
+                    #     #emri_array = np.vstack((emri_array, emri_array))
 
-                    else:
-                        temp_emri_array[0] = galaxy
-                        temp_emri_array[1] = time_passed
-                        temp_emri_array[2] = bh_orb_a_inner_disk[i]
-                        temp_emri_array[3] = bh_mass_inner_disk[i]
-                        temp_emri_array[4] = bh_orb_ecc_inner_disk[i]
-                        temp_emri_array[5] = emri_gw_strain[i]
-                        temp_emri_array[6] = emri_gw_freq[i]
+                    # else:
+                    temp_emri_array[0] = galaxy
+                    temp_emri_array[1] = time_passed
+                    temp_emri_array[2] = bh_orb_a_inner_disk[i]
+                    temp_emri_array[3] = bh_mass_inner_disk[i]
+                    temp_emri_array[4] = bh_orb_ecc_inner_disk[i]
+                    temp_emri_array[5] = emri_gw_strain[i]
+                    temp_emri_array[6] = emri_gw_freq[i]
 
-                        emri_array = np.vstack((emri_array, temp_emri_array))
+                    emri_array = np.vstack((emri_array, temp_emri_array))
+                if len(emri_array[:,0][emri_array[:,0]%1 != 0]) > 0:
+                    print(galaxy)
+                    print(emri_array[:,0])
+                    print(ff)
 
             # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
             # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
@@ -1407,15 +1409,15 @@ def main():
                                                 new_time_passed=np.full(emri_gw_freq_obj.size, time_passed),
                                                 new_id_num=blackholes_inner_disk.id_num)
 
-            merger_dist = 49 #1.0 FIX LATER
+            merger_dist = 1.0
             emri_merger_indices = np.where(bh_orb_a_inner_disk <= merger_dist)
             emri_merger_id_num = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
             #print('mergers')
             #print((np.size(emri_merger_indices)), np.size(emri_merger_id_num))
             #print(len(bh_orb_a_inner_disk),len(blackholes_inner_disk.orb_a))
-            print('emri merger IDs')
-            print(blackholes_inner_disk.id_num[emri_merger_indices])
-            print(emri_merger_id_num)
+            #print('emri merger IDs')
+            #print(blackholes_inner_disk.id_num[emri_merger_indices])
+            #print(emri_merger_id_num)
             if ((np.size(emri_merger_indices)) != np.size(emri_merger_id_num)):
                 print((np.size(emri_merger_indices)), np.size(emri_merger_id_num))
                 print(ff)
