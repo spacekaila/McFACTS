@@ -1391,13 +1391,15 @@ def main():
                                       new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_max+1, 1))
         
         # Update filing_cabinet
-        filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_max+1, 1),
-                                   new_category=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
-                                   new_orb_a=np.concatenate([bh_orb_a_1, bh_orb_a_2]),
-                                   new_mass=np.concatenate([bh_mass_1, bh_mass_2]),
-                                   new_size=np.array([-1, -1]),
-                                   new_direction=np.array([1, 1]),
-                                   new_disk_inner_outer=np.array([0, 0]))
+        filing_cabinet.add_objects(
+            new_id_num=np.arange(filing_cabinet.id_max+1, len(bh_mass_1) + len(bh_mass_1) + filing_cabinet.id_max+1, 1),
+            new_category=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
+            new_orb_a=np.concatenate([bh_orb_a_1, bh_orb_a_2]),
+            new_mass=np.concatenate([bh_mass_1, bh_mass_2]),
+            new_size=np.full(len(np.concatenate([bh_mass_1, bh_mass_2])), -1),
+            new_direction=np.ones(len(np.concatenate([bh_mass_1, bh_mass_2]))),
+            new_disk_inner_outer=np.zeros(len(np.concatenate([bh_mass_1, bh_mass_2])))
+        )
 
         surviving_bh_array[:, 0] = blackholes_pro.orb_a
         surviving_bh_array[:, 1] = blackholes_pro.mass
