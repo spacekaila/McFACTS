@@ -527,6 +527,8 @@ def construct_disk_interp(
         Surface density (radius)
     disk_aspect_ratio_func : lambda
         Aspect ratio (radius)
+    disk_opacity_func : lambda
+        Opacity (radius)
     """
     ## Check inputs ##
     # Check smbh_mass
@@ -570,7 +572,7 @@ def construct_disk_interp(
 
     else:
         # instead, populate with pagn
-        disk_surf_dens_func, disk_aspect_ratio_func, disk_model_properties, bonus_structures = \
+        disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, disk_model_properties, bonus_structures = \
             construct_disk_pAGN(
                 disk_model_name,
                 smbh_mass,
@@ -584,7 +586,7 @@ def construct_disk_interp(
         print("I read and digested your disk model")
         print("Sending variables back")
 
-    return disk_surf_dens_func, disk_aspect_ratio_func
+    return disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func
 
 def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=False):
     """This function reads your prior mergers from a file user specifies or
