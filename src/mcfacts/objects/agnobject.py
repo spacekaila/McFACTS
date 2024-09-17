@@ -49,7 +49,6 @@ class AGNObject(object):
                  orb_arg_periapse=empty_arr,
                  galaxy=empty_arr,
                  time_passed=empty_arr,
-                 smbh_mass=empty_arr,
                  obj_num=0,
                  id_start_val=0):
         """
@@ -75,28 +74,16 @@ class AGNObject(object):
             galaxy iteration
         time_passed : numpy array
             time passed
-        smbh_mass : numpy array
-            mass of the SMBH in Msun
         obj_num : int, optional
             number of objects, by default 0
         id_start_val : numpy array
             ID numbers for the objects, by default 0
         """
 
-        """
-
-        assert mass.shape == (obj_num,),"mass: all arrays must be 1d and the same length"
-        assert spin.shape == (obj_num,),"spin: all arrays must be 1d and the same length"
-        assert spin_angle.shape == (obj_num,),"spin_angle: all arrays must be 1d and the same length"
-        assert orb_a.shape == (obj_num,),"orb_a: all arrays must be 1d and the same length"
-        assert orb_inc.shape == (obj_num,),"orb_inc: all arrays must be 1d and the same length"
-        #assert orb_ang_mom.shape == (obj_num,),"orb_ang_mom: all arrays must be 1d and the same length"
-        assert orb_ecc.shape == (obj_num,),"orb_ecc: all arrays must be 1d and the same length" """
-
         if (obj_num == 0):
             obj_num = mass.shape[0]
 
-        assert mass.shape == (obj_num,), "obj_num must match the number of objects"
+        assert spin.shape == (obj_num,), "obj_num must match the number of objects"
 
         self.mass = mass
         self.spin = spin
@@ -109,6 +96,8 @@ class AGNObject(object):
         self.id_num = np.arange(id_start_val, id_start_val + obj_num, 1)
         self.galaxy = galaxy
         self.time_passed = time_passed
+
+        self.check_consistency()
 
     def add_objects(self,
                     new_mass=empty_arr,
@@ -156,17 +145,7 @@ class AGNObject(object):
             ID numbers to be added
         obj_num : int, optional
             Number of objects to be added.
-        """        
-
-        # Make sure all inputs are included
         """
-        assert new_mass.shape == (obj_num,),"new mass: all arrays must be 1d and the same length"
-        assert new_spin.shape == (obj_num,),"new_spin: all arrays must be 1d and the same length"
-        assert new_spin_angle.shape == (obj_num,),"new_spin_angle: all arrays must be 1d and the same length"
-        assert new_a.shape == (obj_num,),"new_a: all arrays must be 1d and the same length"
-        assert new_inc.shape == (obj_num,),"new_inc: all arrays must be 1d and the same length"
-        #assert new_orb_ang_mom.shape == (obj_num,),"new_orb_ang_mom: all arrays must be 1d and the same length"
-        assert new_e.shape == (obj_num,),"new_e: all arrays must be 1d and the same length" """
 
         if (obj_num == 0):
             obj_num = new_mass.shape[0]
@@ -186,6 +165,8 @@ class AGNObject(object):
         self.galaxy = np.concatenate([self.galaxy, new_galaxy])
         self.time_passed = np.concatenate([self.time_passed, new_time_passed])
 
+        self.check_consistency()
+
     def remove_index(self, idx_remove=None):
         """
         Removes objects at specified indices.
@@ -196,9 +177,6 @@ class AGNObject(object):
             indices to remove
         """
 
-        # Check that the index array is a numpy array.
-        # assert isinstance(idx_remove,np.ndarray),"idx_remove must be numpy array"
-
         if idx_remove is None:
             return None
 
@@ -206,6 +184,8 @@ class AGNObject(object):
         idx_change[idx_remove] = False
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[idx_change])
+
+        self.check_consistency()
 
     def remove_id_num(self, id_num_remove=None):
         """
@@ -224,6 +204,8 @@ class AGNObject(object):
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[keep_mask])
 
+        self.check_consistency()
+
     def keep_index(self, idx_keep):
         """
         Filters AGNObject to only keep the objects at the specified indices.
@@ -234,9 +216,6 @@ class AGNObject(object):
             indices to keep, others are removed.
         """
 
-        # Check that the index array is a numpy array.
-        # assert isinstance(idx_remove,np.ndarray),"idx_remove must be numpy array"
-
         if idx_keep is None:
             return None
 
@@ -244,6 +223,8 @@ class AGNObject(object):
         idx_change[idx_keep] = True
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[idx_change])
+
+        self.check_consistency()
 
     def keep_id_num(self, id_num_keep):
         """
@@ -261,6 +242,8 @@ class AGNObject(object):
         keep_mask = (np.isin(getattr(self, "id_num"), id_num_keep))
         for attr in vars(self).keys():
             setattr(self, attr, getattr(self, attr)[keep_mask])
+
+        self.check_consistency()
 
     def at_id_num(self, id_num, attr):
         """
@@ -377,9 +360,13 @@ class AGNObject(object):
         ----------
         fname : str
             filename including path
+        col_order : array of str
+            array of header names to re-order or cut out columns, optional
         """
 
         assert fname is not None, "Need to pass filename"
+
+        self.check_consistency()
 
         import pandas
         samples_out = self.return_record_array()
@@ -411,24 +398,23 @@ class AGNObject(object):
     def check_consistency(self):
         """
         Prints the size of each attribute to check that everything is
-        consistent with each other.
+        consistent. Raises an AttributeError if all arrays do not have
+        the same length.
         """
 
         # shape of the mass array (arbitrary, just need a comparison value)
         shape = self.mass.shape
         not_consistent = 0
-        #print(f"mass.shape == {shape}")
         for attr in vars(self).keys():
             if (getattr(self, attr).shape != shape):
                 not_consistent += 1
 
         if not_consistent > 0:
-            print("Attributes are not all the same size!")
             for attr in vars(self).keys():
                 print(f"{attr}.shape = {getattr(self, attr).shape}")
-            raise AttributeError("attributes are not consistent length")
-        else:
-            print("attributes are consistent length")
+            raise AttributeError("Attributes are not all the same size")
+        #else:
+        #    print("attributes are consistent length")
 
 
 class AGNStar(AGNObject):

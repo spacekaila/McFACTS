@@ -258,7 +258,6 @@ def main():
                                   orb_inc=bh_orb_inc_initial,
                                   orb_ecc=bh_orb_ecc_initial,
                                   orb_arg_periapse=bh_orb_arg_periapse_initial,
-                                  smbh_mass=opts.smbh_mass,
                                   bh_num=disk_bh_num,
                                   galaxy=np.zeros(disk_bh_num),
                                   time_passed=np.zeros(disk_bh_num))
@@ -416,7 +415,7 @@ def main():
         print("Scale of t_gw (yrs)=", time_gw_normalization)
 
         # Set up merger array (identical to binary array)
-        merger_array = np.zeros((bin_properties_num, opts.bin_num_max))
+        #merger_array = np.zeros((bin_properties_num, opts.bin_num_max))
 
         # Set up output array (mergerfile)
         # -1 because galaxy will be concatenated beforehand
@@ -984,7 +983,7 @@ def main():
                                 time_passed
                             )
                         # do another thing
-                        merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
+                        #merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
                         # Reset merger marker to zero
                         # Remove merged binary from binary array. Delete column where merger_indices is the label.
                         binary_bh_array = np.delete(binary_bh_array, merger_indices, 1)
@@ -1031,8 +1030,8 @@ def main():
                                                    new_disk_inner_outer=np.array([0]))
                         if opts.verbose:
                             print("New BH locations", blackholes_pro.orb_a)
-                        if opts.verbose:
-                            print(merger_array)
+                        #if opts.verbose:
+                        #    print(merger_array)
                     else:
                         # No merger
                         # do nothing! hardening should happen FIRST (and now it does!)
@@ -1255,6 +1254,7 @@ def main():
             time_galaxy_tracker = 10.0*opts.timestep_duration_yr
             if time_passed % time_galaxy_tracker == 0:
                 print("Time passed=", time_passed)
+
         # End Loop of Timesteps at Final Time, end all changes & print out results
 
         print("End Loop!")
