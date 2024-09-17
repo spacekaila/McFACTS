@@ -362,11 +362,10 @@ def main():
         blackholes_inner_disk = AGNBlackHole()
 
 
-        print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-        print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-        if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-            print(ff)
-
+        # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+        # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+        # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+        #     print(ff)
 
         # Housekeeping: Set up time
         time_init = 0.0
@@ -925,7 +924,7 @@ def main():
                                                       new_orb_inc=np.array([bh_orb_inc_1, bh_orb_inc_2]),
                                                       new_orb_ang_mom=np.array([1, 1]),
                                                       new_orb_arg_periapse=np.array([1.0, 1.0]),
-                                                      new_galaxy=np.full(2,galaxy),
+                                                      new_galaxy=np.full(2, galaxy),
                                                       new_time_passed=np.full(2,time_passed),
                                                       new_id_num=np.array([blackholes_pro.id_num.max()+1, blackholes_pro.id_num.max()+2])
                                                       )
@@ -1148,8 +1147,8 @@ def main():
 
             bh_indices_inner_disk = np.where(blackholes_pro.orb_a < disk_radius_safe_min)
             bh_id_num_pro_inner_disk = blackholes_pro.id_num[blackholes_pro.orb_a < disk_radius_safe_min]
-            print('inner disk indices')
-            print(np.size(bh_indices_inner_disk), np.size(bh_id_num_pro_inner_disk))
+            #print('inner disk indices')
+            #print(np.size(bh_indices_inner_disk), np.size(bh_id_num_pro_inner_disk))
             if(np.size(bh_indices_inner_disk) != np.size(bh_id_num_pro_inner_disk)):
                 print(ff)
             print('orb a')
@@ -1190,10 +1189,13 @@ def main():
                                       attr="disk_inner_outer",
                                       new_info=np.full(len(bh_id_num_pro_inner_disk), -1))
 
-            print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-            print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-            if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-                print(ff)
+            # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+            # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+            # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+            #     print(ff)
+
+            print("len(emri_array) = ",(emri_array.shape))
+            print("len(blackholes_emris.mass) = ",len(blackholes_emris.mass))
 
             # Check if any retrograde BHs are in the inner disk
             # bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < disk_radius_safe_min]
@@ -1215,10 +1217,20 @@ def main():
 
             # adding retros too
 
-            print("orb_a lengths before")
-            print(np.size(bh_orb_a_inner_disk),np.size(blackholes_inner_disk.orb_a))
-            print(bh_orb_a_inner_disk)
-            print(blackholes_inner_disk.orb_a)
+            # print("orb_a lengths before")
+            # print(np.size(bh_orb_a_inner_disk),np.size(blackholes_inner_disk.orb_a))
+            # print(bh_orb_a_inner_disk)
+            # print(blackholes_inner_disk.orb_a)
+
+            if(len(blackholes_retro.mass[blackholes_retro.mass ==0]) > 0):
+                print('galaxy',galaxy)
+                print(len(blackholes_retro.mass[blackholes_retro.mass ==0]))
+                print(ff)
+
+            if(len(blackholes_pro.mass[blackholes_pro.mass ==0]) > 0):
+                print('galaxy',galaxy)
+                print(len(blackholes_pro.mass[blackholes_pro.mass ==0]))
+                print(ff)
 
             inner_disk_retro_indices = np.where(blackholes_retro.orb_a < disk_radius_safe_min)
             bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < disk_radius_safe_min]
@@ -1260,14 +1272,17 @@ def main():
                                       attr="disk_inner_outer",
                                       new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
 
-            print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-            print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-            if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-                print(ff)
+            # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+            # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+            # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+            #     print(ff)
+
+            print("len(emri_array) = ",(emri_array.shape))
+            print("len(blackholes_emris.mass) = ",len(blackholes_emris.mass))
 
             
-            print("orb_a lengths after")
-            print(np.size(bh_orb_a_inner_disk),np.size(blackholes_inner_disk.orb_a))
+            # print("orb_a lengths after")
+            # print(np.size(bh_orb_a_inner_disk),np.size(blackholes_inner_disk.orb_a))
 
             if (np.size(blackholes_inner_disk.orb_a) > 0):
                 blackholes_inner_disk.orb_a = dynamics.bh_near_smbh(opts.smbh_mass,
@@ -1301,12 +1316,10 @@ def main():
                 num_in_inner_disk = np.size(bh_orb_a_inner_disk)
 
                 # On 1st run through define old GW freqs (at say 9.e-7 Hz, since evolution change is 1e-6Hz)
-                if ((nemri == 0) and (nemri_obj == 0)):
+                if ((nemri == 0)):
                     old_gw_freq = 9.e-7*np.ones(num_in_inner_disk)
-                    old_gw_freq_obj = 9.e-7*np.ones(num_in_inner_disk_obj)
-                if ((nemri > 0) and (nemri_obj > 0)):
+                if ((nemri > 0)):
                     old_gw_freq = emri_gw_freq
-                    old_gw_freq_obj = emri_gw_freq_obj
                 # Now update emris & generate NEW frequency & evolve   
 
                 emri_gw_strain, emri_gw_freq = evolve.evolve_emri_gw(
@@ -1329,10 +1342,13 @@ def main():
             #     print(emri_gw_strain_obj)
             #     print(ff)
 
-            print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-            print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-            if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-                print(ff)
+            # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+            # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+            # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+            #     print(ff)
+
+            print("len(emri_array) = ",(emri_array.shape))
+            print("len(blackholes_emris.mass) = ",len(blackholes_emris.mass))
 
             num_in_inner_disk = np.size(bh_orb_a_inner_disk)
             num_in_inner_disk_obj = np.size(blackholes_inner_disk.orb_a)
@@ -1344,6 +1360,8 @@ def main():
             nemri_obj = nemri_obj + num_in_inner_disk_obj
             if num_in_inner_disk > 0:
                 for i in range(0, num_in_inner_disk):
+                    if(galaxy%1 != 0):
+                        print(galaxy,ff)
                     if i == 0:
                         emri_array[0] = galaxy
                         emri_array[1] = time_passed
@@ -1353,7 +1371,7 @@ def main():
                         emri_array[5] = emri_gw_strain[i]
                         emri_array[6] = emri_gw_freq[i]
 
-                        emri_array = np.vstack((emri_array, temp_emri_array))
+                        #emri_array = np.vstack((emri_array, emri_array))
 
                     else:
                         temp_emri_array[0] = galaxy
@@ -1366,10 +1384,13 @@ def main():
 
                         emri_array = np.vstack((emri_array, temp_emri_array))
 
-            print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-            print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-            if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-                print(ff)
+            # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+            # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+            # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+            #     print(ff)
+
+            print("len(emri_array) = ",(emri_array.shape))
+            print("len(blackholes_emris.mass) = ",len(blackholes_emris.mass))
             if num_in_inner_disk_obj > 0:
                 blackholes_emris.add_blackholes(new_mass=blackholes_inner_disk.mass,
                                                 new_spin=blackholes_inner_disk.spin,
@@ -1386,7 +1407,7 @@ def main():
                                                 new_time_passed=np.full(emri_gw_freq_obj.size, time_passed),
                                                 new_id_num=blackholes_inner_disk.id_num)
 
-            merger_dist = 49 #1.0
+            merger_dist = 49 #1.0 FIX LATER
             emri_merger_indices = np.where(bh_orb_a_inner_disk <= merger_dist)
             emri_merger_id_num = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
             #print('mergers')
@@ -1400,10 +1421,13 @@ def main():
                 print(ff)
             blackholes_inner_disk.check_consistency()
 
-            print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-            print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-            if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-                print(ff)
+            # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+            # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+            # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+            #     print(ff)
+
+            print("len(emri_array) = ",(emri_array.shape))
+            print("len(blackholes_emris.mass) = ",len(blackholes_emris.mass))
             # if mergers occurs, remove from inner_disk arrays and stop evolving
             # still getting some nans, but I think that's bc there's retros that should have been
             #  moved to prograde arrays
@@ -1421,10 +1445,13 @@ def main():
                 empty = []
                 emri_merger_indices = np.array(empty)
 
-            print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-            print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-            if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-                print(ff)
+            # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+            # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+            # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+            #     print(ff)
+
+            print("len(emri_array) = ",(emri_array.shape))
+            print("len(blackholes_emris.mass) = ",len(blackholes_emris.mass))
 
             # THIS IS WHERE THE PROBLEM IS
             if np.size(emri_merger_id_num) > 0:
@@ -1432,10 +1459,13 @@ def main():
                 print(blackholes_inner_disk.at_id_num(emri_merger_id_num,"mass"))
                 blackholes_inner_disk.remove_id_num(emri_merger_id_num)
 
-            print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
-            print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
-            if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
-                print(ff)
+            # print("len(blackholes_inner_disk.orb_a) = ",len(blackholes_inner_disk.orb_a))
+            # print("len(bh_orb_a_inner_disk) = ",len(bh_orb_a_inner_disk))
+            # if(len(blackholes_inner_disk.orb_a) != len(bh_orb_a_inner_disk)):
+            #     print(ff)
+
+            print("len(emri_array) = ",(emri_array.shape))
+            print("len(blackholes_emris.mass) = ",len(blackholes_emris.mass))
 
 
             #bh_id_num_emri = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
@@ -1589,15 +1619,14 @@ def main():
                                  new_orb_ecc=blackholes_emris.orb_ecc,
                                  new_orb_arg_periapse=blackholes_emris.orb_arg_periapse,
                                  new_galaxy=blackholes_emris.galaxy,
+                                 new_gen=blackholes_emris.gen,
                                  new_time_passed=blackholes_emris.time_passed,
                                  new_gw_freq=blackholes_emris.gw_freq,
                                  new_gw_strain=blackholes_emris.gw_strain)
+        
+        emris_pop.check_consistency()
 
-    print('AGNBlackHole EMRIs')
-    print(len(emris_pop.mass))
-    #print(blackholes_emri.mass.size)
-    print('array EMRIs')
-    print(total_emris)
+    
     #print(emris_array_pop)
     # save all mergers from Monte Carlo
     population_header = f"Initial seed: {opts.seed}\n{merger_field_names}"  # Include initial seed
@@ -1611,6 +1640,12 @@ def main():
     surviving_bh_array_pop = np.vstack(surviving_bh_array_pop)
     emris_array_pop = np.vstack(emris_array_pop)
     gw_array_pop = np.vstack(gw_array_pop)
+
+    print('AGNBlackHole EMRIs')
+    print(len(emris_pop.mass))
+    #print(blackholes_emri.mass.size)
+    print('array EMRIs')
+    print(emris_array_pop.shape)
 
     # Define headers
     surviving_bh_header = "galaxy orb_a mass spin spin_angle gen"
@@ -1644,6 +1679,8 @@ def main():
         gw_array_pop,
         header=gw_header,
     )
+
+    emris_pop.to_file(os.path.join(opts.work_directory, "output_mergers_emris_agnobj.dat"))
 
 if __name__ == "__main__":
     main()
