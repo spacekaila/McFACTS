@@ -248,12 +248,16 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
 
     Returns
     -------
-    _type_
-        _description_
+    blackholes_binary : AGNBinaryBlackHole
+        binary black hole object with new binaries added
+    id_nums : numpy array of ints
+        ID numbers of the new binary black holes
     """
 
     bin_num = bh_pro_id_num_binary.shape[1]
     id_nums = np.arange(id_start_val+1, id_start_val + 1 + bin_num, 1)
+    print("add_new_binary/id_start_val",id_start_val)
+    print("add_new_binary/id_nums",id_nums)
     orb_a_1 = np.zeros(bin_num)
     orb_a_2 = np.zeros(bin_num)
     mass_1 = np.zeros(bin_num)
@@ -286,6 +290,11 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
     for i in range(bin_num):
         id_num_1 = bh_pro_id_num_binary[0,i]
         id_num_2 = bh_pro_id_num_binary[1,i]
+
+        print("add_new_binary.add_to_binary_obj/bh_pro_id_num_binary[0,i]",bh_pro_id_num_binary[0,i])
+        print("add_new_binary.add_to_binary_obj/bh_pro_id_num_binary[1,i]",bh_pro_id_num_binary[1,i])
+        print("add_new_binary.add_to_binary_obj/mass_1",blackholes_pro.at_id_num(id_num_1, "mass"))
+        print("add_new_binary.add_to_binary_obj/mass_2",blackholes_pro.at_id_num(id_num_2, "mass"))
 
         mass_1[i] = blackholes_pro.at_id_num(id_num_1, "mass")
         mass_2[i] = blackholes_pro.at_id_num(id_num_2, "mass")
@@ -376,4 +385,4 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
                                      new_id_num=id_nums,
                                      new_galaxy=galaxy)
 
-    return (blackholes_binary)
+    return (blackholes_binary, id_nums)
