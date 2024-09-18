@@ -1006,23 +1006,19 @@ def reality_check(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
 
 def reality_check_obj(blackholes_binary):
     """ This function tests to see if the binary is real. If location = 0 or mass = 0 *and* any other element is NON-ZERO then discard this binary element.
-        Returns flag, negative for default, if positive it is the index of the binary column to be deleted.
+        Returns ID numbers of fake binaries.
 
         Parameters
         ----------
-        disk_bin_bhbh_pro_array : float array 
-            Full binary array.
-        bin_index : int
-            number of binaries in array
-        smbh_mass : float
-            mass of supermassive black hole in units of solar masses
+        blackholes_binary : AGNBinaryBlackHole 
+            binary black holes.
 
         Returns
         -------
         disk_bin_bhbh_pro_array : float array 
             Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
         """
-    reality_flag = -2
+    bh_bin_id_num_fakes = np.array([])
 
     mass_1_id_num = blackholes_binary.id_num[blackholes_binary.mass_1 == 0]
     mass_2_id_num = blackholes_binary.id_num[blackholes_binary.mass_2 == 0]
@@ -1035,4 +1031,4 @@ def reality_check_obj(blackholes_binary):
     if id_nums.size > 0:
         return (id_nums)
     else:
-        return (reality_flag)
+        return (bh_bin_id_num_fakes)

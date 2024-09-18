@@ -479,7 +479,7 @@ def circular_binaries_encounters_ecc_prograde_obj(
     blackholes_binary.bin_orb_ecc = disk_bins_bhbh[18,:]
     blackholes_binary.bin_ecc = disk_bins_bhbh[13,:]
 
-    return(blackholes_binary)
+    return (blackholes_binary)
 
 
 def circular_binaries_encounters_circ_prograde(

@@ -127,6 +127,7 @@ def add_to_binary_array(
     #   complex to fix now and appears many places
     # find number of new binaries based on indices from hillsphere.binary_check
     num_new_bins = np.shape(disk_bin_bhbh_pro_indices)[1]
+    print("num_new_bins",num_new_bins)
 
     # If there are new binaries, actually form them!
     if num_new_bins > 0:
@@ -256,8 +257,8 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
 
     bin_num = bh_pro_id_num_binary.shape[1]
     id_nums = np.arange(id_start_val+1, id_start_val + 1 + bin_num, 1)
-    print("add_new_binary/id_start_val",id_start_val)
-    print("add_new_binary/id_nums",id_nums)
+    #print("add_new_binary/id_start_val",id_start_val)
+    #print("add_new_binary/id_nums",id_nums)
     orb_a_1 = np.zeros(bin_num)
     orb_a_2 = np.zeros(bin_num)
     mass_1 = np.zeros(bin_num)
@@ -291,10 +292,10 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
         id_num_1 = bh_pro_id_num_binary[0,i]
         id_num_2 = bh_pro_id_num_binary[1,i]
 
-        print("add_new_binary.add_to_binary_obj/bh_pro_id_num_binary[0,i]",bh_pro_id_num_binary[0,i])
-        print("add_new_binary.add_to_binary_obj/bh_pro_id_num_binary[1,i]",bh_pro_id_num_binary[1,i])
-        print("add_new_binary.add_to_binary_obj/mass_1",blackholes_pro.at_id_num(id_num_1, "mass"))
-        print("add_new_binary.add_to_binary_obj/mass_2",blackholes_pro.at_id_num(id_num_2, "mass"))
+        #print("add_new_binary.add_to_binary_obj/bh_pro_id_num_binary[0,i]",bh_pro_id_num_binary[0,i])
+        #print("add_new_binary.add_to_binary_obj/bh_pro_id_num_binary[1,i]",bh_pro_id_num_binary[1,i])
+        #print("add_new_binary.add_to_binary_obj/mass_1",blackholes_pro.at_id_num(id_num_1, "mass"))
+        #print("add_new_binary.add_to_binary_obj/mass_2",blackholes_pro.at_id_num(id_num_2, "mass"))
 
         mass_1[i] = blackholes_pro.at_id_num(id_num_1, "mass")
         mass_2[i] = blackholes_pro.at_id_num(id_num_2, "mass")
@@ -310,7 +311,7 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
         galaxy[i] = blackholes_pro.at_id_num(id_num_1, "galaxy")
 
         # Binary c.o.m.= location_1 + separation*M_2/(M_1+M_2)
-        bin_orb_a[i] = orb_a_1[i] + ((bin_sep[i] * mass_1[i]) / (mass_1[i] + mass_2[i]))
+        bin_orb_a[i] = orb_a_1[i] + ((bin_sep[i] * mass_2[i]) / (mass_1[i] + mass_2[i]))
 
         gen_1[i] = blackholes_pro.at_id_num(id_num_1, "gen")
         gen_2[i] = blackholes_pro.at_id_num(id_num_2, "gen")

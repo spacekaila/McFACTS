@@ -362,7 +362,7 @@ def main():
         filing_cabinet.update(id_num=stars.id_num,
                               attr="disk_inner_outer",
                               new_info=np.ones(stars.id_num.size))
-        
+
         # Create empty TDEs object
         stars_tdes = AGNStar()
 
@@ -702,6 +702,14 @@ def main():
                 #     Please explain what this is and how it works right here?
                 flag_orb_a_mass_gtr_zero = evolve.reality_check(binary_bh_array, bin_index, bin_properties_num)
                 bh_binary_id_num_unphysical = evolve.reality_check_obj(blackholes_binary=blackholes_binary)
+                if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+                if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                 # if bh_binary_id_num_unphysical.size > 0:
                 if flag_orb_a_mass_gtr_zero >= 0:
 
@@ -715,6 +723,14 @@ def main():
                 else:
                     # If there are binaries, evolve them
                     # Damp binary orbital eccentricity
+                    if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("bin_orb_ecc do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     binary_bh_array = orbital_ecc.orbital_bin_ecc_damping(
                         opts.smbh_mass,
                         binary_bh_array,
@@ -732,11 +748,33 @@ def main():
                         opts.timestep_duration_yr,
                         opts.disk_bh_pro_orb_ecc_crit
                     )
+
+                    if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("bin_orb_ecc do not match")
+                        print(ff)
+
                     blackholes_binary.unique_id_nums()
                     if (opts.flag_dynamic_enc > 0):
                         # Harden/soften binaries via dynamical encounters
                         # Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
                         #FIX THIS: RETURN perturbed circ singles (orb_a, orb_ecc)
+
+                        if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_ecc do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                         binary_bh_array = dynamics.circular_binaries_encounters_circ_prograde(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -758,11 +796,49 @@ def main():
                             opts.delta_energy_strong,
                             blackholes_binary,
                         )
+                        # Setting things equal so they match
+                        blackholes_binary.bin_sep = binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]
+                        blackholes_binary.bin_orb_ecc = binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]
+                        blackholes_binary.bin_ecc = binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]
                         blackholes_binary.unique_id_nums()
+
+                        if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_ecc do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
+                        
 
                         # Soften/ ionize binaries due to encounters with eccentric singletons
                         #FIX THIS!
                         #Return 3 things: perturbed biary_bh_array, disk_bh_pro_orbs_a, disk_bh_pro_orbs_ecc
+                        if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_ecc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
                         binary_bh_array = dynamics.circular_binaries_encounters_ecc_prograde(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -785,6 +861,27 @@ def main():
                             opts.delta_energy_strong,
                             blackholes_binary,
                         )
+                        # Setting things equal right now so that everything matches
+                        blackholes_binary.bin_sep = binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]
+                        blackholes_binary.bin_orb_ecc = binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]
+                        blackholes_binary.bin_ecc = binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]
+
+                        if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_ecc do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                         blackholes_binary.unique_id_nums()
                         #binary_bh_array = temp_dynamics_array[0][0]
                         #blackholes_pro.orb_a = temp_dynamics_array[1][0]
@@ -792,6 +889,25 @@ def main():
                         
                     # Harden binaries via gas
                     # Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
+                    if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.time_to_merger_gw != binary_bh_array[10,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("time_to_merger_gw do not match")
+                        print(ff)
+
+                    if np.any(blackholes_binary.flag_merging != binary_bh_array[11,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("flag_merging do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.time_merged != binary_bh_array[12,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("time_merged do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     binary_bh_array = baruteau11.bin_harden_baruteau(
                         binary_bh_array,
                         opts.smbh_mass,
@@ -808,11 +924,44 @@ def main():
                         time_gw_normalization,
                         time_passed,
                     )
+                    if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.time_to_merger_gw != binary_bh_array[10,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("time_to_merger_gw do not match")
+                        print(blackholes_binary.time_to_merger_gw)
+                        print(binary_bh_array[10,:][np.nonzero(binary_bh_array[2,:])])
+                        print(ff)
+
+                    if np.any(blackholes_binary.flag_merging != binary_bh_array[11,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("flag_merging do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.time_merged != binary_bh_array[12,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("time_merged do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     blackholes_binary.unique_id_nums()
                     # Check closeness of binary. Are black holes at merger condition separation
                     binary_bh_array = evolve.contact_check(binary_bh_array, bin_index, opts.smbh_mass)
                     blackholes_binary = evolve.contact_check_obj(blackholes_binary, opts.smbh_mass)
                     # Accrete gas onto binary components
+                    if np.any(blackholes_binary.mass_1 != binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("mass_1 do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.mass_2 != binary_bh_array[3,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("mass_2 do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     binary_bh_array = evolve.change_bin_mass(
                         binary_bh_array,
                         opts.disk_bh_eddington_ratio,
@@ -827,8 +976,28 @@ def main():
                         disk_bh_eddington_mass_growth_rate,
                         opts.timestep_duration_yr,
                     )
+
+                    if np.any(blackholes_binary.mass_1 != binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("mass_1 do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.mass_2 != binary_bh_array[3,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("mass_2 do not match")
+                        print(ff)
                     blackholes_binary.unique_id_nums()
                     # Spin up binary components
+                    if np.any(blackholes_binary.spin_1 != binary_bh_array[4,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("spin_1 do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.spin_2 != binary_bh_array[5,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("spin_2 do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     binary_bh_array = evolve.change_bin_spin_magnitudes(
                         binary_bh_array,
                         opts.disk_bh_eddington_ratio,
@@ -843,8 +1012,32 @@ def main():
                         opts.disk_bh_torque_condition,
                         opts.timestep_duration_yr,
                     )
+                    if np.any(blackholes_binary.spin_1 != binary_bh_array[4,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("spin_1 do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.spin_2 != binary_bh_array[5,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("spin_2 do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     blackholes_binary.unique_id_nums()
                     # Torque angle of binary spin components
+                    if np.any(blackholes_binary.spin_angle_1 != binary_bh_array[6,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("spin_angle_1 do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.spin_angle_2 != binary_bh_array[7,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("spin_angle_2 do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     binary_bh_array = evolve.change_bin_spin_angles(
                         binary_bh_array,
                         opts.disk_bh_eddington_ratio,
@@ -860,11 +1053,42 @@ def main():
                         disk_bh_spin_resolution_min,
                         opts.timestep_duration_yr,
                     )
+                    if np.any(blackholes_binary.spin_angle_1 != binary_bh_array[6,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("spin_angle_1 do not match")
+                            print(ff)
+
+                    if np.any(blackholes_binary.spin_angle_2 != binary_bh_array[7,:][np.nonzero(binary_bh_array[2,:])]):
+                        print("spin_angle_2 do not match")
+                        print(ff)
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                     blackholes_binary.unique_id_nums()
 
                     if (opts.flag_dynamic_enc > 0):
                         # Spheroid encounters
                         #FIX THIS: Replace nsc_imf_bh below with nsc_imf_stars_ since pulling from stellar MF
+                        if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_ecc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_inc != binary_bh_array[17,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_inc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                         binary_bh_array = dynamics.bin_spheroid_encounter(
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
@@ -885,11 +1109,39 @@ def main():
                             opts.delta_energy_strong,
                             opts.nsc_spheroid_normalization
                         )
+                        # Setting things equal so they match
+                        blackholes_binary.bin_sep = binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]
+                        blackholes_binary.bin_orb_ecc = binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]
+                        blackholes_binary.bin_ecc = binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]
+                        blackholes_binary.bin_orb_inc = binary_bh_array[17,:][np.nonzero(binary_bh_array[2,:])]
                         blackholes_binary.unique_id_nums()
+
+                        if np.any(blackholes_binary.bin_sep != binary_bh_array[8,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_sep do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+
+                        if np.any(blackholes_binary.bin_orb_ecc != binary_bh_array[18,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_ecc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_inc != binary_bh_array[17,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_inc do not match")
+                            print(ff)
+                        if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
 
                     if (opts.flag_dynamic_enc > 0):
                         # Recapture bins out of disk plane. 
                         # FIX THIS: Replace this with orb_inc_damping but for binary bhbh OBJECTS (KN)
+                        if np.any(blackholes_binary.bin_orb_inc != binary_bh_array[17,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_inc do not match")
+                            print(ff)
                         binary_bh_array = dynamics.bin_recapture(
                             bin_index,
                             binary_bh_array,
@@ -900,7 +1152,15 @@ def main():
                             blackholes_binary,
                             opts.timestep_duration_yr
                         )
+                        if np.any(blackholes_binary.bin_orb_inc != binary_bh_array[17,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_inc do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
                         blackholes_binary.unique_id_nums()
+                        if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(ff)
 
                     # Migrate binaries
                     # First if feedback present, find ratio of feedback heating torque to migration torque
@@ -922,7 +1182,18 @@ def main():
                         ratio_heat_mig_torques_bin_com = np.ones(len(binary_bh_array[9, :]))
                         ratio_heat_mig_torques_bin_com_obj = np.ones(blackholes_binary.id_num.size)
 
+                    if np.any(ratio_heat_mig_torques_bin_com[np.nonzero(binary_bh_array[2,:])] != ratio_heat_mig_torques_bin_com_obj):
+                            print("ratio_heat_mig_torques_bin_com do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ratio_heat_mig_torques_bin_com[np.nonzero(binary_bh_array[2,:])])
+                            print(ratio_heat_mig_torques_bin_com_obj)
+                            print(ff)
+
                     # Migrate binaries center of mass
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(ff)
                     binary_bh_array = evolve.bin_migration(
                         opts.smbh_mass,
                         binary_bh_array,
@@ -944,6 +1215,9 @@ def main():
                         opts.disk_radius_trap,
                         opts.disk_bh_pro_orb_ecc_crit
                     )
+                    if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(ff)
                     blackholes_binary.unique_id_nums()
 
                     # Test to see if any binaries separation is O(1r_g)
@@ -952,10 +1226,24 @@ def main():
                     min_bbh_gw_separation = 2.0
                     # If there are binaries AND if any separations are < min_bbh_gw_separation
                     bbh_gw_indices = np.where((binary_bh_array[8, :] < min_bbh_gw_separation) & (binary_bh_array[8, :] > 0))
-                    bh_binary_id_num_gw = blackholes_binary.id_num[np.where((blackholes_binary.bin_sep < min_bbh_gw_separation) & (blackholes_binary.bin_sep > 0))]
+                    bh_binary_id_num_gw = blackholes_binary.id_num[(blackholes_binary.bin_sep < min_bbh_gw_separation) & (blackholes_binary.bin_sep > 0)]
+                    print("step5")
+                    bin_arr_len = (binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]).size
+                    bin_obj_len = blackholes_binary.id_num.size
+                    print("bin_arr_len:", bin_arr_len)
+                    print("bin_obj_len",bin_obj_len)
+                    if(bin_arr_len != bin_obj_len):
+                        print(ff)
+                    #if (bin_arr_len == bin_obj_len):
+                    #    print(np.all(binary_bh_array[0,:][np.nonzero(binary_bh_array[2,:])] == blackholes_binary.orb_a_1))
+                        #print(binary_bh_array[0,:][np.nonzero(binary_bh_array[2,:])])
+                        #print(blackholes_binary.orb_a_1)
+                    print("bbh_gw_indices",bbh_gw_indices)
+                    print("bh_binary_id_num_gw",bh_binary_id_num_gw, blackholes_binary.id_num[bbh_gw_indices])
+                    print()
                     # If bbh_indices exists (ie is not empty)
                     #if (bh_binary_id_num_gw.size > 0):
-                    if len(bbh_gw_indices[0]):
+                    if np.size(bbh_gw_indices, 1):
                         # 1st time around.
                         #if num_bbh_gw_tracked_obj == 0:
                         if num_bbh_gw_tracked == 0:
@@ -968,9 +1256,9 @@ def main():
 
                         num_bbh_gw_tracked = np.size(bbh_gw_indices, 1)
                         num_bbh_gw_tracked_obj = bh_binary_id_num_gw.size
-                        print("bbh_gw_indices",bbh_gw_indices)
-                        print("num_bbh_gw_tracked",num_bbh_gw_tracked)
-                        print("num_bbh_gw_tracked_obj",num_bbh_gw_tracked_obj)
+                        #print("bbh_gw_indices",bbh_gw_indices)
+                        #print("num_bbh_gw_tracked",num_bbh_gw_tracked)
+                        #print("num_bbh_gw_tracked_obj",num_bbh_gw_tracked_obj)
                         # Now update BBH & generate NEW frequency & evolve
 
                         bbh_gw_strain, bbh_gw_freq = evolve.bbh_gw_params(
@@ -980,7 +1268,7 @@ def main():
                             opts.timestep_duration_yr,
                             old_bbh_gw_freq
                             )
-                        print("gw strain",bbh_gw_strain)
+                        #print("gw strain",bbh_gw_strain)
                         bbh_gw_strain_obj, bbh_gw_freq_obj = evolve.bbh_gw_params_obj(
                             blackholes_binary,
                             bh_binary_id_num_gw,
@@ -1021,12 +1309,12 @@ def main():
                                 bbh_gw_array = np.vstack((bbh_gw_array, temp_bbh_gw_array))
 
                         if (num_bbh_gw_tracked_obj > 0):
-                            print("bh_binary_id_num_gw",bh_binary_id_num_gw)
-                            print("len(blackholes_binary.id_num)",len(blackholes_binary.id_num))
-                            print("len(np.unique(blackholes_binary.id_num))",len(np.unique(blackholes_binary.id_num)))
-                            print("blackholes_binary.at_id_num(bh_binary_id_num_gw, 'mass_1')",blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1"))
-                            print("blackholes_binary.mass_1",blackholes_binary.mass_1)
-                            print("blackholes_binary.id_num", blackholes_binary.id_num)
+                            #print("bh_binary_id_num_gw",bh_binary_id_num_gw)
+                            #print("len(blackholes_binary.id_num)",len(blackholes_binary.id_num))
+                            #print("len(np.unique(blackholes_binary.id_num))",len(np.unique(blackholes_binary.id_num)))
+                            #print("blackholes_binary.at_id_num(bh_binary_id_num_gw, 'mass_1')",blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1"))
+                            #print("blackholes_binary.mass_1",blackholes_binary.mass_1)
+                            #print("blackholes_binary.id_num", blackholes_binary.id_num)
                             blackholes_binary_historic.add_binaries(new_id_num=bh_binary_id_num_gw,
                                                                     new_mass_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1"),
                                                                     new_mass_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_2"),
@@ -1107,8 +1395,8 @@ def main():
                         #                               new_id_num=np.array([filing_cabinet.id_max+1, filing_cabinet.id_max+2])
                         #                               )
                         blackholes_binary.unique_id_nums()
-                        print("bh_binary_id_num_ionization",bh_binary_id_num_ionization)
-                        print("len(blackholes_pro.id_num)",len(blackholes_pro.id_num))
+                        #print("bh_binary_id_num_ionization",bh_binary_id_num_ionization)
+                        #print("len(blackholes_pro.id_num)",len(blackholes_pro.id_num))
                         blackholes_pro.add_blackholes(new_mass=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_1"),
                                                                                blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_2")]),
                                                       new_spin=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_1"),
@@ -1137,11 +1425,11 @@ def main():
                         # Reduce number of binaries
                         bin_index -= 1
 
-                        print(("l1117(len(blackholes_binary.id_num))",len(blackholes_binary.id_num)))
-                        print(("(len(np.unique(blackholes_binary.id_num)))",len(np.unique(blackholes_binary.id_num))))
-                        print("bh_binary_id_num_ionization",bh_binary_id_num_ionization)
-                        print("[blackholes_binary.at_id_num(bh_binary_id_num_ionization, 'orb_a_1'),blackholes_binary.at_id_num(bh_binary_id_num_ionization, orb_a_2)]",np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_1"),
-                                                                             blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_2")]))
+                        #print(("l1117(len(blackholes_binary.id_num))",len(blackholes_binary.id_num)))
+                        #print(("(len(np.unique(blackholes_binary.id_num)))",len(np.unique(blackholes_binary.id_num))))
+                        #print("bh_binary_id_num_ionization",bh_binary_id_num_ionization)
+                        #print("[blackholes_binary.at_id_num(bh_binary_id_num_ionization, 'orb_a_1'),blackholes_binary.at_id_num(bh_binary_id_num_ionization, orb_a_2)]",np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_1"),
+                        #                                                     blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_2")]))
                         filing_cabinet.check_consistency()
                         filing_cabinet.unique_id_nums()
                         # Update filing cabinet
@@ -1192,10 +1480,6 @@ def main():
                                 #This binary is not real. Delete.
                                 any_merger = any_merger - 1
 
-                        # Check for primary masses of zero
-                        if (np.sum(blackholes_binary.mass_1 == 0) > 0):
-                            blackholes_binary.remove_id_num(blackholes_binary.id_num[blackholes_binary.mass_1 == 0])
-
                         for i in range(any_merger):
                             #Check time to merge
                             if np.isnan(binary_bh_array[11,merger_indices[i]]):
@@ -1206,24 +1490,16 @@ def main():
                                 #This binary is not real. Delete.
                                 any_merger = any_merger - 1
 
-                        # Check for NaNs in flag_merging
-                        if (np.sum(np.isnan(blackholes_binary.flag_merging)) > 0):
-                            blackholes_binary.remove_id_num(blackholes_binary.id_num[np.isnan(blackholes_binary.flag_merging)])
-
                         for i in range(any_merger):
                             flag_orb_a_mass_gtr_zero = evolve.reality_check(binary_bh_array, bin_index, bin_properties_num)
-                            bh_binary_id_num_unphysical = evolve.reality_check_obj(blackholes_binary=blackholes_binary)
-                            # if bh_binary_id_num_unphysical.size > 0:
                             if flag_orb_a_mass_gtr_zero >= 0:
                                 # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
                                 binary_bh_array = np.delete(binary_bh_array, flag_orb_a_mass_gtr_zero, 1)
                                 bin_index -= - 1
-                                blackholes_binary.remove_id_num(bh_binary_id_num_unphysical)
                                 #bin_index -= bh_binary_id_num_unphysical.size
                                 if bin_index < 0:
                                     bin_index = 0.0
                                 any_merger -= 1
-                        blackholes_binary.unique_id_nums()
 
                         for i in range(any_merger):
 
@@ -1300,6 +1576,21 @@ def main():
 
                         if (bh_binary_id_num_merger.size > 0):
 
+                            # Check for primary masses of zero
+                            if (np.sum(blackholes_binary.mass_1 == 0) > 0):
+                                blackholes_binary.remove_id_num(blackholes_binary.id_num[blackholes_binary.mass_1 == 0])
+
+                            # Check for NaNs in flag_merging
+                            if (np.sum(np.isnan(blackholes_binary.flag_merging)) > 0):
+                                blackholes_binary.remove_id_num(blackholes_binary.id_num[np.isnan(blackholes_binary.flag_merging)])
+
+                            bh_binary_id_num_unphysical = evolve.reality_check_obj(blackholes_binary=blackholes_binary)
+                            if bh_binary_id_num_unphysical.size > 0:
+                                # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
+                                blackholes_binary.remove_id_num(bh_binary_id_num_unphysical)
+
+                            blackholes_binary.unique_id_nums()
+
                             bh_mass_merged_obj = tichy08.merged_mass(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
@@ -1351,7 +1642,6 @@ def main():
                                                             new_chi_eff=bh_chi_eff_merged_obj,
                                                             new_chi_p=bh_chi_p_merged_obj,
                                                             new_time_merged=np.full(bh_binary_id_num_merger.size, time_passed))
-                            blackholes_binary.remove_id_num(bh_binary_id_num_merger)
                             blackholes_binary.unique_id_nums()
 
                             blackholes_pro.unique_id_nums()
@@ -1369,23 +1659,41 @@ def main():
                                                           new_id_num=bh_binary_id_num_merger)
                             blackholes_pro.unique_id_nums()
                             # Update filing cabinet
-                            print("blackholes_merged.id_num.size",blackholes_merged.id_num.size)
-                            filing_cabinet.update(id_num=bh_binary_id_num_merger,
-                                                attr="category",
-                                                new_info=np.full(bh_binary_id_num_merger.size, 0))
-                            filing_cabinet.update(id_num=bh_binary_id_num_merger,
-                                                attr="size",
-                                                new_info=np.full(bh_binary_id_num_merger.size, -1))
+                            #print("blackholes_merged.id_num.size",blackholes_merged.id_num.size)
+
                             filing_cabinet.unique_id_nums()
                             blackholes_binary.unique_id_nums()
 
+                        print('step1')
+                        bin_arr_len = (binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]).size
+                        bin_obj_len = blackholes_binary.id_num.size
+                        print("bin_arr_len:", bin_arr_len)
+                        print("bin_obj_len",bin_obj_len)
+                        if(bin_arr_len != bin_obj_len):
+                            print(ff)
                         # do another thing
                         #merger_array[:, merger_indices] = binary_bh_array[:, merger_indices]
                         # Reset merger marker to zero
                         # Remove merged binary from binary array. Delete column where merger_indices is the label.
                         binary_bh_array = np.delete(binary_bh_array, merger_indices, 1)
 
+                        filing_cabinet.update(id_num=bh_binary_id_num_merger,
+                                                attr="category",
+                                                new_info=np.full(bh_binary_id_num_merger.size, 0))
+                        filing_cabinet.update(id_num=bh_binary_id_num_merger,
+                                                attr="size",
+                                                new_info=np.full(bh_binary_id_num_merger.size, -1))
+                        blackholes_binary.remove_id_num(bh_binary_id_num_merger)
+
                         blackholes_binary.unique_id_nums()
+
+                        print("step2")
+                        bin_arr_len = (binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]).size
+                        bin_obj_len = blackholes_binary.id_num.size
+                        print("bin_arr_len:", bin_arr_len)
+                        print("bin_obj_len",bin_obj_len)
+                        if(bin_arr_len != bin_obj_len):
+                            print(ff)
 
                         # Reduce number of binaries by number of mergers
                         bin_index = bin_index - len(merger_indices)
@@ -1437,7 +1745,26 @@ def main():
             )
             close_encounters_id_num = blackholes_pro.id_num[close_encounters_indices]
 
+            print('step0')
+            bin_arr_len = (binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]).size
+            bin_obj_len = blackholes_binary.id_num.size
+            print("bin_arr_len:", bin_arr_len)
+            print("bin_obj_len",bin_obj_len)
+            if(bin_arr_len != bin_obj_len):
+                print(ff)
+
+            if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+            if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
+
             if np.size(close_encounters_indices) > 0:
+                print("bin_index",bin_index)
+                print("close_encounters_indices",close_encounters_indices)
                 # number of new binaries is length of 2nd dimension of close_encounters_indices
                 bin_num_new = np.shape(close_encounters_indices)[1]
                 # make new binaries
@@ -1455,9 +1782,9 @@ def main():
                 )
 
                 blackholes_binary.unique_id_nums()
-                print("len(blackholes_pro.id_num)",len(blackholes_pro.id_num))
-                print("len(np.unique(blackholes_pro.id_num))",len(np.unique(blackholes_pro.id_num)))
-                print("filing_cabinet.id_max",filing_cabinet.id_max)
+                #print("len(blackholes_pro.id_num)",len(blackholes_pro.id_num))
+                #print("len(np.unique(blackholes_pro.id_num))",len(np.unique(blackholes_pro.id_num)))
+                #print("filing_cabinet.id_max",filing_cabinet.id_max)
                 blackholes_binary, bh_binary_id_num_new = add_new_binary.add_to_binary_obj(
                     blackholes_binary,
                     blackholes_pro,
@@ -1466,7 +1793,27 @@ def main():
                     frac_bin_retro,
                     opts.smbh_mass,
                 )
+                # Temporarily set bin_ecc and bin_orb_ang_mom to be the same as in the binary_bh_array so that things match
+                blackholes_binary.bin_ecc = binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]
+                blackholes_binary.bin_orb_ang_mom = binary_bh_array[16,:][np.nonzero(binary_bh_array[2,:])]
                 blackholes_binary.unique_id_nums()
+
+                print("step3")
+                bin_arr_len = (binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]).size
+                bin_obj_len = blackholes_binary.id_num.size
+                print("bin_arr_len:", bin_arr_len)
+                print("bin_obj_len",bin_obj_len)
+                if(bin_arr_len != bin_obj_len):
+                    print(ff)
+
+                if np.any(blackholes_binary.bin_ecc != binary_bh_array[13,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_ecc do not match")
+                            print(ff)
+                if np.any(blackholes_binary.bin_orb_a != binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])]):
+                            print("bin_orb_a do not match")
+                            print(binary_bh_array[9,:][np.nonzero(binary_bh_array[2,:])])
+                            print(blackholes_binary.bin_orb_a)
+                            print(ff)
 
                 # Add new binaries to filing cabinet and delete prograde singleton black holes
                 filing_cabinet.add_objects(new_id_num=bh_binary_id_num_new,
@@ -1680,6 +2027,7 @@ def main():
             print("BH locations at Final Time")
             print(blackholes_pro.orb_a)
         print("Number of binaries = ", bin_index)
+        print("blackholes_binary",blackholes_binary.id_num.shape)
         print("Total number of mergers = ", number_of_mergers)
         print("Mergers", merged_bh_array.shape)
         print("Nbh_disk", disk_bh_num)
@@ -1708,8 +2056,41 @@ def main():
         bh_gen_2 = np.zeros(bin_index)
 
         print("binary lengths")
-        print("binary_bh_array",binary_bh_array[18,:].shape)
-        print("blackholes_binary",blackholes_binary.id_num.shape)
+        print("binary_bh_array",len(binary_bh_array[2,:][np.nonzero(binary_bh_array[2,:])]))
+
+        # print('\n\n')
+        # print("orb_a_1")
+        # print(binary_bh_array[0,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.orb_a_1)
+        # print()
+        # print("orb_a_2")
+        # print(binary_bh_array[1,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.orb_a_2)        
+        # print()
+        # print("mass_1")
+        # print(binary_bh_array[2,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.mass_1)        
+        # print()
+        # print("mass_2")
+        # print(binary_bh_array[3,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.mass_2)
+        # print()
+        # print("spin_1")
+        # print(binary_bh_array[4,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.spin_1)
+        # print()
+        # print("spin_2")
+        # print(binary_bh_array[5,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.spin_2)
+        # print()
+        # print("spin_angle_1")
+        # print(binary_bh_array[6,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.spin_angle_1)
+        # print()
+        # print("spin_angle_2")
+        # print(binary_bh_array[7,:][np.nonzero(binary_bh_array[0,:])])
+        # print(blackholes_binary.spin_angle_2)
+
 
         for i in range(0, bin_index):
             bh_orb_a_1[i] = binary_bh_array[0, i]
