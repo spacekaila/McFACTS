@@ -502,13 +502,21 @@ def main():
             # First if feedback present, find ratio of feedback heating torque to migration torque
             if opts.flag_thermal_feedback > 0:
                 ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(
-                    blackholes_pro.orb_a, disk_surface_density, opts.disk_bh_eddington_ratio, opts.disk_alpha_viscosity)
+                    blackholes_pro.orb_a,
+                    disk_surface_density,
+                    disk_opacity,
+                    opts.disk_bh_eddington_ratio,
+                    opts.disk_alpha_viscosity)
             else:
                 ratio_heat_mig_torques = np.ones(len(blackholes_pro.orb_a))
 
             # now for stars
             ratio_heat_mig_stars_torques = feedback_hankla21_stars.feedback_hankla_stars(
-                stars_pro.orb_a, disk_surface_density, opts.disk_star_eddington_ratio, opts.disk_alpha_viscosity
+                stars_pro.orb_a,
+                disk_surface_density,
+                disk_opacity,
+                opts.disk_star_eddington_ratio,
+                opts.disk_alpha_viscosity
             )
 
             # then migrate as usual
@@ -805,6 +813,7 @@ def main():
                         ratio_heat_mig_torques_bin_com = evolve.com_feedback_hankla(
                             binary_bh_array,
                             disk_surface_density,
+                            disk_opacity,
                             opts.disk_bh_eddington_ratio,
                             opts.disk_alpha_viscosity
                         )
