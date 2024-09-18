@@ -1,6 +1,6 @@
 import numpy as np
 
-def binary_check2(
+def binary_check(
         disk_bh_pro_orbs_a,
         disk_bh_pro_masses,
         smbh_mass,
