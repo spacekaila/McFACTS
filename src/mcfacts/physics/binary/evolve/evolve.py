@@ -284,7 +284,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     if index_outwards_modified.size > 0:
         disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = bin_com[index_outwards_modified] +(migration_distance[index_outwards_modified]*(feedback_ratio[index_outwards_modified]-1))
         # catch to keep stuff from leaving the outer radius of the disk!
-        if disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer: disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = disk_radius_outer
+        disk_bin_bhbh_pro_orbs_a[np.where(disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer)] = disk_radius_outer
     
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
     index_unchanged = np.where(feedback_ratio == 1)[0]
