@@ -258,7 +258,7 @@ def com_feedback_hankla_obj(blackholes_binary, disk_surf_model, disk_bh_eddingto
     return (ratio_feedback_migration_torque_bin_com)
 
 
-def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspect_ratio_model, timestep_duration_yr, feedback_ratio, disk_radius_trap, disk_bh_pro_orb_ecc_crit):
+def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspect_ratio_model, timestep_duration_yr, feedback_ratio, disk_radius_trap, disk_bh_pro_orb_ecc_crit, disk_radius_outer):
     """This function calculates how far the center of mass of a binary migrates in an AGN gas disk in a time
     of length timestep_duration_yr, assuming a gas disk surface density and aspect ratio profile, for
     objects of specified masses and starting locations, and returns their new locations
@@ -348,6 +348,8 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
 
     if index_outwards_modified.size > 0:
         disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = bin_com[index_outwards_modified] +(migration_distance[index_outwards_modified]*(feedback_ratio[index_outwards_modified]-1))
+        # catch to keep stuff from leaving the outer radius of the disk!
+        if disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer: disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = disk_radius_outer
     
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
     index_unchanged = np.where(feedback_ratio == 1)[0]
@@ -650,6 +652,7 @@ def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timeste
 
 def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_duration_yr,old_gw_freq):
     """This function evaluates the EMRI gravitational wave frequency and strain at the end of each timestep_duration_yr
+
     Set up binary GW frequency nu_gw = 1/pi *sqrt(GM_bin/a_bin^3). 
     Set up binary strain of h0 = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
     where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)

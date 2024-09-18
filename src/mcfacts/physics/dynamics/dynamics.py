@@ -623,6 +623,8 @@ def circular_binaries_encounters_circ_prograde(
     # The energy in the exchange is assumed to come from the binary binding energy around its c.o.m.
     # delta_energy_strong (read into this module) refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
     de_strong =0.9
+    # eccentricity correction--do not let ecc>=1, catch and reset to 1-epsilon
+    epsilon = 1e-8
 
     number_of_binaries = bindex
     # set up 1-d arrays for bin com, masses, separations, velocities of com, orbit time (in yrs), orbits/timestep
@@ -710,6 +712,8 @@ def circular_binaries_encounters_circ_prograde(
                                 #delta_energy_strong refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
                                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
+                                # eccentricity catch
+                                if bin_eccentricities[i] >= 1.0: bin_eccentricities[i]=1.0-epsilon
                                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
                                 # Change interloper parameters; increase a_ecc, increase e_ecc
                                 circ_prograde_population_locations[j] = circ_prograde_population_locations[j]*(1+delta_energy_strong)
@@ -939,6 +943,8 @@ def bin_spheroid_encounter(
     # The energy in the exchange is assumed to come from the binary binding energy around its c.o.m.
     # delta_energy_strong refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
     de_strong =0.9
+    # eccentricity correction--do not let ecc>=1, catch and reset to 1-epsilon
+    epsilon = 1e-8
     # Spheroid normalization to allow for non-ideal NSC (cored/previous AGN episodes/disky population concentration/whatever)
     #Default initial value of i3,i3_rad
     i3 = 0.0
@@ -1034,6 +1040,8 @@ def bin_spheroid_encounter(
                 # Change binary parameters; decr separation, incr ecc around com and orb_ecc
                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
+                # eccentricity catch
+                if bin_eccentricities[i] >= 1.0: bin_eccentricities[i]=1.0-epsilon
                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
                 #Ignore interloper parameters, since just drawing randomly from NSC population.     
             if hard < 0:

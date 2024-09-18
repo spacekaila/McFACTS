@@ -1202,7 +1202,8 @@ def main():
                         opts.timestep_duration_yr,
                         ratio_heat_mig_torques_bin_com,
                         opts.disk_radius_trap,
-                        opts.disk_bh_pro_orb_ecc_crit
+                        opts.disk_bh_pro_orb_ecc_crit,
+                        opts.disk_radius_outer
                     )
 
                     blackholes_binary = evolve.bin_migration_obj(
