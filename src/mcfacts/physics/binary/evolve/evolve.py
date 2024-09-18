@@ -387,13 +387,15 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
 
 
 def bin_migration_obj(smbh_mass, blackholes_binary, disk_surf_model, disk_aspect_ratio_model,
-                      timestep_duration_yr, feedback_ratio, disk_radius_trap, disk_bh_pro_orb_ecc_crit):
+                      timestep_duration_yr, feedback_ratio, disk_radius_trap,
+                      disk_bh_pro_orb_ecc_crit, disk_radius_outer):
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
     disk_bin_bhbh_pro_array = bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model,
-                                            disk_aspect_ratio_model, timestep_duration_yr, feedback_ratio,
-                                            disk_radius_trap, disk_bh_pro_orb_ecc_crit)
+                                            disk_aspect_ratio_model, timestep_duration_yr,
+                                            feedback_ratio, disk_radius_trap, disk_bh_pro_orb_ecc_crit,
+                                            disk_radius_outer)
 
     blackholes_binary.bin_orb_a = disk_bin_bhbh_pro_array[9,:]
 
@@ -696,14 +698,19 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
     # nu_gw = 1/pi *sqrt(GM_bin/a_bin^3)
     num_emris = np.size(inner_disk_locations)
 
-    char_strain=np.zeros(num_emris)
-    nu_gw=np.zeros(num_emris)
-    
+    char_strain = np.zeros(num_emris)
+    nu_gw = np.zeros(num_emris)
+
     m1 = smbh_mass
-    
+
     #If number of EMRIs has grown since last timestep_duration_yr, add a new component to old_gw_freq to carry out dnu/dt calculation
-    if num_emris > len(old_gw_freq):
-        old_gw_freq = np.append(old_gw_freq,9.e-7)
+    #if num_emris > len(old_gw_freq):
+    #    old_gw_freq = np.append(old_gw_freq,9.e-7)
+
+    while num_emris > len(old_gw_freq):
+        old_gw_freq = np.append(old_gw_freq, 9.e-7)
+    while num_emris < len(old_gw_freq):
+        np.delete(old_gw_freq, 0)
 
     for i in range(0,num_emris):
         m2 = inner_disk_masses[i]
@@ -795,8 +802,8 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
 
         Returns
         -------
-        disk_bin_bhbh_pro_array : float array 
-            Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
+        ionization_flag : int 
+            Returns index of binary to be ionized. Otherwise returns -1.
 
     """
     #Define Ionization threshold as fraction of Hill sphere radius
