@@ -494,6 +494,7 @@ def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_d
 
 def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_duration_yr,old_gw_freq):
     """This function evaluates the EMRI gravitational wave frequency and strain at the end of each timestep_duration_yr
+    
     Set up binary GW frequency nu_gw = 1/pi *sqrt(GM_bin/a_bin^3). 
     Set up binary strain of h0 = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
     where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
