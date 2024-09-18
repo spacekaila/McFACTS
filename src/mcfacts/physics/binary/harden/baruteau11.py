@@ -1,4 +1,5 @@
 import numpy as np
+from mcfacts.objects.agnobject import obj_to_binary_bh_array
 
 
 def bin_harden_baruteau(binary_bh_array, smbh_mass, timestep_duration_yr, time_gw_normalization, bin_index, time_passed):
@@ -78,3 +79,20 @@ def bin_harden_baruteau(binary_bh_array, smbh_mass, timestep_duration_yr, time_g
                 binary_bh_array[12,j] = time_passed
 
     return binary_bh_array
+
+
+def bin_harden_baruteau_obj(blackholes_binary, smbh_mass, timestep_duration_yr, time_gw_normalization, time_passed):
+
+    binary_bh_array = obj_to_binary_bh_array(blackholes_binary)
+
+    bin_index = blackholes_binary.id_num.size
+
+    binary_bh_array = bin_harden_baruteau(binary_bh_array, smbh_mass, timestep_duration_yr,
+                                          time_gw_normalization, bin_index, time_passed)
+
+    blackholes_binary.time_to_merger_gw = binary_bh_array[10, :]
+    blackholes_binary.bin_sep = binary_bh_array[8, :]
+    blackholes_binary.flag_merging = binary_bh_array[11, :]
+    blackholes_binary.time_merged = binary_bh_array[12, :]
+
+    return (blackholes_binary)
