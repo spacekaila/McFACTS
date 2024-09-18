@@ -530,12 +530,12 @@ def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_d
         num_tracked = np.size(bbh_gw_indices)
         char_strain=np.zeros(num_tracked)
         nu_gw=np.zeros(num_tracked)
-        #If number of BBH tracked has grown since last timestep, add a new component to old_gw_freq to carry out dnu/dt calculation
+        # If number of BBH tracked has grown since last timestep, add a new component to old_gw_freq to carry out dnu/dt calculation
         while num_tracked > len(old_bbh_freq):
             old_bbh_freq = np.append(old_bbh_freq,9.e-7)
-        #If number of BBH tracked has shrunk. Reduce old_bbh_freq to match size of num_tracked.
+        # If number of BBH tracked has shrunk. Reduce old_bbh_freq to match size of num_tracked.
         while num_tracked < len(old_bbh_freq):
-            old_bbh_freq = np.delete(old_bbh_freq,0)    
+            old_bbh_freq = np.delete(old_bbh_freq,0)
 
         for j in range(0,num_tracked):
             temp_mass_1 = disk_bin_bhbh_pro_array[2,j]
@@ -601,22 +601,19 @@ def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timeste
         old_bbh_freq = np.append(old_bbh_freq, (9.e-7)*u.Hz)
 
     while (num_tracked < len(old_bbh_freq)):
-        old_bbh_freq = np.delete(old_bbh_freq,(0)*u.Hz)
+        old_bbh_freq = np.delete(old_bbh_freq, 0)
 
     #1rg =1AU=1.5e11m for 1e8Msun
     rg = 1.5e11*(smbh_mass/1.e8)*u.meter
-    mass_1 = blackholes_binary.mass_1*u.kg
-    mass_2 = blackholes_binary.mass_2*u.kg
-    mass_total = blackholes_binary.mass_total*u.kg
-    bin_sep = blackholes_binary.bin_sep*rg
+    mass_1 = blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1") * u.kg
+    mass_2 = blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_2") * u.kg
+    mass_total = blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_total") * u.kg
+    bin_sep = blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_sep") * rg
 
     mass_chirp = np.power(mass_1 * mass_2, 3./5.) / np.power(mass_total, 1./5.)
     rg_chirp = (const.G * mass_chirp) / np.power(const.c, 2)
 
     # If separation is less than rg_chirp then cap separation at rg_chirp.
-    #if (bin_sep < rg_chirp):
-    #    bin_sep = rg_chirp
-
     bin_sep[bin_sep < rg_chirp] = rg_chirp[bin_sep < rg_chirp]
 
     nu_gw = (1.0/cds.pi)*np.sqrt(
@@ -643,7 +640,7 @@ def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timeste
     delta_nu = np.abs(old_bbh_freq - nu_gw)
     delta_nu_delta_timestep = delta_nu/timestep_units
     nu_squared = (nu_gw*nu_gw)
-    strain_factor[nu_gw > (1e-6)*u.Hz] = np.sqrt((nu_squared[nu_gw > (1e-6)*u.Hz] / delta_nu_delta_timestep)/8.)
+    strain_factor[nu_gw > (1e-6)*u.Hz] = np.sqrt((nu_squared[nu_gw > (1e-6)*u.Hz] / delta_nu_delta_timestep[nu_gw > (1e-6)*u.Hz])/8.)
 
     char_strain = strain_factor*strain
 
