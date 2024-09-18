@@ -553,8 +553,17 @@ class AGNObject(object):
             for attr in attr_list:
                 print(f"{attr}.shape = {getattr(self, attr).shape}")
             raise AttributeError("Attributes are not all the same size")
-        #else:
-        #    print("attributes are consistent length")
+
+    def unique_id_nums(self):
+        """
+        Checks that ID numbers are unique.
+        """
+
+        if (self.id_num.size != np.unique(self.id_num).size):
+            print(f"There are {self.id_num.size} ID numbers stored and {np.unique(self.id_num).size} unique ID numbers.")
+            print("See ID numbers below:")
+            print(self.id_num)
+            raise ValueError("ID numbers are not unique.")
 
 
 class AGNStar(AGNObject):
@@ -1529,9 +1538,12 @@ class AGNFilingCabinet(AGNObject):
             raise TypeError("`attr` must be passed as a string")
 
         try:
-            getattr(self, attr)[np.isin(getattr(self, "id_num"),id_num)] = new_info
+            getattr(self, attr)
         except:
             raise AttributeError("{} is not an attribute of AGNFilingCabinet".format(attr))
+
+        getattr(self, attr)[np.isin(getattr(self, "id_num"), id_num)] = new_info
+
 
     def add_objects(self, new_id_num, new_category, new_orb_a,
                     new_mass, new_size, new_direction, new_disk_inner_outer):
