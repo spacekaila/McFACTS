@@ -1,8 +1,12 @@
 import numpy as np
 import scipy
 from mcfacts.mcfacts_random_state import rng
+from mcfacts.objects.agnobject import obj_to_binary_bh_array
+from astropy import constants as const
+from astropy import units as u
+from astropy.units import cds
 
-def add_to_binary_array2(
+def add_to_binary_array(
         disk_bins_bhbh,
         disk_bh_pro_orbs_a,
         disk_bh_pro_masses,
@@ -29,58 +33,58 @@ def add_to_binary_array2(
     disk_bins_bhbh : [21, bindex] mixed array
         binary black hole array, multi-dimensional;
             [0,j]: float
-            location of object 1 at formation of binary (distance from SMBH in
-            r_g)
+                location of object 1 at formation of binary (distance from SMBH in
+                r_g)
             [1,j]: float
-            location of object 2 at formation of binary (distance from SMBH in
-            r_g)
+                location of object 2 at formation of binary (distance from SMBH in
+                r_g)
             [2,j]: float
-            mass of obj 1 at time t in units of solar masses
+                mass of obj 1 at time t in units of solar masses
             [3,j]: float
-            mass of obj 2 at time t in units of solar masses
+                mass of obj 2 at time t in units of solar masses
             [4,j]: float
-            dimensionless spin magnitude of obj 1 at time t
+                dimensionless spin magnitude of obj 1 at time t
             [5,j]: float
-            dimensionless spin magnitude of obj 2 at time t
+                dimensionless spin magnitude of obj 2 at time t
             [6,j]: float
-            spin angle of obj 1 wrt disk gas in radians at time t
+                spin angle of obj 1 wrt disk gas in radians at time t
             [7,j]: float
-            spin angle of obj 2 wrt disk gas in radians at time t
+                spin angle of obj 2 wrt disk gas in radians at time t
             [8,j]: float
-            binary semi-major axis around c.o.m. in units of r_g of SMBH
+                binary semi-major axis around c.o.m. in units of r_g of SMBH
             [9,j]: float
-            binary center of mass location wrt SMBH in r_g
+                binary center of mass location wrt SMBH in r_g
             [10,j]: float
-            time to merger through GW alone (not set here)
+                time to merger through GW alone (not set here)
             [11,j]: int
-            merger flag = -2 if merging this timestep, else = 0 (not set here)
+                merger flag = -2 if merging this timestep, else = 0 (not set here)
             [12,j]: float
-            time of merger if binary has already merged (not set here)
+                time of merger if binary has already merged (not set here)
             [13,j]: float
-            binary eccentricity around binary center of mass
+                binary eccentricity around binary center of mass
             [14,j]: int
-            generation of obj 1 (1=natal black hole, no prior mergers)
+                generation of obj 1 (1=natal black hole, no prior mergers)
             [15,j]: int
-            generation of obj 2 (1=natal black hole, no prior mergers)
+                generation of obj 2 (1=natal black hole, no prior mergers)
             [16,j]: int
-            binary angular momentum switch +1/-1 for pro/retrograde
+                binary angular momentum switch +1/-1 for pro/retrograde
             [17,j]: float
-            binary orbital inclination
+                binary orbital inclination
             [18,j]: float
-            binary orbital eccentricity of binary center of mass around SMBH
+                binary orbital eccentricity of binary center of mass around SMBH
             [19,j]: float
-            GW frequency of binary
-            nu_gw = 1/pi *sqrt(GM_bin/a_bin^3)
+                GW frequency of binary
+                nu_gw = 1/pi *sqrt(GM_bin/a_bin^3)
             [20,j]: float
-            GW strain of binary
-            h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
-            where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
-            For local distances, approx 
-            d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc
-            assume 1Mpc = 3.1e22m.
-            From Ned Wright's calculator
-            (https://www.astro.ucla.edu/~wright/CosmoCalc.html)
-            (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
+                GW strain of binary
+                h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
+                where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
+                For local distances, approx 
+                d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc
+                assume 1Mpc = 3.1e22m.
+                From Ned Wright's calculator
+                (https://www.astro.ucla.edu/~wright/CosmoCalc.html)
+                (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
     disk_bh_pro_orbs_a : float array
         locations of prograde singleton BH at start of timestep in units of
         gravitational radii (r_g=GM_SMBH/c^2)
@@ -192,7 +196,7 @@ def add_to_binary_array2(
                 # nu_gw = 1/pi *sqrt(GM_bin/a_bin^3)
                 #1rg =1AU=1.5e11m for 1e8Msun
                 rg = 1.5e11*(smbh_mass/1.e8)
-                temp_bin_separation_meters = temp_bin_separation*rg
+                bin_sep_meters = temp_bin_separation*rg
                 temp_mass_1_kg = 2.e30*temp_mass_1
                 temp_mass_2_kg = 2.e30*temp_mass_2
                 temp_bin_mass_kg = 2.e30*temp_bin_mass
@@ -200,14 +204,14 @@ def add_to_binary_array2(
                     (temp_bin_mass_kg**(1/5))
                 rg_chirp = (scipy.constants.G * m_chirp)/ \
                     (scipy.constants.c**(2.0))
-                if temp_bin_separation_meters < rg_chirp:
-                    temp_bin_separation_meters = rg_chirp
+                if bin_sep_meters < rg_chirp:
+                    bin_sep_meters = rg_chirp
                 
                 # compute GW frequency & strain for each binary
                 nu_gw = (1.0/scipy.constants.pi)*np.sqrt(
                     temp_bin_mass_kg *
                     scipy.constants.G /
-                    (temp_bin_separation_meters**(3.0))
+                    (bin_sep_meters**(3.0))
                     )
                 disk_bins_bhbh[19,j] = nu_gw
                 Mpc = 3.1e22 # This is terrible use astropy
@@ -216,5 +220,160 @@ def add_to_binary_array2(
                     (np.pi*nu_gw*rg_chirp/scipy.constants.c)**(2/3)
                 disk_bins_bhbh[20,j] = strain
             bincount = bincount + 1
-        
+
     return disk_bins_bhbh
+
+
+def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, id_start_val, fraction_bin_retro, smbh_mass):
+    """_summary_
+
+    Parameters
+    ----------
+    blackholes_binary : AGNBinaryBlackHole
+        binary black holes, will add new binaries
+    blackholes_pro : AGNBlackHole
+        prograde black holes
+    bh_pro_id_num_binary : numpy array of ints
+        ID numbers for the prograde blackholes that will form binaries
+    id_start_val : int
+        starting value for the ID numbers (add 1 to ensure it's unique)
+    fraction_bin_retro : float
+        fraction of binaries which form retrograde (wrt to the disk gas)
+        around their own center of mass.
+        = 0.0 turns all retrograde BBH at formation into prograde BBH. 
+        = 0.5 half of the binaries will be retrograde
+        = 1.0 all binaries will be retrograde.
+    smbh_mass : float
+        mass of SMBH in units of Msun
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+
+    bin_num = bh_pro_id_num_binary.shape[1]
+    id_nums = np.arange(id_start_val+1, id_start_val + 1 + bin_num, 1)
+    orb_a_1 = np.zeros(bin_num)
+    orb_a_2 = np.zeros(bin_num)
+    mass_1 = np.zeros(bin_num)
+    mass_2 = np.zeros(bin_num)
+    spin_1 = np.zeros(bin_num)
+    spin_2 = np.zeros(bin_num)
+    spin_angle_1 = np.zeros(bin_num)
+    spin_angle_2 = np.zeros(bin_num)
+    bin_sep = np.zeros(bin_num)
+    bin_orb_a = np.zeros(bin_num)
+    time_to_merger_gw = np.zeros(bin_num)
+    flag_merging = np.zeros(bin_num)
+    time_merged = np.zeros(bin_num)
+    # Set up binary eccentricity around its own center of mass.
+    # Draw uniform value btwn [0,1]
+    bin_ecc = rng.random(bin_num)
+    gen_1 = np.zeros(bin_num)
+    gen_2 = np.zeros(bin_num)
+    bin_orb_ang_mom = np.zeros(bin_num)
+    # Set up binary inclination (in units radians). Will want this
+    # to be pi radians if retrograde.
+    bin_orb_inc = np.zeros(bin_num)
+    # Set up binary orbital eccentricity of com around SMBH.
+    # Assume initially v.small (e~0.01)
+    bin_orb_ecc = np.full(bin_num, 0.01)
+    gw_freq = np.zeros(bin_num)
+    gw_strain = np.zeros(bin_num)
+    galaxy = np.zeros(bin_num)
+
+    for i in range(bin_num):
+        id_num_1 = bh_pro_id_num_binary[0,i]
+        id_num_2 = bh_pro_id_num_binary[1,i]
+
+        mass_1[i] = blackholes_pro.at_id_num(id_num_1, "mass")
+        mass_2[i] = blackholes_pro.at_id_num(id_num_2, "mass")
+        orb_a_1[i] = blackholes_pro.at_id_num(id_num_1, "orb_a")
+        orb_a_2[i] = blackholes_pro.at_id_num(id_num_2, "orb_a")
+        spin_1[i] = blackholes_pro.at_id_num(id_num_1, "spin")
+        spin_2[i] = blackholes_pro.at_id_num(id_num_2, "spin")
+        spin_angle_1[i] = blackholes_pro.at_id_num(id_num_1, "spin_angle")
+        spin_angle_2[i] = blackholes_pro.at_id_num(id_num_2, "spin_angle")
+        gen_1[i] = blackholes_pro.at_id_num(id_num_1, "gen")
+        gen_2[i] = blackholes_pro.at_id_num(id_num_1, "gen")
+        bin_sep[i] = np.abs(orb_a_1[i] - orb_a_2[i])
+        galaxy[i] = blackholes_pro.at_id_num(id_num_1, "galaxy")
+
+        # Binary c.o.m.= location_1 + separation*M_2/(M_1+M_2)
+        bin_orb_a[i] = orb_a_1[i] + ((bin_sep[i] * mass_1[i]) / (mass_1[i] + mass_2[i]))
+
+        gen_1[i] = blackholes_pro.at_id_num(id_num_1, "gen")
+        gen_2[i] = blackholes_pro.at_id_num(id_num_2, "gen")
+
+        # Set up bin orb. ang. mom.
+        # (randomly +1 (pro) or -1(retrograde))
+        # random number between [0,1]
+        # If fraction_bin_retro =0, range = [0,1] and set L_bbh = +1.
+        if fraction_bin_retro == 0:
+            bin_orb_ang_mom[i] = 1.
+        else:
+            bin_orb_ang_mom[i] = (2.0*np.around(rng.random())) - 1.0
+
+        # Calculate binary GW frequency
+        # nu_gw = 1/pi *sqrt(GM_bin/a_bin^3)
+        # 1rg =1AU=1.5e11m for 1e8Msun
+        rg_to_meters = 1.5e11 * (smbh_mass / 1.e8) * u.meter
+        bin_sep_meters = bin_sep[i] * rg_to_meters
+        mass_1_units = (mass_1[i] * cds.Msun)
+        mass_2_units = (mass_2[i] * cds.Msun)
+        mass_bin = mass_1_units + mass_2_units
+        mass_chirp = np.power(mass_1_units * mass_2_units, 3./5.) / (np.power(mass_bin, 1./5.))
+        rg_chirp = (const.G * mass_chirp) / np.power(const.c, 2)
+
+        if (bin_sep_meters < rg_chirp):
+            bin_sep_meters = rg_chirp
+
+        nu_gw = (1.0/cds.pi)*np.sqrt(
+                    mass_bin *
+                    const.G /
+                    (bin_sep_meters**(3.0)))
+
+        gw_freq[i] = np.array([nu_gw.to(u.Hz).value])
+
+        # Calculate GW strain
+        # h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
+        #         where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
+        #         For local distances, approx 
+        #         d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc
+        #         assume 1Mpc = 3.1e22m.
+        #         From Ned Wright's calculator
+        #         (https://www.astro.ucla.edu/~wright/CosmoCalc.html)
+        #         (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
+        d_obs = 421*u.Mpc
+        strain = (4/d_obs) * rg_chirp * np.power(cds.pi * nu_gw * rg_chirp / const.c, 2./3.)
+
+        gw_strain[i] = np.array([strain.value])
+
+    #print(mass_1)
+
+    blackholes_binary.add_binaries(new_orb_a_1=orb_a_1,
+                                     new_orb_a_2=orb_a_2,
+                                     new_mass_1=mass_1,
+                                     new_mass_2=mass_2,
+                                     new_spin_1=spin_1,
+                                     new_spin_2=spin_2,
+                                     new_spin_angle_1=spin_angle_1,
+                                     new_spin_angle_2=spin_angle_2,
+                                     new_bin_sep=bin_sep,
+                                     new_bin_orb_a=bin_orb_a,
+                                     new_time_to_merger_gw=time_to_merger_gw,
+                                     new_flag_merging=flag_merging,
+                                     new_time_merged=time_merged,
+                                     new_bin_ecc=bin_ecc,
+                                     new_gen_1=gen_1,
+                                     new_gen_2=gen_2,
+                                     new_bin_orb_ang_mom=bin_orb_ang_mom,
+                                     new_bin_orb_inc=bin_orb_inc,
+                                     new_bin_orb_ecc=bin_orb_ecc,
+                                     new_gw_freq=gw_freq,
+                                     new_gw_strain=gw_strain,
+                                     new_id_num=id_nums,
+                                     new_galaxy=galaxy)
+
+    return (blackholes_binary)
