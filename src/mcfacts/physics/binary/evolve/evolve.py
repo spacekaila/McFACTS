@@ -707,10 +707,12 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
     #if num_emris > len(old_gw_freq):
     #    old_gw_freq = np.append(old_gw_freq,9.e-7)
 
+    while (num_emris < len(old_gw_freq)):
+        print("num_emris",num_emris)
+        print("len(old_gw_freq)",len(old_gw_freq))
+        old_gw_freq = np.delete(old_gw_freq, 0)
     while num_emris > len(old_gw_freq):
         old_gw_freq = np.append(old_gw_freq, 9.e-7)
-    while num_emris < len(old_gw_freq):
-        np.delete(old_gw_freq, 0)
 
     for i in range(0,num_emris):
         m2 = inner_disk_masses[i]
@@ -838,7 +840,7 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
 
 
 def ionization_check_obj(blackholes_binary, smbh_mass):
-
+    # Remove returning -1 if that's not how it's supposed to work
     # Define ionization threshold as a fraction of Hill sphere radius
     # Default is 1.0, change only if condition for binary formation is set for separation > R_hill
     frac_rhill = 1.0
@@ -848,7 +850,10 @@ def ionization_check_obj(blackholes_binary, smbh_mass):
 
     bh_id_nums = blackholes_binary.id_num[np.where(blackholes_binary.bin_sep > (frac_rhill*hill_sphere))[0]]
 
-    return (bh_id_nums)
+    if bh_id_nums.size > 0:
+        return (np.array(bh_id_nums[-1]))
+    else:
+        return (bh_id_nums)
 
 
 def contact_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
