@@ -46,6 +46,24 @@ def merged_mass(masses_1, masses_2, spins_1, spins_2):
     return merged_masses
 
 
+def merged_mass_obj(masses_1, masses_2, spins_1, spins_2):
+
+    mass_ratios = np.ones(masses_1.size)
+    mass_ratios[masses_1 > masses_2] = masses_2[masses_1 > masses_2] / masses_1[masses_1 > masses_2]
+    mass_ratios[masses_1 < masses_2] = masses_1[masses_1 < masses_2] / masses_2[masses_1 < masses_2]
+
+    total_masses = masses_1 + masses_2
+    total_spins = spins_1 + spins_2
+    nu_factors = np.power(1.0 + mass_ratios, 2)
+    nu = mass_ratios / nu_factors
+    nu_squared = nu * nu
+
+    mass_factors = 1.0 - (0.2 * nu) - (0.208 * nu_squared * total_spins)
+    merged_masses = total_masses*mass_factors
+
+    return (merged_masses)
+
+
 def merged_spin(masses_1, masses_2, spins_1, spins_2):
     """Calculate the spin magnitude of a merged binary.
 
@@ -87,3 +105,23 @@ def merged_spin(masses_1, masses_2, spins_1, spins_2):
                    (0.4*((spins_1/spin_factors_1)+(spins_2/spin_factors_2)))
 
     return merged_spins
+
+
+def merged_spin_obj(masses_1, masses_2, spins_1, spins_2):
+
+    mass_ratios = np.ones(masses_1.size)
+    mass_ratios[masses_1 > masses_2] = masses_2[masses_1 > masses_2] / masses_1[masses_1 > masses_2]
+    mass_ratios[masses_1 < masses_2] = masses_1[masses_1 < masses_2] / masses_2[masses_1 < masses_2]
+
+    mass_ratios_inv = 1.0 / mass_ratios
+
+    nu_factors = np.power(1.0 + mass_ratios, 2)
+    nu = mass_ratios / nu_factors
+    nu_squared = nu * nu
+
+    spin_factors_1 = np.power(0.632 + mass_ratios_inv, 2)
+    spin_factors_2 = np.power(0.632 + mass_ratios, 2)
+
+    merged_spins = 0.686 * ((5.04 * nu) - (4.16 * nu_squared)) + (0.4 * ((spins_1 / spin_factors_1) + (spins_2 / spin_factors_2)))
+
+    return (merged_spins)
