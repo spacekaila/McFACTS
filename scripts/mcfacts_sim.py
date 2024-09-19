@@ -1227,7 +1227,7 @@ def main():
                                                              new_gen_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "gen_2"),
                                                              new_chi_eff=bh_chi_eff_merged_obj,
                                                              new_chi_p=bh_chi_p_merged_obj,
-                                                             new_time_merged=np.full(bh_binary_id_num_merger.size, time_passed))
+                                                                new_time_merged=np.full(bh_binary_id_num_merger.size, time_passed))
                             blackholes_binary.unique_id_nums()
 
                         blackholes_pro.unique_id_nums()
@@ -1697,6 +1697,7 @@ def main():
     population_cols = ["galaxy", "bin_orb_a", "mass_final", "chi_eff", "spin_final", "spin_angle_final",
                        "mass_1", "mass_2", "spin_1", "spin_2", "spin_angle_1", "spin_angle_2",
                        "gen_1", "gen_2", "time_merged", "chi_p"]
+    binary_historic_cols = ["galaxy", "time_merged", "bin_sep", "mass_total", "bin_ecc", "gw_strain", "gw_freq"]
     # Stack and check arrays
     if len(gw_array_pop) > 0:
         gw_array_pop = np.vstack(gw_array_pop)
@@ -1710,8 +1711,6 @@ def main():
         header=gw_header,
     )
 
-    #emris_pop.to_file(os.path.join(opts.work_directory, emris_save_name),
-    #                  col_order=emri_cols)
     emris_pop.to_txt(os.path.join(opts.work_directory, emris_save_name),
                      cols=emri_cols)
 
@@ -1721,6 +1720,11 @@ def main():
     # Include initial seed in header
     blackholes_merged_pop.to_txt(os.path.join(opts.work_directory, population_save_name),
                                  cols=population_cols, extra_header=f"Initial seed: {opts.seed}\n")
+    
+    blackholes_binary_historic_pop.to_txt(os.path.join(opts.work_directory, "output_mergers_lvk_obj.dat"),
+                                          cols=binary_historic_cols)
+
+
 
 
 if __name__ == "__main__":
