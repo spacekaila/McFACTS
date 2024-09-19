@@ -4,8 +4,8 @@ import numpy as np
 import os
 import sys
 from os.path import expanduser, join, isfile, isdir
-from basil.relations import Neumayer_early_NSC_mass, Neumayer_late_NSC_mass
-from basil.relations import SchrammSilvermanSMBH_mass_of_GSM as SMBH_mass_of_GSM
+from basil_core.astro.relations import Neumayer_early_NSC_mass, Neumayer_late_NSC_mass
+from basil_core.astro.relations import SchrammSilvermanSMBH_mass_of_GSM as SMBH_mass_of_GSM
 
 ######## Arg ########
 def arg():
@@ -101,6 +101,7 @@ def make_batch(opts, wkdir, mcfacts_args, mass_smbh, mass_nsc):
     #if not opts.print_only:
     #    os.system(cmd)
 
+    #raise Exception
     # Scrub runs
     if opts.scrub:
         cmd = "rm -rf %s/run*"%wkdir
