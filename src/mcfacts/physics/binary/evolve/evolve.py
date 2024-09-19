@@ -251,12 +251,13 @@ def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func, disk_opacity_fu
     return ratio_feedback_migration_torque_bin_com
 
 
-def com_feedback_hankla_obj(blackholes_binary, disk_surf_model, disk_bh_eddington_ratio, alpha):
+def com_feedback_hankla_obj(blackholes_binary, disk_surf_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity):
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
-    ratio_feedback_migration_torque_bin_com = com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_model,
-                                                                  disk_bh_eddington_ratio, alpha)
+    ratio_feedback_migration_torque_bin_com = com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func,
+                                                                  disk_opacity_func, disk_bh_eddington_ratio,
+                                                                  disk_alpha_viscosity)
 
     return (ratio_feedback_migration_torque_bin_com)
 
