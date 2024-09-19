@@ -60,6 +60,23 @@ def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angl
     return chi_eff
 
 
+def chi_effective_obj(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_mom):
+
+    total_masses = masses_1 + masses_2
+    spins_1 = np.abs(spins_1)
+    spins_2 = np.abs(spins_2)
+
+    spin_angles_1[bin_ang_mom < 0] = np.pi - spin_angles_1[bin_ang_mom < 0]
+    spin_angles_2[bin_ang_mom < 0] = np.pi - spin_angles_2[bin_ang_mom < 0]
+
+    spin_factors_1 = (masses_1 / total_masses) * spins_1 * np.cos(spin_angles_1)
+    spin_factors_2 = (masses_2 / total_masses) * spins_2 * np.cos(spin_angles_2)
+
+    chi_eff = spin_factors_1 + spin_factors_2
+
+    return (chi_eff)
+
+
 def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_incs_wrt_disk):
     """Calculate the precessing spin component :math:`\chi_p` associated with a merger.
 
@@ -197,11 +214,11 @@ def chi_p_obj(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2
     mass_ratios[masses_1 > masses_2] = masses_2[masses_1 > masses_2] / masses_1[masses_1 > masses_2]
     mass_ratios[masses_2 > masses_1] = masses_1[masses_2 > masses_1] / masses_2[masses_2 > masses_1]
 
-    spins_1_perp[masses_1 > masses_2] = np.abs(spins_1[masses_1 > masses_2]) * np.sin(spin_angles_1[masses_1 > masses_2])
-    spins_1_perp[masses_2 > masses_1] = np.abs(spins_1[masses_2 > masses_1]) * np.sin(spin_angles_1[masses_2 > masses_1])
+    #spins_1_perp[masses_1 > masses_2] = np.abs(spins_1[masses_1 > masses_2]) * np.sin(spin_angles_1[masses_1 > masses_2])
+    spins_1_perp[masses_2 > masses_1] = np.abs(spins_2[masses_2 > masses_1]) * np.sin(spin_angles_2[masses_2 > masses_1])
 
-    spins_2_perp[masses_1 > masses_2] = np.abs(spins_2[masses_1 > masses_2]) * np.sin(spin_angles_2[masses_1 > masses_2])
-    spins_2_perp[masses_2 > masses_1] = np.abs(spins_2[masses_2 > masses_1]) * np.sin(spin_angles_2[masses_2 > masses_1])
+    #spins_2_perp[masses_1 > masses_2] = np.abs(spins_2[masses_1 > masses_2]) * np.sin(spin_angles_2[masses_1 > masses_2])
+    spins_2_perp[masses_2 > masses_1] = np.abs(spins_1[masses_2 > masses_1]) * np.sin(spin_angles_1[masses_2 > masses_1])
 
     mass_ratio_factors = mass_ratios * ((4.0 * mass_ratios) + 3.0) / (4.0 + (3.0 * mass_ratios))
 
