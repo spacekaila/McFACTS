@@ -16,7 +16,8 @@ def add_to_binary_array(
         disk_bin_bhbh_pro_indices,
         bindex,
         fraction_bin_retro,
-        smbh_mass
+        smbh_mass,
+        agn_redshift
         ):
     """Create new BH binaries with appropriate parameters.
     
@@ -115,6 +116,8 @@ def add_to_binary_array(
         = 1.0 all binaries will be retrograde.
     smbh_mass : float
         mass of supermassive black hole in units of solar masses
+    agn_redshift : float
+        redshift of the AGN, used to set d_obs
 
     Returns
     -------
@@ -127,7 +130,10 @@ def add_to_binary_array(
     #   complex to fix now and appears many places
     # find number of new binaries based on indices from hillsphere.binary_check
     num_new_bins = np.shape(disk_bin_bhbh_pro_indices)[1]
-    print("num_new_bins",num_new_bins)
+    #print("num_new_bins",num_new_bins)
+
+    redshift_d_obs_dict = {0.1: 421,
+                           0.5: 1909}
 
     # If there are new binaries, actually form them!
     if num_new_bins > 0:
@@ -198,10 +204,10 @@ def add_to_binary_array(
                 #1rg =1AU=1.5e11m for 1e8Msun
                 rg = 1.5e11*(smbh_mass/1.e8)
                 bin_sep_meters = temp_bin_separation*rg
-                temp_mass_1_kg = 2.e30*temp_mass_1
-                temp_mass_2_kg = 2.e30*temp_mass_2
-                temp_bin_mass_kg = 2.e30*temp_bin_mass
-                m_chirp = ((temp_mass_1_kg*temp_mass_2_kg)**(3/5))/ \
+                temp_mass_1_kg = ((temp_mass_1*cds.Msun).to(u.kg)).value #2.e30*temp_mass_1
+                temp_mass_2_kg = ((temp_mass_2*cds.Msun).to(u.kg)).value #2.e30*temp_mass_2
+                temp_bin_mass_kg = ((temp_bin_mass*cds.Msun).to(u.kg)).value #2.e30*temp_bin_mass
+                m_chirp = ((temp_mass_1_kg*temp_mass_2_kg)**(3./5.))/ \
                     (temp_bin_mass_kg**(1/5))
                 rg_chirp = (scipy.constants.G * m_chirp)/ \
                     (scipy.constants.c**(2.0))
@@ -216,16 +222,19 @@ def add_to_binary_array(
                     )
                 disk_bins_bhbh[19,j] = nu_gw
                 Mpc = 3.1e22 # This is terrible use astropy
-                d_obs = 421*Mpc
+                #d_obs = 421*Mpc
+                redshift = redshift_d_obs_dict[agn_redshift]
+                d_obs = (redshift*u.Mpc).to(u.meter).value  #1909*Mpc
+
                 strain = (4/d_obs)*rg_chirp * \
-                    (np.pi*nu_gw*rg_chirp/scipy.constants.c)**(2/3)
+                    (np.pi*nu_gw*rg_chirp/scipy.constants.c)**(2./3.)
                 disk_bins_bhbh[20,j] = strain
             bincount = bincount + 1
 
     return disk_bins_bhbh
 
 
-def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, id_start_val, fraction_bin_retro, smbh_mass):
+def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, id_start_val, fraction_bin_retro, smbh_mass, agn_redshift):
     """_summary_
 
     Parameters
@@ -246,6 +255,8 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
         = 1.0 all binaries will be retrograde.
     smbh_mass : float
         mass of SMBH in units of Msun
+    agn_redshift : float
+        redshift of the AGN, used to set d_obs
 
     Returns
     -------
@@ -254,6 +265,9 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
     id_nums : numpy array of ints
         ID numbers of the new binary black holes
     """
+
+    redshift_d_obs_dict = {0.1: 421*u.Mpc,
+                           0.5: 1909*u.Mpc}
 
     bin_num = bh_pro_id_num_binary.shape[1]
     id_nums = np.arange(id_start_val+1, id_start_val + 1 + bin_num, 1)
@@ -330,21 +344,21 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
         # 1rg =1AU=1.5e11m for 1e8Msun
         rg_to_meters = 1.5e11 * (smbh_mass / 1.e8) * u.meter
         bin_sep_meters = bin_sep[i] * rg_to_meters
-        mass_1_units = (mass_1[i] * cds.Msun)
-        mass_2_units = (mass_2[i] * cds.Msun)
+        mass_1_units = (mass_1[i] * cds.Msun).to(u.kg)
+        mass_2_units = (mass_2[i] * cds.Msun).to(u.kg)
         mass_bin = mass_1_units + mass_2_units
-        mass_chirp = np.power(mass_1_units * mass_2_units, 3./5.) / (np.power(mass_bin, 1./5.))
-        rg_chirp = (const.G * mass_chirp) / np.power(const.c, 2)
+        mass_chirp = (np.power(mass_1_units * mass_2_units, 3./5.) / (np.power(mass_bin, 1./5.))).to(u.kg)
+        rg_chirp = ((const.G * mass_chirp) / np.power(const.c, 2)).to(u.meter)
 
         if (bin_sep_meters < rg_chirp):
             bin_sep_meters = rg_chirp
 
-        nu_gw = (1.0/cds.pi)*np.sqrt(
+        nu_gw = ((1.0/np.pi)*np.sqrt(
                     mass_bin *
                     const.G /
-                    (bin_sep_meters**(3.0)))
+                    (bin_sep_meters**(3.0)))).to(u.Hz)
 
-        gw_freq[i] = np.array([nu_gw.to(u.Hz).value])
+        gw_freq[i] = np.array([nu_gw.value])
 
         # Calculate GW strain
         # h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
@@ -355,8 +369,9 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
         #         From Ned Wright's calculator
         #         (https://www.astro.ucla.edu/~wright/CosmoCalc.html)
         #         (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-        d_obs = 421*u.Mpc
-        strain = (4/d_obs) * rg_chirp * np.power(cds.pi * nu_gw * rg_chirp / const.c, 2./3.)
+        #d_obs = 421*u.Mpc
+        d_obs = redshift_d_obs_dict[agn_redshift].to(u.meter)
+        strain = (4/d_obs) * rg_chirp * np.power(np.pi * nu_gw * rg_chirp / const.c, 2./3.)
 
         gw_strain[i] = np.array([strain.value])
 

@@ -468,7 +468,7 @@ def circular_binaries_encounters_ecc_prograde_obj(
 
     disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
 
-    bindex = blackholes_binary.id_num.size
+    bindex = blackholes_binary.num
 
     disk_bins_bhbh = circular_binaries_encounters_ecc_prograde(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_masses,
                                                           disk_bh_pro_orbs_ecc, timestep_duration_yr,
@@ -758,7 +758,7 @@ def circular_binaries_encounters_circ_prograde_obj(
 
     disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
 
-    bindex = blackholes_binary.id_num.size
+    bindex = blackholes_binary.num
 
     disk_bins_bhbh = circular_binaries_encounters_circ_prograde(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_masses,
                                                                 disk_bh_pro_orbs_ecc, timestep_duration_yr,
@@ -1083,7 +1083,7 @@ def bin_spheroid_encounter_obj(
     
     disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
 
-    bindex = blackholes_binary.id_num.size
+    bindex = blackholes_binary.num
 
 
     disk_bins_bhbh = bin_spheroid_encounter(smbh_mass, timestep_duration_yr, disk_bins_bhbh, time_passed, bindex,
@@ -1155,7 +1155,7 @@ def bin_recapture_obj(blackholes_binary, timestep_duration_yr):
 
     disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
 
-    bindex = blackholes_binary.id_num.size
+    bindex = blackholes_binary.num
 
     disk_bins_bhbh = bin_recapture(bindex, disk_bins_bhbh, timestep_duration_yr)
 

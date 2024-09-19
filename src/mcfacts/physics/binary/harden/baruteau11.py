@@ -85,7 +85,7 @@ def bin_harden_baruteau_obj(blackholes_binary, smbh_mass, timestep_duration_yr, 
 
     binary_bh_array = obj_to_binary_bh_array(blackholes_binary)
 
-    bin_index = blackholes_binary.id_num.size
+    bin_index = blackholes_binary.num
 
     binary_bh_array = bin_harden_baruteau(binary_bh_array, smbh_mass, timestep_duration_yr,
                                           time_gw_normalization, bin_index, time_passed)

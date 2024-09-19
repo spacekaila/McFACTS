@@ -265,7 +265,6 @@ def orbital_bin_ecc_damping_obj(smbh_mass, blackholes_binary, disk_surf_density_
     return (blackholes_binary)
 
 
-
 def bin_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, disk_surf_density_func,
                     disk_aspect_ratio_func,
                     disk_bh_pro_orbs_ecc, timestep_duration_yr, disk_bh_pro_orb_ecc_crit):

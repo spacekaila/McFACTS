@@ -56,7 +56,7 @@ def change_bin_mass_obj(blackholes_binary, disk_bh_eddington_ratio, disk_bh_eddi
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
-    bin_index = blackholes_binary.id_num.size
+    bin_index = blackholes_binary.num
 
     disk_bin_bhbh_pro_array = change_bin_mass(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio,
                                               disk_bh_eddington_mass_growth_rate, timestep_duration_yr, bin_index)
@@ -129,7 +129,7 @@ def change_bin_spin_magnitudes_obj(blackholes_binary, disk_bh_eddington_ratio, d
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
-    bin_index = blackholes_binary.id_num.size
+    bin_index = blackholes_binary.num
 
     disk_bin_bhbh_pro_array = change_bin_spin_magnitudes(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio,
                                                          disk_bh_torque_condition, timestep_duration_yr, bin_index)
@@ -177,7 +177,7 @@ def change_bin_spin_angles_obj(blackholes_binary, disk_bh_eddington_ratio, spin_
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
-    bin_index = blackholes_binary.id_num.size
+    bin_index = blackholes_binary.num
 
     disk_bin_bhbh_pro_array = change_bin_spin_angles(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio,
                                                      spin_torque_condition, spin_minimum_resolution,
@@ -403,7 +403,7 @@ def bin_migration_obj(smbh_mass, blackholes_binary, disk_surf_model, disk_aspect
 
 
 
-def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
+def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift):
     """This function evaluates the binary gravitational wave frequency and strain at the end of each timestep_duration_yr.
     Set up binary GW frequency nu_gw = 1/pi *sqrt(GM_bin/a_bin^3). Set up binary strain of GW
     h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
@@ -418,6 +418,8 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
         number of binaries in array
     smbh_mass : float
         mass of supermassive black hole in units of solar masses
+    agn_redshift : float
+        redshift of the AGN, used to set d_obs
 
     Returns
     -------
@@ -426,6 +428,8 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
 
     """
     
+    redshift_d_obs_dict = {0.1: 421,
+                           0.5: 1909}
     
     for j in range(0,bin_index):
         temp_mass_1 = disk_bin_bhbh_pro_array[2,j]
@@ -454,7 +458,10 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
         Mpc = 3.1e22
         # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
         # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-        d_obs = 421*Mpc
+        #d_obs = 421*Mpc
+        redshift = redshift_d_obs_dict[agn_redshift]
+        d_obs = (redshift*u.Mpc).to(u.meter).value  #1909*Mpc
+
         strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw*rg_chirp/scipy.constants.c)**(2/3)
         # But power builds up in band over multiple cycles! 
         # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
@@ -472,13 +479,16 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
     return disk_bin_bhbh_pro_array
 
 
-def evolve_gw_obj(blackholes_binary, smbh_mass):
+def evolve_gw_obj(blackholes_binary, smbh_mass, agn_redshift):
+
+    #redshift_d_obs_dict = {0.1: 421*u.Mpc,
+    #                       0.5: 1909*u.Mpc}
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
-    bin_index = blackholes_binary.id_num.size
+    bin_index = blackholes_binary.num
 
-    disk_bin_bhbh_pro_array = evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass)
+    disk_bin_bhbh_pro_array = evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift)
 
     blackholes_binary.gw_freq = disk_bin_bhbh_pro_array[19, :]
     blackholes_binary.gw_strain = disk_bin_bhbh_pro_array[20, :]
@@ -486,7 +496,7 @@ def evolve_gw_obj(blackholes_binary, smbh_mass):
     return (blackholes_binary)
 
 
-def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_duration_yr, old_bbh_freq):
+def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_duration_yr, old_bbh_freq, agn_redshift):
     """This function evaluates the binary gravitational wave frequency and strain at the end of each timestep_duration_yr
     Set up binary GW frequency nu_gw = 1/pi *sqrt(GM_bin/a_bin^3). 
     Set up binary strain of h0 = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
@@ -519,16 +529,21 @@ def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_d
     timestep_duration_yr : float
         size of timestep_duration_yr in years
     old_bbh_freq : float 
-        gw freq of this BHBH pro binary on previous timestep, so characteristic strain can be calculated (function of rate of change over timestep)        
+        gw freq of this BHBH pro binary on previous timestep, so characteristic strain can be calculated (function of rate of change over timestep)
+    agn_redshift : float
+        redshift of the AGN, used to set d_obs      
 
     Returns
     -------
     disk_bin_bhbh_pro_array : float array 
         Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
     """
+
+    redshift_d_obs_dict = {0.1: 421,
+                           0.5: 1909}
     
     year =3.15e7
-    timestep_secs = timestep_duration_yr*year
+    timestep_secs = (timestep_duration_yr*u.year).to(u.second).value #timestep_duration_yr*year
     # If there are BBH that meet the condition (ie if bbh_gw_indices exists, is not empty)
     if (len(bbh_gw_indices) > 0):
         num_tracked = np.size(bbh_gw_indices)
@@ -541,17 +556,18 @@ def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_d
         while num_tracked < len(old_bbh_freq):
             old_bbh_freq = np.delete(old_bbh_freq,0)
 
-        for j in range(0,num_tracked):
-            temp_mass_1 = disk_bin_bhbh_pro_array[2,j]
-            temp_mass_2 = disk_bin_bhbh_pro_array[3,j]
+        #for j in range(0,num_tracked):
+        for j,bindex in enumerate(bbh_gw_indices[0]):
+            temp_mass_1 = disk_bin_bhbh_pro_array[2,bindex]
+            temp_mass_2 = disk_bin_bhbh_pro_array[3,bindex]
             temp_bin_mass = temp_mass_1 + temp_mass_2
-            temp_bin_separation = disk_bin_bhbh_pro_array[8,j]
+            temp_bin_separation = disk_bin_bhbh_pro_array[8,bindex]
             #1rg =1AU=1.5e11m for 1e8Msun
             rg = 1.5e11*(smbh_mass/1.e8)
             m_sun = 2.0e30
-            temp_mass_1_kg = m_sun*temp_mass_1
-            temp_mass_2_kg = m_sun*temp_mass_2
-            temp_bin_mass_kg = m_sun*temp_bin_mass
+            temp_mass_1_kg = ((temp_mass_1*cds.Msun).to(u.kg)).value  #m_sun*temp_mass_1
+            temp_mass_2_kg = ((temp_mass_2*cds.Msun).to(u.kg)).value #m_sun*temp_mass_2
+            temp_bin_mass_kg = ((temp_bin_mass*cds.Msun).to(u.kg)).value #m_sun*temp_bin_mass
             temp_bin_separation_meters = temp_bin_separation*rg
         
             m_chirp = ((temp_mass_1_kg*temp_mass_2_kg)**(3/5))/(temp_bin_mass_kg**(1/5))
@@ -561,14 +577,14 @@ def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_d
                 temp_bin_separation_meters = rg_chirp
 
             nu_gw[j] = (1.0/scipy.constants.pi)*np.sqrt(temp_bin_mass_kg*scipy.constants.G/(temp_bin_separation_meters**(3.0)))
-            
             # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc 
             # 1Mpc = 3.1e22m. 
             Mpc = 3.1e22
             # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
             # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-            d_obs = 1909*Mpc
-            strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw[j]*rg_chirp/scipy.constants.c)**(2/3)
+            redshift = redshift_d_obs_dict[agn_redshift]
+            d_obs = (redshift*u.Mpc).to(u.meter).value  #1909*Mpc
+            strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw[j]*rg_chirp/const.c.value)**(2/3)
             # But power builds up in band over multiple cycles! 
             # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
             strain_factor = 1
@@ -587,15 +603,17 @@ def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_d
                 dnu_dt = dnu/timestep_secs
                 nusq = nu_gw[j]*nu_gw[j]
                 strain_factor = np.sqrt((nusq/dnu_dt)/8)
-
             char_strain[j] = strain_factor*strain        
 
     return (char_strain, nu_gw)
 
 
-def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timestep_duration_yr, old_bbh_freq):
+def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timestep_duration_yr, old_bbh_freq, agn_redshift):
 
-    timestep_units = timestep_duration_yr*u.year
+    redshift_d_obs_dict = {0.1: 421*u.Mpc,
+                           0.5: 1909*u.Mpc}
+
+    timestep_units = (timestep_duration_yr*u.year).to(u.second)
 
     num_tracked = bh_binary_id_num_gw.size
 
@@ -609,35 +627,37 @@ def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timeste
 
     #1rg =1AU=1.5e11m for 1e8Msun
     rg = 1.5e11*(smbh_mass/1.e8)*u.meter
-    mass_1 = blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1") * u.kg
-    mass_2 = blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_2") * u.kg
-    mass_total = blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_total") * u.kg
+    mass_1 = (blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1") * cds.Msun).to(u.kg)
+    mass_2 = (blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_2") * cds.Msun).to(u.kg)
+    mass_total = mass_1 + mass_2
     bin_sep = blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_sep") * rg
 
     mass_chirp = np.power(mass_1 * mass_2, 3./5.) / np.power(mass_total, 1./5.)
-    rg_chirp = (const.G * mass_chirp) / np.power(const.c, 2)
+    rg_chirp = ((const.G * mass_chirp) / np.power(const.c, 2)).to(u.meter)
 
     # If separation is less than rg_chirp then cap separation at rg_chirp.
     bin_sep[bin_sep < rg_chirp] = rg_chirp[bin_sep < rg_chirp]
 
-    nu_gw = (1.0/cds.pi)*np.sqrt(
+    nu_gw = (1.0/np.pi)*np.sqrt(
                     mass_total *
                     const.G /
                     (bin_sep**(3.0)))
     nu_gw = nu_gw.to(u.Hz)
 
     # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc 
-    d_obs = 421*u.Mpc
+    d_obs = redshift_d_obs_dict[agn_redshift].to(u.meter)
+    #d_obs = (1909*u.Mpc).to(u.meter)
     # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
     # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-    strain = (4/d_obs) * rg_chirp * np.power(cds.pi * nu_gw * rg_chirp / const.c, 2./3.)
+    strain = (4/d_obs) * rg_chirp * np.power(np.pi * nu_gw * rg_chirp / const.c, 2./3.)
     # But power builds up in band over multiple cycles! 
     # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
     strain_factor = np.ones(len(nu_gw))
 
     # char amplitude = strain_factor*h0
     #                = sqrt(N/8)*h_0 and N=freq*1yr for approx const. freq. sources over ~~yr.
-    strain_factor[nu_gw < (1e-6)*u.Hz] = np.sqrt(nu_gw[nu_gw < (1e-6)*u.Hz]*np.pi*(10**7)/8)
+    strain_factor[nu_gw < (1e-6)*u.Hz] = np.sqrt(nu_gw[nu_gw < (1e-6)*u.Hz]*np.pi*(1e7)/8)
+
     # For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt).
     # char amplitude = strain_factor*h0
     #                = sqrt(freq^2/(dfreq/dt)/8)*h0
@@ -645,7 +665,6 @@ def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timeste
     delta_nu_delta_timestep = delta_nu/timestep_units
     nu_squared = (nu_gw*nu_gw)
     strain_factor[nu_gw > (1e-6)*u.Hz] = np.sqrt((nu_squared[nu_gw > (1e-6)*u.Hz] / delta_nu_delta_timestep[nu_gw > (1e-6)*u.Hz])/8.)
-
     char_strain = strain_factor*strain
 
     return (char_strain.value, nu_gw.value)
@@ -708,8 +727,6 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
     #    old_gw_freq = np.append(old_gw_freq,9.e-7)
 
     while (num_emris < len(old_gw_freq)):
-        print("num_emris",num_emris)
-        print("len(old_gw_freq)",len(old_gw_freq))
         old_gw_freq = np.delete(old_gw_freq, 0)
     while num_emris > len(old_gw_freq):
         old_gw_freq = np.append(old_gw_freq, 9.e-7)
@@ -846,14 +863,11 @@ def ionization_check_obj(blackholes_binary, smbh_mass):
     frac_rhill = 1.0
 
     mass_ratio = blackholes_binary.mass_total/smbh_mass
-    hill_sphere = blackholes_binary.bin_orb_a * ((mass_ratio/3)**(1./3.))
+    hill_sphere = blackholes_binary.bin_orb_a * np.power(mass_ratio / 3, 1. / 3.)
 
     bh_id_nums = blackholes_binary.id_num[np.where(blackholes_binary.bin_sep > (frac_rhill*hill_sphere))[0]]
 
-    if bh_id_nums.size > 0:
-        return (np.array(bh_id_nums[-1]))
-    else:
-        return (bh_id_nums)
+    return (bh_id_nums)
 
 
 def contact_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
@@ -902,7 +916,7 @@ def contact_check_obj(blackholes_binary, smbh_mass):
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
-    bin_index = blackholes_binary.id_num.size
+    bin_index = blackholes_binary.num
 
     disk_bin_bhbh_pro_array = contact_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass)
 
