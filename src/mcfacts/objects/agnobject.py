@@ -1451,8 +1451,7 @@ class AGNMergedBlackHole(AGNObject):
 obj_types = {0: "single black hole",
              1: "single star",
              2: "binary black hole",
-             3: "binary star",
-             4: "merged black hole", }
+             3: "binary star",}
              #5: "exploded star"
              #} # Other types are not in use yet
 

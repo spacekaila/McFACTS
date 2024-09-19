@@ -412,7 +412,7 @@ def main():
 
 
         # Tracker for all binaries ever formed in this galaxy
-        num_bbh_gw_tracked_obj = 0
+        num_bbh_gw_tracked = 0
 
         # Set up normalization for t_gw (SF: I do not like this way of handling, flag for update)
         time_gw_normalization = tgw.normalize_tgw(opts.smbh_mass)
@@ -460,7 +460,7 @@ def main():
                     stars_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
                     stars_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
 
-                    blackholes_binary.to_txt(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}_obj.dat"),
+                    blackholes_binary.to_txt(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
                                              cols=binary_cols)
                 timestep_current_num += 1
 
@@ -801,19 +801,19 @@ def main():
                     bh_binary_id_num_gw = blackholes_binary.id_num[(blackholes_binary.bin_sep < min_bbh_gw_separation) & (blackholes_binary.bin_sep > 0)]
                     if (bh_binary_id_num_gw.size > 0):
                         # 1st time around.
-                        if num_bbh_gw_tracked_obj == 0:
-                            old_bbh_gw_freq_obj = 9.e-7*np.ones(bh_binary_id_num_gw.size)
-                        if num_bbh_gw_tracked_obj > 0:
-                            old_bbh_gw_freq_obj = bbh_gw_freq_obj
+                        if num_bbh_gw_tracked == 0:
+                            old_bbh_gw_freq = 9.e-7*np.ones(bh_binary_id_num_gw.size)
+                        if num_bbh_gw_tracked > 0:
+                            old_bbh_gw_freq = bbh_gw_freq
 
-                        num_bbh_gw_tracked_obj = bh_binary_id_num_gw.size
+                        num_bbh_gw_tracked = bh_binary_id_num_gw.size
 
-                        bbh_gw_strain_obj, bbh_gw_freq_obj = evolve.bbh_gw_params_obj(
+                        bbh_gw_strain, bbh_gw_freq = evolve.bbh_gw_params(
                             blackholes_binary,
                             bh_binary_id_num_gw,
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
-                            old_bbh_gw_freq_obj,
+                            old_bbh_gw_freq,
                             opts.agn_redshift
                             )
 
@@ -837,8 +837,8 @@ def main():
                                                           new_bin_orb_ang_mom=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_ang_mom"),
                                                           new_bin_orb_inc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_inc"),
                                                           new_bin_orb_ecc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_ecc"),
-                                                          new_gw_freq=bbh_gw_freq_obj,
-                                                          new_gw_strain=bbh_gw_strain_obj,
+                                                          new_gw_freq=bbh_gw_freq,
+                                                          new_gw_strain=bbh_gw_strain,
                                                           new_galaxy=np.full(bh_binary_id_num_gw.size, galaxy),
                                                           )
 
@@ -916,21 +916,21 @@ def main():
 
                         if (bh_binary_id_num_merger.size > 0):
 
-                            bh_mass_merged_obj = tichy08.merged_mass_obj(
+                            bh_mass_merged = tichy08.merged_mass_obj(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_2")
                                 )
 
-                            bh_spin_merged_obj = tichy08.merged_spin_obj(
+                            bh_spin_merged = tichy08.merged_spin_obj(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_2")
                                 )
 
-                            bh_chi_eff_merged_obj = chieff.chi_effective_obj(
+                            bh_chi_eff_merged = chieff.chi_effective_obj(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
@@ -940,7 +940,7 @@ def main():
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "bin_orb_ang_mom")
                                     )
 
-                            bh_chi_p_merged_obj = chieff.chi_p_obj(
+                            bh_chi_p_merged = chieff.chi_p_obj(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
@@ -953,8 +953,8 @@ def main():
                             blackholes_merged.add_blackholes(new_id_num=bh_binary_id_num_merger,
                                                              new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
                                                              new_bin_orb_a=blackholes_binary.at_id_num(bh_binary_id_num_merger, "bin_orb_a"),
-                                                             new_mass_final=bh_mass_merged_obj,
-                                                             new_spin_final=bh_spin_merged_obj,
+                                                             new_mass_final=bh_mass_merged,
+                                                             new_spin_final=bh_spin_merged,
                                                              new_spin_angle_final=np.zeros(bh_binary_id_num_merger.size),
                                                              new_mass_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                                              new_mass_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
@@ -964,8 +964,8 @@ def main():
                                                              new_spin_angle_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_angle_2"),
                                                              new_gen_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "gen_1"),
                                                              new_gen_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "gen_2"),
-                                                             new_chi_eff=bh_chi_eff_merged_obj,
-                                                             new_chi_p=bh_chi_p_merged_obj,
+                                                             new_chi_eff=bh_chi_eff_merged,
+                                                             new_chi_p=bh_chi_p_merged,
                                                              new_time_merged=np.full(bh_binary_id_num_merger.size, time_passed))
 
                         # # New bh generation is max of generations involved in merger plus 1
