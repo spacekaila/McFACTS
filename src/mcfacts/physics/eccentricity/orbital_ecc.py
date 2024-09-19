@@ -1,6 +1,7 @@
 """This module provides methods for calculating the orbital and binary eccentricities."""
 
 import numpy as np
+from mcfacts.objects.agnobject import obj_to_binary_bh_array
 
 
 def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, disk_surf_density_func,
@@ -249,6 +250,19 @@ def orbital_bin_ecc_damping(smbh_mass, bin_array, disk_surf_density_func, disk_a
         bin_array[18, j] = new_bin_orb_ecc[j]
 
     return bin_array
+
+
+def orbital_bin_ecc_damping_obj(smbh_mass, blackholes_binary, disk_surf_density_func, disk_aspect_ratio_func, timestep_duration_yr,
+                                disk_bh_pro_orb_ecc_crit):
+
+    bin_array = obj_to_binary_bh_array(blackholes_binary)
+
+    bin_array = orbital_bin_ecc_damping(smbh_mass, bin_array, disk_surf_density_func, disk_aspect_ratio_func, timestep_duration_yr,
+                                        disk_bh_pro_orb_ecc_crit)
+
+    blackholes_binary.bin_orb_ecc = bin_array[18, :]
+
+    return (blackholes_binary)
 
 
 def bin_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, disk_surf_density_func,

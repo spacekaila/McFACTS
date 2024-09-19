@@ -3,6 +3,8 @@ import scipy
 
 from mcfacts.mcfacts_random_state import rng
 import mcfacts.constants as mc_const
+from mcfacts.objects.agnobject import obj_to_binary_bh_array
+
 
 """Module for handling dynamical interactions
 
@@ -453,6 +455,33 @@ def circular_binaries_encounters_ecc_prograde(
     #return temp_dynamics_array
     return disk_bins_bhbh 
 
+def circular_binaries_encounters_ecc_prograde_obj(
+        smbh_mass,
+        disk_bh_pro_orbs_a,
+        disk_bh_pro_masses,
+        disk_bh_pro_orbs_ecc,
+        timestep_duration_yr,
+        disk_bh_pro_orb_ecc_crit,
+        delta_energy_strong,
+        blackholes_binary,
+        ):
+
+    disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
+
+    bindex = blackholes_binary.num
+
+    disk_bins_bhbh = circular_binaries_encounters_ecc_prograde(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_masses,
+                                                          disk_bh_pro_orbs_ecc, timestep_duration_yr,
+                                                          disk_bh_pro_orb_ecc_crit, delta_energy_strong,
+                                                          disk_bins_bhbh, bindex)
+
+    blackholes_binary.bin_sep = disk_bins_bhbh[8,:]
+    blackholes_binary.bin_orb_ecc = disk_bins_bhbh[18,:]
+    blackholes_binary.bin_ecc = disk_bins_bhbh[13,:]
+
+    return (blackholes_binary)
+
+
 def circular_binaries_encounters_circ_prograde(
         smbh_mass,
         disk_bh_pro_orbs_a,
@@ -594,6 +623,8 @@ def circular_binaries_encounters_circ_prograde(
     # The energy in the exchange is assumed to come from the binary binding energy around its c.o.m.
     # delta_energy_strong (read into this module) refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
     de_strong =0.9
+    # eccentricity correction--do not let ecc>=1, catch and reset to 1-epsilon
+    epsilon = 1e-8
 
     number_of_binaries = bindex
     # set up 1-d arrays for bin com, masses, separations, velocities of com, orbit time (in yrs), orbits/timestep
@@ -681,6 +712,8 @@ def circular_binaries_encounters_circ_prograde(
                                 #delta_energy_strong refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
                                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
+                                # eccentricity catch
+                                if bin_eccentricities[i] >= 1.0: bin_eccentricities[i]=1.0-epsilon
                                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
                                 # Change interloper parameters; increase a_ecc, increase e_ecc
                                 circ_prograde_population_locations[j] = circ_prograde_population_locations[j]*(1+delta_energy_strong)
@@ -710,6 +743,34 @@ def circular_binaries_encounters_circ_prograde(
     #TO DO: Also return array of modified circularized orbiters.
 
     return disk_bins_bhbh
+
+
+def circular_binaries_encounters_circ_prograde_obj(
+        smbh_mass,
+        disk_bh_pro_orbs_a,
+        disk_bh_pro_masses,
+        disk_bh_pro_orbs_ecc,
+        timestep_duration_yr,
+        disk_bh_pro_orb_ecc_crit,
+        delta_energy_strong,
+        blackholes_binary,
+        ):
+
+    disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
+
+    bindex = blackholes_binary.num
+
+    disk_bins_bhbh = circular_binaries_encounters_circ_prograde(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_masses,
+                                                                disk_bh_pro_orbs_ecc, timestep_duration_yr,
+                                                                disk_bh_pro_orb_ecc_crit, delta_energy_strong,
+                                                                disk_bins_bhbh, bindex)
+
+    blackholes_binary.bin_sep = disk_bins_bhbh[8,:]
+    blackholes_binary.bin_orb_ecc = disk_bins_bhbh[18,:]
+    blackholes_binary.bin_ecc = disk_bins_bhbh[13,:]
+
+    return (blackholes_binary)
+
 
 def bin_spheroid_encounter(
         smbh_mass,
@@ -882,6 +943,8 @@ def bin_spheroid_encounter(
     # The energy in the exchange is assumed to come from the binary binding energy around its c.o.m.
     # delta_energy_strong refers to the perturbation of the orbit of the binary c.o.m. around the SMBH, which is not as strongly perturbed (we take an 'average' perturbation) 
     de_strong =0.9
+    # eccentricity correction--do not let ecc>=1, catch and reset to 1-epsilon
+    epsilon = 1e-8
     # Spheroid normalization to allow for non-ideal NSC (cored/previous AGN episodes/disky population concentration/whatever)
     #Default initial value of i3,i3_rad
     i3 = 0.0
@@ -977,6 +1040,8 @@ def bin_spheroid_encounter(
                 # Change binary parameters; decr separation, incr ecc around com and orb_ecc
                 bin_separations[i] = bin_separations[i]*(1-de_strong)
                 bin_eccentricities[i] = bin_eccentricities[i]*(1+de_strong)
+                # eccentricity catch
+                if bin_eccentricities[i] >= 1.0: bin_eccentricities[i]=1.0-epsilon
                 bin_orbital_eccentricities[i] = bin_orbital_eccentricities[i]*(1+delta_energy_strong)
                 #Ignore interloper parameters, since just drawing randomly from NSC population.     
             if hard < 0:
@@ -1004,6 +1069,32 @@ def bin_spheroid_encounter(
             # End encounter
 
     return disk_bins_bhbh
+
+
+def bin_spheroid_encounter_obj(
+        smbh_mass,
+        timestep_duration_yr,
+        blackholes_binary,
+        time_passed,
+        nsc_bh_imf_powerlaw_index,
+        delta_energy_strong,
+        nsc_spheroid_normalization
+        ):
+    
+    disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
+
+    bindex = blackholes_binary.num
+
+
+    disk_bins_bhbh = bin_spheroid_encounter(smbh_mass, timestep_duration_yr, disk_bins_bhbh, time_passed, bindex,
+                                            nsc_bh_imf_powerlaw_index, delta_energy_strong, nsc_spheroid_normalization)
+    
+    blackholes_binary.bin_sep = disk_bins_bhbh[8,:]
+    blackholes_binary.bin_ecc = disk_bins_bhbh[13,:]
+    blackholes_binary.bin_orb_ecc = disk_bins_bhbh[18,:]
+    blackholes_binary.bin_orb_inc = disk_bins_bhbh[17,:]
+
+    return (blackholes_binary)
 
 def bin_recapture(
         bindex,
@@ -1058,6 +1149,19 @@ def bin_recapture(
         disk_bins_bhbh[17,j] = bin_orbital_inclinations[j]
 
     return disk_bins_bhbh
+
+
+def bin_recapture_obj(blackholes_binary, timestep_duration_yr):
+
+    disk_bins_bhbh = obj_to_binary_bh_array(blackholes_binary)
+
+    bindex = blackholes_binary.num
+
+    disk_bins_bhbh = bin_recapture(bindex, disk_bins_bhbh, timestep_duration_yr)
+
+    blackholes_binary.bin_orb_inc = disk_bins_bhbh[17,:]
+
+    return(blackholes_binary)
 
 def bh_near_smbh(
         smbh_mass,
