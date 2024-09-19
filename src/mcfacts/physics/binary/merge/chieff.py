@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_momenta):
+def chi_effective_old(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_momenta):
     """Calculate the effective spin :math:`\chi_{\rm eff}` associated with a merger.
 
     The measured effective spin of a merger is calculated as
@@ -60,7 +60,7 @@ def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angl
     return chi_eff
 
 
-def chi_effective_obj(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_mom):
+def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_ang_mom):
 
     total_masses = masses_1 + masses_2
     spins_1 = np.abs(spins_1)
@@ -77,7 +77,7 @@ def chi_effective_obj(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_
     return (chi_eff)
 
 
-def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_incs_wrt_disk):
+def chi_p_old(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_incs_wrt_disk):
     """Calculate the precessing spin component :math:`\chi_p` associated with a merger.
 
     chi_p = max[spin_1_perp, (q(4q+3)/(4+3q))* spin_2_perp]
@@ -155,7 +155,7 @@ def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bi
     return chi_p
 
 
-def chi_p_obj(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_orbs_inc):
+def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bin_orbs_inc):
     """Calculate the precessing spin component :math:`\chi_p` associated with a merger.
 
     chi_p = max[spin_1_perp, (q(4q+3)/(4+3q))* spin_2_perp]

@@ -410,7 +410,6 @@ def main():
                               attr="direction",
                               new_info=np.full(stars_retro.num, -1))
 
-
         # Tracker for all binaries ever formed in this galaxy
         num_bbh_gw_tracked = 0
 
@@ -663,7 +662,7 @@ def main():
                 # SF: I believe this step is handling an error checking thing that may have been
                 #     set up in the previous timeloop if e.g. a binary either merged or was ionized?
                 #     Please explain what this is and how it works right here?
-                bh_binary_id_num_unphysical = evolve.reality_check_obj(blackholes_binary=blackholes_binary)
+                bh_binary_id_num_unphysical = evolve.reality_check(blackholes_binary=blackholes_binary)
                 if bh_binary_id_num_unphysical.size > 0:
 
                     # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
@@ -908,7 +907,7 @@ def main():
                             blackholes_binary.remove_id_num(blackholes_binary.id_num[np.isnan(blackholes_binary.flag_merging)])
                             bh_binary_id_num_merger = blackholes_binary.id_num[np.nonzero(blackholes_binary.flag_merging)]
 
-                        bh_binary_id_num_unphysical = evolve.reality_check_obj(blackholes_binary=blackholes_binary)
+                        bh_binary_id_num_unphysical = evolve.reality_check(blackholes_binary=blackholes_binary)
                         if bh_binary_id_num_unphysical.size > 0:
                             # One of the key parameter (mass or location is zero). Not real. Delete binary. Remove column at index = ionization_flag
                             blackholes_binary.remove_id_num(bh_binary_id_num_unphysical)
@@ -916,21 +915,21 @@ def main():
 
                         if (bh_binary_id_num_merger.size > 0):
 
-                            bh_mass_merged = tichy08.merged_mass_obj(
+                            bh_mass_merged = tichy08.merged_mass(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_2")
                                 )
 
-                            bh_spin_merged = tichy08.merged_spin_obj(
+                            bh_spin_merged = tichy08.merged_spin(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_2")
                                 )
 
-                            bh_chi_eff_merged = chieff.chi_effective_obj(
+                            bh_chi_eff_merged = chieff.chi_effective(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
@@ -940,7 +939,7 @@ def main():
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "bin_orb_ang_mom")
                                     )
 
-                            bh_chi_p_merged = chieff.chi_p_obj(
+                            bh_chi_p_merged = chieff.chi_p(
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
                                     blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
@@ -1106,7 +1105,7 @@ def main():
                 filing_cabinet.update(id_num=bh_id_num_pro_inner_disk,
                                       attr="disk_inner_outer",
                                       new_info=np.full(len(bh_id_num_pro_inner_disk), -1))
-                
+
             # Check if any retrograde BHs are in the inner disk
             bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < disk_radius_safe_min]
             if (bh_id_num_retro_inner_disk.size > 0):
@@ -1128,7 +1127,7 @@ def main():
                 filing_cabinet.update(id_num=bh_id_num_retro_inner_disk,
                                       attr="disk_inner_outer",
                                       new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
-                
+
             if (blackholes_inner_disk.num > 0):
                 #FIX THIS: Return the new evolved bh_orb_ecc_inner_disk as they decay inwards.
                 #Potentially move inner disk behaviour to module that is not dynamics (e.g inner disk module)

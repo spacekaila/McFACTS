@@ -6,7 +6,7 @@ from astropy import constants as const
 from astropy import units as u
 from astropy.units import cds
 
-def add_to_binary_array(
+def add_to_binary_array_old(
         disk_bins_bhbh,
         disk_bh_pro_orbs_a,
         disk_bh_pro_masses,

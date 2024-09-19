@@ -1,7 +1,7 @@
 
 import numpy as np
 
-def merged_mass(masses_1, masses_2, spins_1, spins_2):
+def merged_mass_old(masses_1, masses_2, spins_1, spins_2):
     """Calculate the final mass of a merged binary.
 
     Using approximations from Tichy \& Maronetti (2008) where
@@ -46,7 +46,7 @@ def merged_mass(masses_1, masses_2, spins_1, spins_2):
     return merged_masses
 
 
-def merged_mass_obj(masses_1, masses_2, spins_1, spins_2):
+def merged_mass(masses_1, masses_2, spins_1, spins_2):
 
     mass_ratios = np.ones(masses_1.size)
     mass_ratios[masses_1 > masses_2] = masses_2[masses_1 > masses_2] / masses_1[masses_1 > masses_2]
@@ -64,7 +64,7 @@ def merged_mass_obj(masses_1, masses_2, spins_1, spins_2):
     return (merged_masses)
 
 
-def merged_spin(masses_1, masses_2, spins_1, spins_2):
+def merged_spin_old(masses_1, masses_2, spins_1, spins_2):
     """Calculate the spin magnitude of a merged binary.
 
     Only depends on M1,M2,a1,a2 and the binary ang mom around its center of mass.
@@ -107,7 +107,7 @@ def merged_spin(masses_1, masses_2, spins_1, spins_2):
     return merged_spins
 
 
-def merged_spin_obj(masses_1, masses_2, spins_1, spins_2):
+def merged_spin(masses_1, masses_2, spins_1, spins_2):
 
     mass_ratios = np.ones(masses_1.size)
     mass_ratios[masses_1 > masses_2] = masses_2[masses_1 > masses_2] / masses_1[masses_1 > masses_2]

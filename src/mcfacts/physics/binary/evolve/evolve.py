@@ -496,7 +496,7 @@ def evolve_gw_obj(blackholes_binary, smbh_mass, agn_redshift):
     return (blackholes_binary)
 
 
-def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_duration_yr, old_bbh_freq, agn_redshift):
+def bbh_gw_params_old(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_duration_yr, old_bbh_freq, agn_redshift):
     """This function evaluates the binary gravitational wave frequency and strain at the end of each timestep_duration_yr
     Set up binary GW frequency nu_gw = 1/pi *sqrt(GM_bin/a_bin^3). 
     Set up binary strain of h0 = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
@@ -608,7 +608,7 @@ def bbh_gw_params(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_d
     return (char_strain, nu_gw)
 
 
-def bbh_gw_params_obj(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timestep_duration_yr, old_bbh_freq, agn_redshift):
+def bbh_gw_params(blackholes_binary, bh_binary_id_num_gw, smbh_mass, timestep_duration_yr, old_bbh_freq, agn_redshift):
 
     redshift_d_obs_dict = {0.1: 421*u.Mpc,
                            0.5: 1909*u.Mpc}
@@ -991,7 +991,7 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
             
     return ionization_flag
 
-def reality_check(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
+def reality_check_old(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
     """ This function tests to see if the binary is real. If location = 0 or mass = 0 *and* any other element is NON-ZERO then discard this binary element.
         Returns flag, negative for default, if positive it is the index of the binary column to be deleted.
 
@@ -1033,7 +1033,7 @@ def reality_check(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
     return reality_flag
 
 
-def reality_check_obj(blackholes_binary):
+def reality_check(blackholes_binary):
     """ This function tests to see if the binary is real. If location = 0 or mass = 0 *and* any other element is NON-ZERO then discard this binary element.
         Returns ID numbers of fake binaries.
 
