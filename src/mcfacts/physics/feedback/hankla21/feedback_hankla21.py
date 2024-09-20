@@ -1,6 +1,6 @@
 import numpy as np
 
-def feedback_hankla(disk_bh_pro_orbs_a, disk_surf_density_func, disk_bh_eddington_ratio, disk_alpha_viscosity):
+def feedback_hankla(disk_bh_pro_orbs_a, disk_surf_density_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity, disk_radius_outer):
     """Calculate the ratio of radiative feedback torque to migration torque.
 
     This feedback model uses Eqn. 28 in Hankla, Jiang & Armitage (2020)
@@ -35,14 +35,18 @@ def feedback_hankla(disk_bh_pro_orbs_a, disk_surf_density_func, disk_bh_eddingto
         Prograde singleton BH semi-major axes
     disk_surf_density_func : function
         AGN gas disk surface density interpolator function
+    disk_opacity_model : lambda
+        Opacity as a function of radius
     disk_bh_eddington_ratio : float
         The accretion rate Eddington ratio for black holes in the disk
     disk_alpha_viscosity : float
         Disk gas viscocity alpha parameter
+    disk_radius_outer : float
+            final element of disk_model_radius_array (units of r_g)
 
     Returns
     -------
-    ratio_feedback_to_mig : float array
+    ratio_feedback_migration_torque : float array
         ratio of feedback torque to migration torque for each entry in prograde_bh_locations
     """
 
@@ -51,9 +55,12 @@ def feedback_hankla(disk_bh_pro_orbs_a, disk_surf_density_func, disk_bh_eddingto
 
     #Define kappa (or set up a function to call).
     #kappa = 10^0.76 cm^2/g = 10^(0.76) (10^-2m)^2/10^-3kg=10^(0.76-1)=10^(-0.24) m^2/kg to match units of Sigma
-    kappa = 10**(-0.24)
-
-    ratio_feedback_migration_torque = 0.07 * (1/kappa) * (disk_alpha_viscosity)**(-1.5) * \
+    disk_opacity = disk_opacity_func(disk_bh_pro_orbs_a)
+    
+    ratio_feedback_migration_torque = 0.07 * (1/disk_opacity) * (disk_alpha_viscosity)**(-1.5) * \
                                       disk_bh_eddington_ratio * np.sqrt(disk_bh_pro_orbs_a) / disk_surface_density
+
+    # set ratio = 1 (no migration) for black holes beyond the disk outer radius
+    ratio_feedback_migration_torque[np.where(disk_bh_pro_orbs_a > disk_radius_outer)] = 1
 
     return ratio_feedback_migration_torque
