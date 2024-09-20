@@ -189,7 +189,7 @@ def change_bin_spin_angles_obj(blackholes_binary, disk_bh_eddington_ratio, spin_
     return (blackholes_binary)
 
 
-def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity):
+def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity, disk_radius_outer):
     """_summary_
     This feedback model uses Eqn. 28 in Hankla, Jiang & Armitage (2020)
     which yields the ratio of heating torque to migration torque.
@@ -230,6 +230,8 @@ def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func, disk_opacity_fu
         Super-Eddington accretion rates are permitted.
     disk_alpha_viscosity : float
         Disk viscosity parameter (e.g. alpha = 0.1 in Sirko & Goodman 2003).
+    disk_radius_outer : float
+            final element of disk_model_radius_array (units of r_g)
 
     Returns
     -------
@@ -247,17 +249,20 @@ def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func, disk_opacity_fu
     ratio_feedback_migration_torque_bin_com = 0.07 * (1/disk_opacity) * ((disk_alpha_viscosity)**(-1.5)) * \
                                               disk_bh_eddington_ratio*np.sqrt(temp_bin_com_locations) / \
                                               disk_surface_density
+    
+    # set ratio = 1 (no migration) for binaries beyond the disk outer radius
+    ratio_feedback_migration_torque_bin_com[np.where(temp_bin_com_locations > disk_radius_outer)] = 1
 
     return ratio_feedback_migration_torque_bin_com
 
 
-def com_feedback_hankla_obj(blackholes_binary, disk_surf_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity):
+def com_feedback_hankla_obj(blackholes_binary, disk_surf_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity, disk_radius_outer):
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
     ratio_feedback_migration_torque_bin_com = com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func,
                                                                   disk_opacity_func, disk_bh_eddington_ratio,
-                                                                  disk_alpha_viscosity)
+                                                                  disk_alpha_viscosity, disk_radius_outer)
 
     return (ratio_feedback_migration_torque_bin_com)
 
