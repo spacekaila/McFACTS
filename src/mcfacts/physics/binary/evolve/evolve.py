@@ -15,9 +15,9 @@ def change_bin_mass(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio, disk_bh_ed
     disk_bin_bhbh_pro_array : float array
         Array of binary black holes in prograde orbits around SMBH
     disk_bh_eddington_ratio : float
-        user chosen input set by input file; Accretion rate of fully embedded stellar mass 
+        user chosen input set by input file; Accretion rate of fully embedded stellar mass
         black hole in units of Eddington accretion rate. 1.0=embedded BH accreting at Eddington.
-        Super-Eddington accretion rates are permitted.    
+        Super-Eddington accretion rates are permitted.
     disk_bh_eddington_mass_growth_rate : float
         fractional rate of mass growth AT Eddington accretion rate per year (2.3e-8)
     timestep_duration_yr : float
@@ -29,22 +29,22 @@ def change_bin_mass(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio, disk_bh_ed
     -------
     disk_bin_bhbh_pro_array : float array
         Updated disk_bin_bhbh_pro_array after accreting mass at prescribed rate for one timestep
-    
+
     """
-    
+
     bindex = int(bin_index)
-    
-    for j in range(0, bindex): 
+
+    for j in range(0, bindex):
             if disk_bin_bhbh_pro_array[11,j] < 0:
                 #do nothing -merger happened!
                 pass
-            else:            
-                temp_bh_mass_1 = disk_bin_bhbh_pro_array[2,j] 
+            else:
+                temp_bh_mass_1 = disk_bin_bhbh_pro_array[2,j]
                 temp_bh_mass_2 = disk_bin_bhbh_pro_array[3,j]
                 mass_growth_factor = np.exp(disk_bh_eddington_mass_growth_rate*disk_bh_eddington_ratio*timestep_duration_yr)
                 new_bh_mass_1 = temp_bh_mass_1*mass_growth_factor
                 new_bh_mass_2 = temp_bh_mass_2*mass_growth_factor
-                
+
                 disk_bin_bhbh_pro_array[2,j] = new_bh_mass_1
                 disk_bin_bhbh_pro_array[3,j] = new_bh_mass_2
 
@@ -76,9 +76,9 @@ def change_bin_spin_magnitudes(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio,
     disk_bin_bhbh_pro_array : float array
         Array of binary black holes in prograde orbits around SMBH
     disk_bh_eddington_ratio : float
-        user chosen input set by input file; Accretion rate of fully embedded stellar mass 
+        user chosen input set by input file; Accretion rate of fully embedded stellar mass
         black hole in units of Eddington accretion rate. 1.0=embedded BH accreting at Eddington.
-        Super-Eddington accretion rates are permitted.    
+        Super-Eddington accretion rates are permitted.
     disk_bh_torque_condition : float
         fraction of initial mass required to be accreted before BH spin is torqued
         fully into alignment with the AGN disk. We don't know for sure but
@@ -92,23 +92,23 @@ def change_bin_spin_magnitudes(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio,
     -------
     disk_bin_bhbh_pro_array : float array
         Updated disk_bin_bhbh_pro_array after spin up of BH at prescribed rate for one timestep_duration_yr
-    
+
     """
-    
+
     normalized_Eddington_ratio = disk_bh_eddington_ratio/1.0
     normalized_timestep = timestep_duration_yr/1.e4
     normalized_spin_torque_condition = disk_bh_torque_condition/0.1
-    
+
     #max allowed spin
     max_allowed_spin=0.98
     bindex = int(bin_index)
-    
+
     for j in range(0, bindex):
             if disk_bin_bhbh_pro_array[11,j] < 0:
                 #do nothing -merger happened!
                 pass
             else:
-                temp_bh_spin_1 = disk_bin_bhbh_pro_array[4,j] 
+                temp_bh_spin_1 = disk_bin_bhbh_pro_array[4,j]
                 temp_bh_spin_2 = disk_bin_bhbh_pro_array[5,j]
                 spin_change_factor = 4.4e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep
                 new_bh_spin_1 = temp_bh_spin_1 + spin_change_factor
@@ -117,10 +117,10 @@ def change_bin_spin_magnitudes(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio,
                     new_bh_spin_1 = max_allowed_spin
                 if new_bh_spin_2 > max_allowed_spin:
                     new_bh_spin_2 = max_allowed_spin
-                
+
                 disk_bin_bhbh_pro_array[4,j] = new_bh_spin_1
                 disk_bin_bhbh_pro_array[5,j] = new_bh_spin_2
-                
+
     return disk_bin_bhbh_pro_array
 
 
@@ -149,14 +149,14 @@ def change_bin_spin_angles(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio, spi
     #Extract the binary locations and spin magnitudes
     bindex = int(bin_index)
     # Run over active binaries (j is jth binary; i is the ith property of the jth binary, e.g. mass1,mass 2 etc)
-    
+
     for j in range(0, bindex):
             if disk_bin_bhbh_pro_array[11,j] < 0:
                 #do nothing -merger happened!
                 pass
             else:
             #for i in range(0, integer_nbinprop):
-                temp_bh_spin_angle_1 = disk_bin_bhbh_pro_array[6,j] 
+                temp_bh_spin_angle_1 = disk_bin_bhbh_pro_array[6,j]
                 temp_bh_spin_angle_2 = disk_bin_bhbh_pro_array[7,j]
                 #bh_new_spin_angles[prograde_orb_ang_mom_indices]=bh_new_spin_angles[prograde_orb_ang_mom_indices]-(6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
                 spin_angle_change_factor = (6.98e-3*normalized_Eddington_ratio*normalized_spin_torque_condition*normalized_timestep)
@@ -189,16 +189,16 @@ def change_bin_spin_angles_obj(blackholes_binary, disk_bh_eddington_ratio, spin_
     return (blackholes_binary)
 
 
-def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_model, disk_bh_eddington_ratio, alpha):
+def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity, disk_radius_outer):
     """_summary_
     This feedback model uses Eqn. 28 in Hankla, Jiang & Armitage (2020)
     which yields the ratio of heating torque to migration torque.
-    Heating torque is directed outwards. 
+    Heating torque is directed outwards.
     So, Ratio <1, slows the inward migration of an object. Ratio>1 sends the object migrating outwards.
     The direction & magnitude of migration (effected by feedback) will be executed in type1.py.
 
     The ratio of torque due to heating to Type 1 migration torque is calculated as
-    R   = Gamma_heat/Gamma_mig 
+    R   = Gamma_heat/Gamma_mig
         ~ 0.07 (speed of light/ Keplerian vel.)(Eddington ratio)(1/optical depth)(1/alpha)^3/2
     where Eddington ratio can be >=1 or <1 as needed,
     optical depth (tau) = Sigma* kappa
@@ -208,52 +208,61 @@ def com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_model, disk_bh_edding
     So tau = Sigma*0.575 where Sigma is in kg/m^2.
     Since v_kep = c/sqrt(a(r_g)) then
     R   ~ 0.07 (a(r_g))^{1/2}(Edd_ratio) (1/tau) (1/alpha)^3/2
-    So if assume a=10^3r_g, Sigma=7.e6kg/m^2, alpha=0.01, tau=0.575*Sigma (SG03 disk model), Edd_ratio=1, 
+    So if assume a=10^3r_g, Sigma=7.e6kg/m^2, alpha=0.01, tau=0.575*Sigma (SG03 disk model), Edd_ratio=1,
     R   ~5.5e-4 (a/10^3r_g)^(1/2) (Sigma/7.e6) v.small modification to in-migration at a=10^3r_g
         ~0.243 (R/10^4r_g)^(1/2) (Sigma/5.e5)  comparable.
         >1 (a/2x10^4r_g)^(1/2)(Sigma/) migration is *outward* at >=20,000r_g in SG03
         >10 (a/7x10^4r_g)^(1/2)(Sigma/) migration outwards starts to runaway in SG03
 
-    TO DO: Need alpha as an input for disk model (alpha=0.01 is SG03 default)
-    TO (MAYBE) DO: kappa default as an input? Or kappa table? Or kappa user set?
-    
     Parameters
     ----------
-    
     disk_bin_bhbh_pro_array : float array
-        binary array. Row 9 is center of mass of binary BH at start of timestep_duration_yr in units of gravitational radii (r_g=GM_SMBH/c^2)
-    disk_surf_model : function
+        binary array. Row 9 is center of mass of binary BH at start of timestep_duration_yr
+        in units of gravitational radii (r_g=GM_SMBH/c^2)
+    disk_surf_func : lambda
         returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
         can accept a simple float (constant), but this is deprecated
+    disk_opacity_func : lambda
+        Opacity as a function of radius
+    disk_bh_eddington_ratio : float
+        user chosen input set by input file; Accretion rate of fully embedded stellar mass
+        black hole in units of Eddington accretion rate. 1.0=embedded BH accreting at Eddington.
+        Super-Eddington accretion rates are permitted.
+    disk_alpha_viscosity : float
+        Disk viscosity parameter (e.g. alpha = 0.1 in Sirko & Goodman 2003).
+    disk_radius_outer : float
+            final element of disk_model_radius_array (units of r_g)
 
     Returns
     -------
-    ratio_feedback_to_mig : float array
+    ratio_feedback_migration_torque_bin_com : float array
         ratio of feedback torque to migration torque for each entry in prograde_bh_locations
     """
     #Extract the binary locations and masses
     temp_bin_com_locations = disk_bin_bhbh_pro_array[9,:]
-    # get surface density function, or deal with it if only a float
-    if isinstance(disk_surf_model, float):
-        disk_surface_density = disk_surf_model
-    else:
-        disk_surface_density = disk_surf_model(temp_bin_com_locations)
+    # get surface density function
+    disk_surface_density = disk_surf_func(temp_bin_com_locations)
 
-    #Define kappa (or set up a function to call). 
-    #kappa = 10^0.76 cm^2/g = 10^(0.76) (10^-2m)^2/10^-3kg=10^(0.76-1)=10^(-0.24) m^2/kg to match units of Sigma
-    kappa = 10**(-0.24)
+    #Define kappa (or set up a function to call).
+    disk_opacity = disk_opacity_func(temp_bin_com_locations)
 
-    Ratio_feedback_migration_torque_bin_com = 0.07 *(1/kappa)* ((alpha)**(-1.5))*disk_bh_eddington_ratio*np.sqrt(temp_bin_com_locations)/disk_surface_density
+    ratio_feedback_migration_torque_bin_com = 0.07 * (1/disk_opacity) * ((disk_alpha_viscosity)**(-1.5)) * \
+                                              disk_bh_eddington_ratio*np.sqrt(temp_bin_com_locations) / \
+                                              disk_surface_density
+    
+    # set ratio = 1 (no migration) for binaries beyond the disk outer radius
+    ratio_feedback_migration_torque_bin_com[np.where(temp_bin_com_locations > disk_radius_outer)] = 1
 
-    return Ratio_feedback_migration_torque_bin_com
+    return ratio_feedback_migration_torque_bin_com
 
 
-def com_feedback_hankla_obj(blackholes_binary, disk_surf_model, disk_bh_eddington_ratio, alpha):
+def com_feedback_hankla_obj(blackholes_binary, disk_surf_func, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity, disk_radius_outer):
 
     disk_bin_bhbh_pro_array = obj_to_binary_bh_array(blackholes_binary)
 
-    ratio_feedback_migration_torque_bin_com = com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_model,
-                                                                  disk_bh_eddington_ratio, alpha)
+    ratio_feedback_migration_torque_bin_com = com_feedback_hankla(disk_bin_bhbh_pro_array, disk_surf_func,
+                                                                  disk_opacity_func, disk_bh_eddington_ratio,
+                                                                  disk_alpha_viscosity, disk_radius_outer)
 
     return (ratio_feedback_migration_torque_bin_com)
 
@@ -262,15 +271,15 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     """This function calculates how far the center of mass of a binary migrates in an AGN gas disk in a time
     of length timestep_duration_yr, assuming a gas disk surface density and aspect ratio profile, for
     objects of specified masses and starting locations, and returns their new locations
-    after migration over one timestep_duration_yr. Uses standard Type I migration prescription, 
-    modified by Hankla+22 feedback model if included. 
+    after migration over one timestep_duration_yr. Uses standard Type I migration prescription,
+    modified by Hankla+22 feedback model if included.
     This is an exact copy of mcfacts.physics.migration.type1.type1
 
     Parameters
     ----------
     smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Full binary array.
     disk_surf_model : function
         returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
@@ -285,11 +294,11 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     disk_radius_trap : float
         location of migration trap in units of r_g. From Bellovary+16, should be 700r_g for Sirko & Goodman '03, 245r_g for Thompson et al. '05
     disk_bh_pro_orb_ecc_crit : float
-        User defined critical orbital eccentricity for pro BH, below which BH are considered circularized        
+        User defined critical orbital eccentricity for pro BH, below which BH are considered circularized
 
     Returns
     -------
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Returns modified disk_bin_bhbh_pro_array with updated center of masses of the binary bhbh.
     """
 
@@ -306,7 +315,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     if isinstance(disk_aspect_ratio_model, float):
         disk_aspect_ratio = disk_aspect_ratio_model
     else:
-        disk_aspect_ratio = disk_aspect_ratio_model(bin_com) 
+        disk_aspect_ratio = disk_aspect_ratio_model(bin_com)
 
     # This is an exact copy of mcfacts.physics.migration.type1.type1.
     tau_mig = ((disk_aspect_ratio**2)* scipy.constants.c/(3.0*scipy.constants.G) * (smbh_mass/bin_mass) / disk_surface_density) / np.sqrt(bin_com)
@@ -323,7 +332,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     all_inwards_migrators = bin_com[index_inwards_modified]
 
     #Given a population migrating inwards
-    if index_inwards_size > 0: 
+    if index_inwards_size > 0:
         for i in range(0,index_inwards_size):
                 # Among all inwards migrators, find location in disk & compare to trap radius
                 critical_distance = all_inwards_migrators[i]
@@ -343,13 +352,13 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
                 if critical_distance == disk_radius_trap:
                     disk_bin_bhbh_pro_orbs_a[actual_index] = bin_com[actual_index]
 
-    # Find indices of objects where feedback ratio >1; these migrate outwards. 
+    # Find indices of objects where feedback ratio >1; these migrate outwards.
     index_outwards_modified = np.where(feedback_ratio >1)[0]
 
     if index_outwards_modified.size > 0:
         disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = bin_com[index_outwards_modified] +(migration_distance[index_outwards_modified]*(feedback_ratio[index_outwards_modified]-1))
         # catch to keep stuff from leaving the outer radius of the disk!
-        if disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer: disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = disk_radius_outer
+        disk_bin_bhbh_pro_orbs_a[np.where(disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer)] = disk_radius_outer
     
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
     index_unchanged = np.where(feedback_ratio == 1)[0]
@@ -357,7 +366,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     # If BH location > trap radius, migrate inwards
         for i in range(0,index_unchanged.size):
             locn_index = index_unchanged[i]
-            if bin_com[locn_index] > disk_radius_trap:    
+            if bin_com[locn_index] > disk_radius_trap:
                 disk_bin_bhbh_pro_orbs_a[locn_index] = bin_com[locn_index] - migration_distance[locn_index]
             # if new location is <= trap radius, set location to trap radius
                 if disk_bin_bhbh_pro_orbs_a[locn_index] <= disk_radius_trap:
@@ -369,17 +378,17 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
                 #if new location is >= trap radius, set location to trap radius
                 if disk_bin_bhbh_pro_orbs_a[locn_index] >= disk_radius_trap:
                     disk_bin_bhbh_pro_orbs_a[locn_index] = disk_radius_trap
-    
+
     #Distance travelled per binary is old location of com minus new location of com. Is +ive(-ive) if migrating in(out)
     dist_travelled = disk_bin_bhbh_pro_array[9,:] - disk_bin_bhbh_pro_orbs_a
-    
+
     num_of_bins = np.count_nonzero(disk_bin_bhbh_pro_array[2,:])
-    
+
     for i in range(num_of_bins):
         # If circularized then migrate
         if disk_bin_bhbh_pro_array[18,i] <= disk_bh_pro_orb_ecc_crit:
             disk_bin_bhbh_pro_array[9,i] = disk_bin_bhbh_pro_orbs_a[i]
-        # If not circularized, no migration    
+        # If not circularized, no migration
         if disk_bin_bhbh_pro_array[18,i] > disk_bh_pro_orb_ecc_crit:
             pass
 
@@ -409,10 +418,10 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift):
     h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
     where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
     Assume binary is located at z=0.1=422Mpc for now.
-    
+
     Parameters
-    ---------- 
-    disk_bin_bhbh_pro_array : float array 
+    ----------
+    disk_bin_bhbh_pro_array : float array
         Full binary array.
     bin_index : int
         number of binaries in array
@@ -423,7 +432,7 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift):
 
     Returns
     -------
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
 
     """
@@ -443,7 +452,7 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift):
         temp_mass_2_kg = m_sun*temp_mass_2
         temp_bin_mass_kg = m_sun*temp_bin_mass
         temp_bin_separation_meters = temp_bin_separation*rg
-        
+
         m_chirp = ((temp_mass_1_kg*temp_mass_2_kg)**(3/5))/(temp_bin_mass_kg**(1/5))
         rg_chirp = (scipy.constants.G * m_chirp)/(scipy.constants.c**(2.0))
         # If separation is less than rg_chirp then cap separation at rg_chirp.
@@ -453,8 +462,8 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift):
         nu_gw = (1.0/scipy.constants.pi)*np.sqrt(temp_bin_mass_kg*scipy.constants.G/(temp_bin_separation_meters**(3.0)))
         disk_bin_bhbh_pro_array[19,j] = nu_gw
 
-        # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc 
-        # 1Mpc = 3.1e22m. 
+        # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc
+        # 1Mpc = 3.1e22m.
         Mpc = 3.1e22
         # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
         # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
@@ -463,19 +472,19 @@ def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift):
         d_obs = (redshift*u.Mpc).to(u.meter).value  #1909*Mpc
 
         strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw*rg_chirp/scipy.constants.c)**(2/3)
-        # But power builds up in band over multiple cycles! 
+        # But power builds up in band over multiple cycles!
         # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
         strain_factor = 1
         if nu_gw < 10**(-6):
             strain_factor = np.sqrt(nu_gw*np.pi*(10**7)/8)
 
         if nu_gw > 10**(-6):
-            strain_factor = 4.e3    
+            strain_factor = 4.e3
         # char amplitude = sqrt(N/8)h_0 and N=freq*1yr for approx const. freq. sources over ~~yr.
         # So in LISA band
         #For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt)
         disk_bin_bhbh_pro_array[20,j] = strain_factor*strain
-        
+
     return disk_bin_bhbh_pro_array
 
 
@@ -498,28 +507,28 @@ def evolve_gw_obj(blackholes_binary, smbh_mass, agn_redshift):
 
 def bbh_gw_params_old(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timestep_duration_yr, old_bbh_freq, agn_redshift):
     """This function evaluates the binary gravitational wave frequency and strain at the end of each timestep_duration_yr
-    Set up binary GW frequency nu_gw = 1/pi *sqrt(GM_bin/a_bin^3). 
+    Set up binary GW frequency nu_gw = 1/pi *sqrt(GM_bin/a_bin^3).
     Set up binary strain of h0 = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
     where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
     Assume binary is located at z=0.1=422Mpc for now.
     For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc and 1Mpc = 3.1e22m.
     From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
     (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-    But power builds up in band over multiple cycles! 
-    So characteristic strain amplitude measured by e.g. LISA is given by 
-            h_char^2 = N/8*h_0^2 
-    where N is number of cycles per year & divide by 8 to average over viewing angles. 
-    So, h_char is given by 
+    But power builds up in band over multiple cycles!
+    So characteristic strain amplitude measured by e.g. LISA is given by
+            h_char^2 = N/8*h_0^2
+    where N is number of cycles per year & divide by 8 to average over viewing angles.
+    So, h_char is given by
     char amplitude = strain_factor*h0
-                   = sqrt(N/8)*h_0 
+                   = sqrt(N/8)*h_0
     and for a source that is approximately constant frequency over a year, N=freq*1yr.
     For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt). In that case:
     char amplitude = strain_factor*h0
-                   = sqrt(freq^2/(dfreq/dt)/8)*h_0    
+                   = sqrt(freq^2/(dfreq/dt)/8)*h_0
 
     Parameters
     ----------
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Full binary array.
     bbh_gw_indices : int
         indices of bhbh pro binaries in array that have bin separations < min_bbh_gw_sep (=2.0r_g,SMBH by default).
@@ -535,7 +544,7 @@ def bbh_gw_params_old(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timest
 
     Returns
     -------
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
     """
 
@@ -569,7 +578,7 @@ def bbh_gw_params_old(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timest
             temp_mass_2_kg = ((temp_mass_2*cds.Msun).to(u.kg)).value #m_sun*temp_mass_2
             temp_bin_mass_kg = ((temp_bin_mass*cds.Msun).to(u.kg)).value #m_sun*temp_bin_mass
             temp_bin_separation_meters = temp_bin_separation*rg
-        
+
             m_chirp = ((temp_mass_1_kg*temp_mass_2_kg)**(3/5))/(temp_bin_mass_kg**(1/5))
             rg_chirp = (scipy.constants.G * m_chirp)/(scipy.constants.c**(2.0))
             # If separation is less than rg_chirp then cap separation at rg_chirp.
@@ -588,7 +597,7 @@ def bbh_gw_params_old(disk_bin_bhbh_pro_array, bbh_gw_indices, smbh_mass, timest
             # But power builds up in band over multiple cycles! 
             # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
             strain_factor = 1
-            
+
             if nu_gw[j] < 10**(-6):
             # char amplitude = strain_factor*h0
             #                = sqrt(N/8)*h_0 and N=freq*1yr for approx const. freq. sources over ~~yr.
@@ -681,21 +690,21 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
     For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc and 1Mpc = 3.1e22m.
     From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
     (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
-    But power builds up in band over multiple cycles! 
-    So characteristic strain amplitude measured by e.g. LISA is given by 
-            h_char^2 = N/8*h_0^2 
-    where N is number of cycles per year & divide by 8 to average over viewing angles. 
-    So, h_char is given by 
+    But power builds up in band over multiple cycles!
+    So characteristic strain amplitude measured by e.g. LISA is given by
+            h_char^2 = N/8*h_0^2
+    where N is number of cycles per year & divide by 8 to average over viewing angles.
+    So, h_char is given by
     char amplitude = strain_factor*h0
-                   = sqrt(N/8)*h_0 
+                   = sqrt(N/8)*h_0
     and for a source that is approximately constant frequency over a year, N=freq*1yr.
     For a source changing rapidly over 1 yr, N~freq^2/ (dfreq/dt). In that case:
     char amplitude = strain_factor*h0
-                   = sqrt(freq^2/(dfreq/dt)/8)*h_0    
-    
+                   = sqrt(freq^2/(dfreq/dt)/8)*h_0
+
     Parameters
     ----------
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Full binary array.
     bbh_gw_indices : int
         indices of bhbh pro binaries in array that have bin separations < min_bbh_gw_sep (=2.0r_g,SMBH by default).
@@ -704,12 +713,12 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
         mass of supermassive black hole in units of solar masses
     timestep_duration_yr : float
         size of timestep_duration_yr in years
-    old_gw_freq : float 
-        gw freq of this EMRI pro on previous timestep, so characteristic strain can be calculated (function of rate of change over timestep)        
+    old_gw_freq : float
+        gw freq of this EMRI pro on previous timestep, so characteristic strain can be calculated (function of rate of change over timestep)
 
     Returns
     -------
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
 
     """
@@ -747,11 +756,11 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
         #Year in seconds. Multiply to get timestep_duration_yr in seconds
         year = 3.15e7
         timestep_secs = year*timestep_duration_yr
-        
+
         # Set up binary strain of GW
         # h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
         # where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
-        
+
         m_chirp = ((temp_mass_1_kg*temp_mass_2_kg)**(3/5))/(temp_bin_mass_kg**(1/5))
         rg_chirp = (scipy.constants.G * m_chirp)/(scipy.constants.c**(2.0))
         # If separation is less than rg_chirp then cap separation at rg_chirp.
@@ -760,16 +769,16 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
 
         nu_gw[i] = (1.0/scipy.constants.pi)*np.sqrt(temp_bin_mass_kg*scipy.constants.G/(temp_bin_separation_meters**(3.0)))
 
-        # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc 
-        # 1Mpc = 3.1e22m. 
+        # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc
+        # 1Mpc = 3.1e22m.
         Mpc = 3.1e22
         # From Ned Wright's calculator https://www.astro.ucla.edu/~wright/CosmoCalc.html
         # (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
         d_obs = 1909*Mpc
         strain = (4/d_obs)*rg_chirp*(np.pi*nu_gw[i]*rg_chirp/scipy.constants.c)**(2/3)
-        # But power builds up in band over multiple cycles! 
+        # But power builds up in band over multiple cycles!
         # So characteristic strain amplitude measured by e.g. LISA is given by h_char^2 = N/8*h_0^2 where N is number of cycles per year & divide by 8 to average over viewing angles
-        strain_factor = 1        
+        strain_factor = 1
 
         if nu_gw[i] < 10**(-6):
             # char amplitude = strain_factor*h0
@@ -784,10 +793,10 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
             dnu_dt = dnu/timestep_secs
             nusq = nu_gw[i]*nu_gw[i]
             strain_factor = np.sqrt((nusq/dnu_dt)/8)
-        
+
 
         char_strain[i] = strain_factor*strain
-        
+
     return char_strain,nu_gw
 
 def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
@@ -795,24 +804,24 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
         Returns index of binary to be ionized. Otherwise returns -1.
         The limit is set to some fraction of the binary Hill sphere, frac_R_hill
 
-        Default is frac_R_hill =1.0 (ie binary is ionized at the Hill sphere). 
+        Default is frac_R_hill =1.0 (ie binary is ionized at the Hill sphere).
         Change frac_R_hill if you're testing binary formation at >R_hill.
-        
+
         R_hill = a_com*(M_bin/3M_smbh)^1/3
 
         where a_com is the radial disk location of the binary center of mass (given by disk_bin_bhbh_pro_array[9,*]),
         M_bin = M_1 + M_2 = disk_bin_bhbh_pro_array[2,*]+disk_bin_bhbh_pro_array[3,*] is the binary mass
-        M_smbh is the SMBH mass (given by smbh_mass) 
-        
+        M_smbh is the SMBH mass (given by smbh_mass)
+
         and binary separation is in disk_bin_bhbh_pro_array[8,*].
-        Condition is 
+        Condition is
         if bin_separation > frac_R_hill*R_hill:
             Ionize binary. Return flag valued at index of binary in disk_bin_bhbh_pro_array.
             Then in test1.py remove binary from disk_bin_bhbh_pro_array! decrease bin_index by 1.
             Add two new singletons to the singleton arrays.
         Parameters
-        ---------- 
-        disk_bin_bhbh_pro_array : float array 
+        ----------
+        disk_bin_bhbh_pro_array : float array
             Full binary array.
         bin_index : int
             number of binaries in array
@@ -876,8 +885,8 @@ def contact_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
         Since binary separation is in units of r_g (GM_smbh/c^2) then condition is simply:
             binary_separation < M_chirp/M_smbh
         Parameters
-        ---------- 
-        disk_bin_bhbh_pro_array : float array 
+        ----------
+        disk_bin_bhbh_pro_array : float array
             Full binary array.
         bin_index : int
             number of binaries in array
@@ -886,7 +895,7 @@ def contact_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
 
         Returns
         -------
-        disk_bin_bhbh_pro_array : float array 
+        disk_bin_bhbh_pro_array : float array
             Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
         """
     for j in range(0,bin_index):
@@ -931,24 +940,24 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
         Returns index of binary to be ionized. Otherwise returns -1.
         The limit is set to some fraction of the binary Hill sphere, frac_R_hill
 
-        Default is frac_R_hill =1.0 (ie binary is ionized at the Hill sphere). 
+        Default is frac_R_hill =1.0 (ie binary is ionized at the Hill sphere).
         Change frac_R_hill if you're testing binary formation at >R_hill.
-        
+
         R_hill = a_com*(M_bin/3M_smbh)^1/3
 
         where a_com is the radial disk location of the binary center of mass (given by disk_bin_bhbh_pro_array[9,*]),
         M_bin = M_1 + M_2 = disk_bin_bhbh_pro_array[2,*]+disk_bin_bhbh_pro_array[3,*] is the binary mass
-        M_smbh is the SMBH mass (given by smbh_mass) 
-        
+        M_smbh is the SMBH mass (given by smbh_mass)
+
         and binary separation is in disk_bin_bhbh_pro_array[8,*].
-        Condition is 
+        Condition is
         if bin_separation > frac_R_hill*R_hill:
             Ionize binary. Return flag valued at index of binary in disk_bin_bhbh_pro_array.
             Then in test1.py remove binary from disk_bin_bhbh_pro_array! decrease bin_index by 1.
             Add two new singletons to the singleton arrays.
         Parameters
-        ---------- 
-        disk_bin_bhbh_pro_array : float array 
+        ----------
+        disk_bin_bhbh_pro_array : float array
             Full binary array.
         bin_index : int
             number of binaries in array
@@ -957,7 +966,7 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
 
         Returns
         -------
-        disk_bin_bhbh_pro_array : float array 
+        disk_bin_bhbh_pro_array : float array
             Returns modified disk_bin_bhbh_pro_array with updated GW properties (strain,freq) bhbh.
 
     """
@@ -988,7 +997,7 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
             #Ionize binary!!!
             # print("disk_bin_bhbh_pro_array index",j)
             ionization_flag = j
-            
+
     return ionization_flag
 
 def reality_check_old(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
