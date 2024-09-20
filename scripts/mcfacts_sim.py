@@ -479,7 +479,8 @@ def main():
                     disk_surface_density,
                     disk_opacity,
                     opts.disk_bh_eddington_ratio,
-                    opts.disk_alpha_viscosity)
+                    opts.disk_alpha_viscosity,
+                    opts.disk_radius_outer)
             else:
                 ratio_heat_mig_torques = np.ones(len(blackholes_pro.orb_a))
 
@@ -489,7 +490,8 @@ def main():
                 disk_surface_density,
                 disk_opacity,
                 opts.disk_star_eddington_ratio,
-                opts.disk_alpha_viscosity
+                opts.disk_alpha_viscosity,
+                opts.disk_radius_outer
             )
 
             # then migrate as usual
@@ -783,7 +785,8 @@ def main():
                             disk_surface_density,
                             disk_opacity,
                             opts.disk_bh_eddington_ratio,
-                            opts.disk_alpha_viscosity
+                            opts.disk_alpha_viscosity,
+                            opts.disk_radius_outer
                         )
                     else:
                         ratio_heat_mig_torques_bin_com_obj = np.ones(blackholes_binary.num)
