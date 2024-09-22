@@ -35,18 +35,18 @@ def change_bin_mass(disk_bin_bhbh_pro_array, disk_bh_eddington_ratio, disk_bh_ed
     bindex = int(bin_index)
     
     for j in range(0, bindex): 
-            if disk_bin_bhbh_pro_array[11,j] < 0:
-                #do nothing -merger happened!
-                pass
-            else:            
-                temp_bh_mass_1 = disk_bin_bhbh_pro_array[2,j] 
-                temp_bh_mass_2 = disk_bin_bhbh_pro_array[3,j]
-                mass_growth_factor = np.exp(disk_bh_eddington_mass_growth_rate*disk_bh_eddington_ratio*timestep_duration_yr)
-                new_bh_mass_1 = temp_bh_mass_1*mass_growth_factor
-                new_bh_mass_2 = temp_bh_mass_2*mass_growth_factor
-                
-                disk_bin_bhbh_pro_array[2,j] = new_bh_mass_1
-                disk_bin_bhbh_pro_array[3,j] = new_bh_mass_2
+        if disk_bin_bhbh_pro_array[11,j] < 0:
+            #do nothing -merger happened!
+            pass
+        else:            
+            temp_bh_mass_1 = disk_bin_bhbh_pro_array[2,j]
+            temp_bh_mass_2 = disk_bin_bhbh_pro_array[3,j]
+            mass_growth_factor = np.exp(disk_bh_eddington_mass_growth_rate*disk_bh_eddington_ratio*timestep_duration_yr)
+            new_bh_mass_1 = temp_bh_mass_1*mass_growth_factor
+            new_bh_mass_2 = temp_bh_mass_2*mass_growth_factor
+            
+            disk_bin_bhbh_pro_array[2,j] = new_bh_mass_1
+            disk_bin_bhbh_pro_array[3,j] = new_bh_mass_2
 
     return disk_bin_bhbh_pro_array
 
@@ -63,6 +63,45 @@ def change_bin_mass_obj(blackholes_binary, disk_bh_eddington_ratio, disk_bh_eddi
 
     blackholes_binary.mass_1 = disk_bin_bhbh_pro_array[2, :]
     blackholes_binary.mass_2 = disk_bin_bhbh_pro_array[3, :]
+
+    return (blackholes_binary)
+
+
+def change_bin_mass_new(blackholes_binary, disk_bh_eddington_ratio,
+                        disk_bh_eddington_mass_growth_rate, timestep_duration_yr):
+    """
+    Given initial binary black hole masses at timestep start, add mass according to
+    chosen BH mass accretion prescription
+
+    Parameters
+    ----------
+    blackholes_binary : AGNBinaryBlackHole
+        binary black holes in prograde orbits around SMBH
+    disk_bh_eddington_ratio : float
+        user chosen input set by input file; accretion rate of fully embedded stellar
+        mass black hole in units of Eddington accretion rate. 1.0=embedded BH accreting
+        at Eddington. Super-Eddington accretion rates are permitted.
+    disk_bh_eddington_mass_growth : float
+        fractional rate of mass growth AT Eddington accretion rate per year (2.3e-8)
+    timestep_duration_yr : float
+        length of timestep in units of years
+
+    Returns
+    -------
+    blackholes_binary : AGNBinaryBlackHole
+        updated binary black holes after accreting mass at prescribed rate for one timestep
+    """
+
+    # Only interested in BH that have not merged
+    idx_non_mergers = np.where(blackholes_binary.flag_merging >= 0)
+
+    mass_growth_factor = np.exp(disk_bh_eddington_mass_growth_rate * disk_bh_eddington_ratio * timestep_duration_yr)
+
+    mass_1_before = blackholes_binary.mass_1[idx_non_mergers]
+    mass_2_before = blackholes_binary.mass_2[idx_non_mergers]
+
+    blackholes_binary.mass_1[idx_non_mergers] = mass_1_before * mass_growth_factor
+    blackholes_binary.mass_2[idx_non_mergers] = mass_2_before * mass_growth_factor
 
     return (blackholes_binary)
 
@@ -350,7 +389,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
         disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = bin_com[index_outwards_modified] +(migration_distance[index_outwards_modified]*(feedback_ratio[index_outwards_modified]-1))
         # catch to keep stuff from leaving the outer radius of the disk!
         if disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer: disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = disk_radius_outer
-    
+
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
     index_unchanged = np.where(feedback_ratio == 1)[0]
     if index_unchanged.size > 0:
@@ -369,12 +408,12 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
                 #if new location is >= trap radius, set location to trap radius
                 if disk_bin_bhbh_pro_orbs_a[locn_index] >= disk_radius_trap:
                     disk_bin_bhbh_pro_orbs_a[locn_index] = disk_radius_trap
-    
-    #Distance travelled per binary is old location of com minus new location of com. Is +ive(-ive) if migrating in(out)
+
+    # Distance travelled per binary is old location of com minus new location of com. Is +ive(-ive) if migrating in(out)
     dist_travelled = disk_bin_bhbh_pro_array[9,:] - disk_bin_bhbh_pro_orbs_a
-    
+
     num_of_bins = np.count_nonzero(disk_bin_bhbh_pro_array[2,:])
-    
+
     for i in range(num_of_bins):
         # If circularized then migrate
         if disk_bin_bhbh_pro_array[18,i] <= disk_bh_pro_orb_ecc_crit:
@@ -397,10 +436,9 @@ def bin_migration_obj(smbh_mass, blackholes_binary, disk_surf_model, disk_aspect
                                             feedback_ratio, disk_radius_trap, disk_bh_pro_orb_ecc_crit,
                                             disk_radius_outer)
 
-    blackholes_binary.bin_orb_a = disk_bin_bhbh_pro_array[9,:]
+    blackholes_binary.bin_orb_a = disk_bin_bhbh_pro_array[9, :]
 
     return (blackholes_binary)
-
 
 
 def evolve_gw(disk_bin_bhbh_pro_array, bin_index, smbh_mass, agn_redshift):
@@ -784,11 +822,11 @@ def evolve_emri_gw(inner_disk_locations,inner_disk_masses, smbh_mass,timestep_du
             dnu_dt = dnu/timestep_secs
             nusq = nu_gw[i]*nu_gw[i]
             strain_factor = np.sqrt((nusq/dnu_dt)/8)
-        
 
         char_strain[i] = strain_factor*strain
-        
-    return char_strain,nu_gw
+
+    return (char_strain, nu_gw)
+
 
 def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
     """This function tests whether a binary has been softened beyond some limit.
@@ -797,13 +835,13 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
 
         Default is frac_R_hill =1.0 (ie binary is ionized at the Hill sphere). 
         Change frac_R_hill if you're testing binary formation at >R_hill.
-        
+
         R_hill = a_com*(M_bin/3M_smbh)^1/3
 
         where a_com is the radial disk location of the binary center of mass (given by disk_bin_bhbh_pro_array[9,*]),
         M_bin = M_1 + M_2 = disk_bin_bhbh_pro_array[2,*]+disk_bin_bhbh_pro_array[3,*] is the binary mass
         M_smbh is the SMBH mass (given by smbh_mass) 
-        
+
         and binary separation is in disk_bin_bhbh_pro_array[8,*].
         Condition is 
         if bin_separation > frac_R_hill*R_hill:
@@ -988,7 +1026,7 @@ def ionization_check(disk_bin_bhbh_pro_array, bin_index, smbh_mass):
             #Ionize binary!!!
             # print("disk_bin_bhbh_pro_array index",j)
             ionization_flag = j
-            
+
     return ionization_flag
 
 def reality_check_old(disk_bin_bhbh_pro_array, bin_index, nbin_properties):
