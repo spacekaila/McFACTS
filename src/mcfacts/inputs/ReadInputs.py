@@ -623,7 +623,7 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         (wasn't involved in merger in previous episode; but accretion=mass/spin changed)
     )
     """
-    with open(fname) as filedata:
+    with open(fname, 'r') as filedata:
         prior_mergers_file = np.genfromtxt(filedata, unpack = True)
 
 
