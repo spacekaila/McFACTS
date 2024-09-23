@@ -623,8 +623,8 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         (wasn't involved in merger in previous episode; but accretion=mass/spin changed)
     )
     """
-    with open('../recipes/sg1Myrx2_survivors.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('../recipes/sg1Myrx2_survivors.dat', unpack = True)
+    with open(fname) as filedata:
+        prior_mergers_file = np.genfromtxt(filedata, unpack = True)
 
 
     #Clean the file of galaxy lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
