@@ -491,7 +491,7 @@ def main():
                 disk_opacity,
                 opts.disk_star_eddington_ratio,
                 opts.disk_alpha_viscosity,
-                opts.disk_radius_outer
+                opts.disk_radius_outer,
             )
 
             # then migrate as usual
@@ -505,7 +505,8 @@ def main():
                 ratio_heat_mig_torques,
                 opts.disk_radius_trap,
                 blackholes_pro.orb_ecc,
-                opts.disk_bh_pro_orb_ecc_crit
+                opts.disk_bh_pro_orb_ecc_crit,
+                opts.disk_radius_outer,
             )
 
             # Accrete
@@ -577,7 +578,8 @@ def main():
                 ratio_heat_mig_stars_torques,
                 opts.disk_radius_trap,
                 stars_pro.orb_ecc,
-                opts.disk_bh_pro_orb_ecc_crit
+                opts.disk_bh_pro_orb_ecc_crit,
+                opts.disk_radius_outer,
             )
 
             # Accrete
