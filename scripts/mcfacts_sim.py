@@ -63,7 +63,7 @@ def arg():
     parser.add_argument("--fname-snapshots-bh",
                         default="output_bh_[single|binary]_$(index).dat",
                         help="output of BH index file ")
-    parser.add_argument("--no-snapshots", action='store_true')
+    parser.add_argument("--save-snapshots", action='store_true')
     parser.add_argument("--verbose", action='store_true')
     parser.add_argument("-w", "--work-directory",
                         default=Path().parent.resolve(),
@@ -450,16 +450,14 @@ def main():
         timestep_current_num = 0
 
         while time_passed < time_final:
-            # Record
-            if not (opts.no_snapshots):
+            # Record snapshots if user wishes
+            if opts.save_snapshots:
 
-                if (opts.verbose):
-                    blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
-                    blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                    stars_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
-                    stars_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
-
-                    blackholes_binary.to_txt(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
+                blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
+                blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
+                stars_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
+                stars_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
+                blackholes_binary.to_txt(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
                                              cols=binary_cols)
                 timestep_current_num += 1
 
