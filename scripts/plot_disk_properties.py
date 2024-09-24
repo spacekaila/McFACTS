@@ -69,8 +69,10 @@ def pAGN_model_batch(
     disk_radius_outer=50000,
     rad_efficiency=0.1,
     ):
-    disk_alpha_viscositys = np.asarray([0.1, 0.5])
-    edd_ratio = np.asarray([0.5,0.1])
+    #disk_alpha_viscositys = np.asarray([0.1, 0.5])
+    #edd_ratio = np.asarray([0.5,0.1])
+    disk_alpha_viscositys = np.asarray([0.1,])
+    edd_ratio = np.asarray([0.5])
     smbh_masses = 10**np.asarray([6,7,8,9])
     # Define dictionaries
     surface_density_dict = {}
@@ -124,7 +126,10 @@ def pAGN_model_batch(
     for _id_alpha, _alpha  in enumerate(disk_alpha_viscositys):
         for _id_edd,_edd in enumerate(edd_ratio):
             # Identify axis
-            ax = _axes[_id_alpha, _id_edd]
+            try:
+                ax = _axes[_id_alpha, _id_edd]
+            except:
+                ax = _axes
             # Loop SMBH mass
             for _id_mass, _mass in enumerate(smbh_masses):
                 # Identify pAGN model
@@ -175,7 +180,10 @@ def pAGN_model_batch(
     for _id_alpha, _alpha  in enumerate(disk_alpha_viscositys):
         for _id_edd,_edd in enumerate(edd_ratio):
             # Identify axis
-            ax = _axes[_id_alpha, _id_edd]
+            try:
+                ax = _axes[_id_alpha, _id_edd]
+            except:
+                ax = _axes
             # Loop SMBH mass
             for _id_mass, _mass in enumerate(smbh_masses):
                 # Identify pAGN model
@@ -226,7 +234,10 @@ def pAGN_model_batch(
     for _id_alpha, _alpha  in enumerate(disk_alpha_viscositys):
         for _id_edd,_edd in enumerate(edd_ratio):
             # Identify axis
-            ax = _axes[_id_alpha, _id_edd]
+            try:
+                ax = _axes[_id_alpha, _id_edd]
+            except:
+                ax = _axes
             # Loop SMBH mass
             for _id_mass, _mass in enumerate(smbh_masses):
                 # Identify pAGN model
@@ -245,9 +256,14 @@ def pAGN_model_batch(
                 ax.plot(np.log10(bonus_structures_dict[tag]['R']),np.log10(bonus_structures_dict[tag]['tauV']),label=label)
                 if (_id_alpha == 0) and (_id_edd == 0):
                     print(np.log10(bonus_structures_dict[tag]['tauV']))
-                    tau_drop_mask = (np.log10(bonus_structures_dict[tag]['tauV']) < 2.0) & \
+                    tau_drop_mask = \
+                        (np.log10(bonus_structures_dict[tag]['tauV']) < np.log10(bonus_structures_dict[tag]['tauV'][0])) & \
                         (np.log10(bonus_structures_dict[tag]['R']) > 3)
                     tau_drop_index = np.argmax(tau_drop_mask)
+                    ylims = ax.get_ylim()
+                    ax.vlines(np.log10(bonus_structures_dict[tag]['R'][tau_drop_index]),ylims[0],ylims[1],
+                        linestyle="dashed",linewidth=1.5,color='black')
+                    ax.set_ylim(ylims)
                     print(
                         np.log10(_mass),
                         np.log10(bonus_structures_dict[tag]['R'][tau_drop_index]),
@@ -258,7 +274,7 @@ def pAGN_model_batch(
 
             # Vertical line for disk_radius_outer
             ylims = ax.get_ylim()
-            ax.vlines(np.log10(disk_radius_outer), ylims[0],ylims[1], color='black', label="Truncate", linestyle='dashed')
+            ax.vlines(np.log10(disk_radius_outer), ylims[0],ylims[1], color='black', label="Truncate", linestyle='solid')
             ax.set_ylim(ylims)
 
             # Generate a title
