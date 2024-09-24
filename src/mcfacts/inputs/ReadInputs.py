@@ -506,7 +506,7 @@ def construct_disk_pAGN(
 
     # Run pAGN
     pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
-    disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, bonus_structures  = \
+    disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, bonus_structures = \
         pagn_model.return_disk_surf_model()
 
     # Define properties we want to return
@@ -625,8 +625,8 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         (wasn't involved in merger in previous episode; but accretion=mass/spin changed)
     )
     """
-    with open('../recipes/sg1Myrx2_survivors.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('../recipes/sg1Myrx2_survivors.dat', unpack = True)
+    with open(fname, 'r') as filedata:
+        prior_mergers_file = np.genfromtxt(filedata, unpack = True)
 
 
     #Clean the file of galaxy lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
