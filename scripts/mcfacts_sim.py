@@ -720,7 +720,7 @@ def main():
                         
                     # Harden binaries via gas
                     # Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
-                    blackholes_binary = baruteau11.bin_harden_baruteau_obj(
+                    blackholes_binary = baruteau11.bin_harden_baruteau(
                         blackholes_binary,
                         opts.smbh_mass,
                         opts.timestep_duration_yr,
