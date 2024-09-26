@@ -152,7 +152,7 @@ def change_bin_spin_angles(blackholes_binary, disk_bh_eddington_ratio,
     return (blackholes_binary)
 
 
-def com_feedback_hankla(blackholes_binary, disk_surface_density, disk_bh_eddington_ratio, disk_alpha_viscosity, disk_radius_outer):
+def com_feedback_hankla(blackholes_binary, disk_surface_density, disk_opacity_func, disk_bh_eddington_ratio, disk_alpha_viscosity, disk_radius_outer):
     """
     This feedback model uses Eqn. 28 in Hankla, Jiang & Armitage (2020)
     which yields the ratio of heating torque to migration torque.
@@ -187,6 +187,8 @@ def com_feedback_hankla(blackholes_binary, disk_surface_density, disk_bh_eddingt
     disk_surface_density : function
         returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g (r_g=GM_SMBH/c^2)
         can accept a simple float (constant), but this is deprecated
+    disk_opacity_func : lambda
+        Opacity as a function of radius
     disk_bh_eddington_ratio : float
         user chosen input set by input file; Accretion rate of fully embedded stellar mass 
         black hole in units of Eddington accretion rate. 1.0=embedded BH accreting at Eddington.
@@ -209,10 +211,9 @@ def com_feedback_hankla(blackholes_binary, disk_surface_density, disk_bh_eddingt
         raise AttributeError("disk_surface_density is a float")
 
     # Define kappa (or set up a function to call). 
-    # kappa = 10^0.76 cm^2/g = 10^(0.76) (10^-2m)^2/10^-3kg=10^(0.76-1)=10^(-0.24) m^2/kg to match units of Sigma
-    kappa = 10**(-0.24)
+    disk_opacity = disk_opacity_func(blackholes_binary.bin_orb_a)
 
-    ratio_heat_mig_torques_bin_com = 0.07 * (1 / kappa) * np.power(disk_alpha_viscosity, -1.5) * disk_bh_eddington_ratio * np.sqrt(blackholes_binary.bin_orb_a) / disk_surface_density_at_location
+    ratio_heat_mig_torques_bin_com = 0.07 * (1 / disk_opacity) * np.power(disk_alpha_viscosity, -1.5) * disk_bh_eddington_ratio * np.sqrt(blackholes_binary.bin_orb_a) / disk_surface_density_at_location
 
     ratio_heat_mig_torques_bin_com[blackholes_binary.bin_orb_a > disk_radius_outer] = np.ones(np.sum(blackholes_binary.bin_orb_a > disk_radius_outer))
 
