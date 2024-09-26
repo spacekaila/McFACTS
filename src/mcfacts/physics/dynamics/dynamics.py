@@ -972,11 +972,23 @@ def bin_spheroid_encounter(
         if bin_coms[i] < crit_radius:
             if time_passed <= crit_time:
                 enc_rate = 0.02*(nsc_spheroid_normalization/0.1)*(1.0-(time_passed/1.e6))*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e3))
-            if time_passed > crit_time:
+            elif time_passed > crit_time:
                 enc_rate = 0.0
+            else:
+                print("smbh_mass:",smbh_mass)
+                print("bin_coms[i]:",bin_coms[i])
+                print("crit_radius:",crit_radius)
+                print("disk_bins_bhbh[:,i]",disk_bins_bhbh[:,i])
+                raise RuntimeError("Unrecognized bin_com")
 
-        if bin_coms[i] > crit_radius:
+        elif bin_coms[i] > crit_radius:
                 enc_rate = 0.002*(nsc_spheroid_normalization/0.1)*(bin_separations[i]/dist_in_rg_m8)**(2.0)/((timestep_duration_yr/1.e4)*(bin_coms[i]/1.e4)*np.sqrt(time_passed/1.e4))
+        else:
+            print("smbh_mass:",smbh_mass)
+            print("bin_coms[i]:",bin_coms[i])
+            print("crit_radius:",crit_radius)
+            print("disk_bins_bhbh[:,i]",disk_bins_bhbh[:,i])
+            raise RuntimeError("Unrecognized bin_com")
 
         # Based on est encounter rate, calculate if binary actually has a spheroid encounter
         random_uniform_number = rng.random()

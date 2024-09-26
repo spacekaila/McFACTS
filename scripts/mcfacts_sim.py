@@ -63,7 +63,7 @@ def arg():
     parser.add_argument("--fname-snapshots-bh",
                         default="output_bh_[single|binary]_$(index).dat",
                         help="output of BH index file ")
-    parser.add_argument("--no-snapshots", action='store_true')
+    parser.add_argument("--save-snapshots", action='store_true')
     parser.add_argument("--verbose", action='store_true')
     parser.add_argument("-w", "--work-directory",
                         default=Path().parent.resolve(),
@@ -172,7 +172,7 @@ def main():
     opts = arg()
     # Disk surface density (in kg/m^2) is a function of radius, where radius is in r_g
     # Disk aspect ratio is a function of radius, where radius is in r_g
-    disk_surface_density, disk_aspect_ratio = \
+    disk_surface_density, disk_aspect_ratio, disk_opacity = \
         ReadInputs.construct_disk_interp(opts.smbh_mass,
                                          opts.disk_radius_outer,
                                          opts.disk_model_name,
@@ -202,9 +202,9 @@ def main():
         # Fills run number with leading zeros to stay sequential
         galaxy_zfilled_str = f"{galaxy:>0{int(np.log10(opts.galaxy_num))+1}}"
         try:  # Make subdir, exit if it exists to avoid clobbering.
-            os.makedirs(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}"), exist_ok=False)
+            os.makedirs(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}"), exist_ok=False)
         except FileExistsError:
-            raise FileExistsError(f"Directory \'run{galaxy_zfilled_str}\' exists. Exiting so I don't delete your data.")
+            raise FileExistsError(f"Directory \'gal{galaxy_zfilled_str}\' exists. Exiting so I don't delete your data.")
 
         # Housekeeping for array initialization
         blackholes_binary = AGNBinaryBlackHole()
@@ -303,8 +303,8 @@ def main():
                                    new_disk_inner_outer=np.zeros(stars.num))
 
         # Writing initial parameters to file
-        stars.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_star.dat"))
-        blackholes.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_bh.dat"))
+        stars.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_star.dat"))
+        blackholes.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_bh.dat"))
 
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
@@ -450,16 +450,14 @@ def main():
         timestep_current_num = 0
 
         while time_passed < time_final:
-            # Record
-            if not (opts.no_snapshots):
+            # Record snapshots if user wishes
+            if opts.save_snapshots:
 
-                if (opts.verbose):
-                    blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
-                    blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                    stars_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
-                    stars_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
-
-                    blackholes_binary.to_txt(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
+                blackholes_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
+                blackholes_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
+                stars_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
+                stars_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
+                blackholes_binary.to_txt(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
                                              cols=binary_cols)
                 timestep_current_num += 1
 
@@ -475,13 +473,23 @@ def main():
             # First if feedback present, find ratio of feedback heating torque to migration torque
             if opts.flag_thermal_feedback > 0:
                 ratio_heat_mig_torques = feedback_hankla21.feedback_hankla(
-                    blackholes_pro.orb_a, disk_surface_density, opts.disk_bh_eddington_ratio, opts.disk_alpha_viscosity)
+                    blackholes_pro.orb_a,
+                    disk_surface_density,
+                    disk_opacity,
+                    opts.disk_bh_eddington_ratio,
+                    opts.disk_alpha_viscosity,
+                    opts.disk_radius_outer)
             else:
                 ratio_heat_mig_torques = np.ones(len(blackholes_pro.orb_a))
 
             # now for stars
             ratio_heat_mig_stars_torques = feedback_hankla21_stars.feedback_hankla_stars(
-                stars_pro.orb_a, disk_surface_density, opts.disk_star_eddington_ratio, opts.disk_alpha_viscosity
+                stars_pro.orb_a,
+                disk_surface_density,
+                disk_opacity,
+                opts.disk_star_eddington_ratio,
+                opts.disk_alpha_viscosity,
+                opts.disk_radius_outer,
             )
 
             # then migrate as usual
@@ -495,7 +503,8 @@ def main():
                 ratio_heat_mig_torques,
                 opts.disk_radius_trap,
                 blackholes_pro.orb_ecc,
-                opts.disk_bh_pro_orb_ecc_crit
+                opts.disk_bh_pro_orb_ecc_crit,
+                opts.disk_radius_outer,
             )
 
             # Accrete
@@ -567,7 +576,8 @@ def main():
                 ratio_heat_mig_stars_torques,
                 opts.disk_radius_trap,
                 stars_pro.orb_ecc,
-                opts.disk_bh_pro_orb_ecc_crit
+                opts.disk_bh_pro_orb_ecc_crit,
+                opts.disk_radius_outer,
             )
 
             # Accrete
@@ -773,8 +783,10 @@ def main():
                         ratio_heat_mig_torques_bin_com = evolve.com_feedback_hankla(
                             blackholes_binary,
                             disk_surface_density,
+                            disk_opacity,
                             opts.disk_bh_eddington_ratio,
-                            opts.disk_alpha_viscosity
+                            opts.disk_alpha_viscosity,
+                            opts.disk_radius_outer
                         )
 
                     else:
@@ -1301,7 +1313,7 @@ def main():
                                               new_galaxy=blackholes_binary_gw.galaxy)
 
         # Save the mergers
-        galaxy_save_name = f"run{galaxy_zfilled_str}/{opts.fname_output_mergers}"
+        galaxy_save_name = f"gal{galaxy_zfilled_str}/{opts.fname_output_mergers}"
         blackholes_merged.to_txt(os.path.join(opts.work_directory, galaxy_save_name), cols=merger_cols)
 
         # Append each galaxy result to outputs
