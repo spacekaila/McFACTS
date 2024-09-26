@@ -34,6 +34,10 @@ def change_bin_mass(blackholes_binary, disk_bh_eddington_ratio,
     # Only interested in BH that have not merged
     idx_non_mergers = np.where(blackholes_binary.flag_merging >= 0)
 
+    # If all BH have merged then nothing to do
+    if (idx_non_mergers[0].shape[0] == 0):
+        return (blackholes_binary)
+
     mass_growth_factor = np.exp(disk_bh_eddington_mass_growth_rate * disk_bh_eddington_ratio * timestep_duration_yr)
 
     mass_1_before = blackholes_binary.mass_1[idx_non_mergers]
@@ -82,6 +86,11 @@ def change_bin_spin_magnitudes(blackholes_binary, disk_bh_eddington_ratio,
 
     # Only interested in BH that have not merged
     idx_non_mergers = np.where(blackholes_binary.flag_merging >= 0)
+
+    # If all BH have merged then nothing to do
+    if (idx_non_mergers[0].shape[0] == 0):
+        return (blackholes_binary)
+
 
     spin_change_factor = 4.4e-3 * disk_bh_eddington_ratio_normalized * disk_bh_torque_condition_normalized * timestep_duration_yr_normalized
 
@@ -134,6 +143,11 @@ def change_bin_spin_angles(blackholes_binary, disk_bh_eddington_ratio,
 
     # Only interested in BH that have not merged
     idx_non_mergers = np.where(blackholes_binary.flag_merging >= 0)
+
+    # If all BH have merged then nothing to do
+    if (idx_non_mergers[0].shape[0] == 0):
+        return (blackholes_binary)
+
 
     spin_angle_change_factor = 6.98e-3 * disk_bh_eddington_ratio_normalized * disk_bh_torque_condition_normalized * timestep_duration_yr_normalized
 
