@@ -30,8 +30,8 @@ def chi_effective(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angl
 
     Returns
     -------
-    float,ndarray
-        The effective spin value for this (these) object(s).
+    chi_eff : numpy array
+        The effective spin value for these object(s).
     """
 
     total_masses = masses_1 + masses_2
@@ -84,7 +84,7 @@ def chi_p(masses_1, masses_2, spins_1, spins_2, spin_angles_1, spin_angles_2, bi
     Returns
     -------
     chi_p : numpy array
-        _description_
+        precessing spin component for these objects
     """
 
     # If mass_1 is the dominant binary component
