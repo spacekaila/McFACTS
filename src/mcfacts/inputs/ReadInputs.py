@@ -254,6 +254,30 @@ def ReadInputs_ini(fname_ini, verbose=False):
     if not ('flag_use_pagn' in input_variables):
         input_variables['flag_use_pagn'] = False
 
+    ## Check outer disk radius in parsecs
+    # Scale factor for parsec distance in r_g
+    pc_dist = 2.e5*((input_variables["smbh_mass"]/1.e8)**(-1.0))
+    # Calculate outer disk radius in pc
+    disk_radius_outer_pc = input_variables["disk_radius_outer"]/pc_dist
+    # Check disk_radius_max_pc argument
+    if input_variables["disk_radius_max_pc"] == 0.:
+        # Case 1: disk_radius_max_pc is disabled
+        pass
+    elif input_variables["disk_radius_max_pc"] < 0.:
+        # Case 2: disk_radius_max_pc is negative
+        # Always assign disk_radius_outer to given distance in parsecs
+        input_variables["disk_radius_outer"] = \
+            -1. * input_variables["disk_radius_max_pc"] * pc_dist
+    else:
+        # Case 3: disk_radius_max_pc is positive
+        # Cap disk_radius_outer at given value
+        if disk_radius_outer_pc > input_variables["disk_radius_max_pc"]:
+            # calculate scale factor
+            disk_radius_scale = input_variables["disk_radius_max_pc"] / disk_radius_outer_pc
+            # Adjust disk_radius_outer as needed
+            input_variables["disk_radius_outer"] = \
+                input_variables["disk_radius_outer"] * disk_radius_scale
+
     # Print out the dictionary if we are in verbose mode
     if verbose:
         print("input_variables:")
@@ -479,7 +503,7 @@ def construct_disk_pAGN(
 
     # Run pAGN
     pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
-    disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, bonus_structures  = \
+    disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, bonus_structures = \
         pagn_model.return_disk_surf_model()
 
     # Define properties we want to return
@@ -530,28 +554,6 @@ def construct_disk_interp(
     ## Check inputs ##
     # Check smbh_mass
     assert type(smbh_mass) == float, "smbh_mass expected float, got %s"%(type(smbh_mass))
-
-    ## Check outer disk radius in parsecs
-    # Scale factor for parsec distance in r_g
-    pc_dist = 2.e5*((smbh_mass/1.e8)**(-1.0))
-    # Calculate outer disk radius in pc
-    disk_radius_outer_pc = disk_radius_outer/pc_dist
-    # Check disk_radius_max_pc argument
-    if disk_radius_max_pc == 0.:
-        # Case 1: disk_radius_max_pc is disabled
-        pass
-    elif disk_radius_max_pc < 0.:
-        # Case 2: disk_radius_max_pc is negative
-        # Always assign disk_radius_outer to given distance in parsecs
-        disk_radius_outer = -1. * disk_radius_max_pc * pc_dist
-    else:
-        # Case 3: disk_radius_max_pc is positive
-        # Cap disk_radius_outer at given value
-        if disk_radius_outer_pc > disk_radius_max_pc:
-            # calculate scale factor
-            disk_radius_scale = disk_radius_max_pc / disk_radius_outer_pc
-            # Adjust disk_radius_outer as needed
-            disk_radius_outer = disk_radius_outer * disk_radius_scale
 
     # open the disk model surface density file and read it in
     # Note format is assumed to be comments with #
@@ -620,8 +622,8 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         (wasn't involved in merger in previous episode; but accretion=mass/spin changed)
     )
     """
-    with open('../recipes/sg1Myrx2_survivors.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('../recipes/sg1Myrx2_survivors.dat', unpack = True)
+    with open(fname, 'r') as filedata:
+        prior_mergers_file = np.genfromtxt(filedata, unpack = True)
 
 
     #Clean the file of galaxy lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)
