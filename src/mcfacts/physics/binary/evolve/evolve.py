@@ -220,18 +220,19 @@ def com_feedback_hankla(blackholes_binary, disk_surface_density, disk_bh_eddingt
 
 
 def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspect_ratio_model, timestep_duration_yr, feedback_ratio, disk_radius_trap, disk_bh_pro_orb_ecc_crit, disk_radius_outer):
-    """This function calculates how far the center of mass of a binary migrates in an AGN gas disk in a time
+    """
+    This function calculates how far the center of mass of a binary migrates in an AGN gas disk in a time
     of length timestep_duration_yr, assuming a gas disk surface density and aspect ratio profile, for
     objects of specified masses and starting locations, and returns their new locations
-    after migration over one timestep_duration_yr. Uses standard Type I migration prescription, 
-    modified by Hankla+22 feedback model if included. 
+    after migration over one timestep_duration_yr. Uses standard Type I migration prescription,
+    modified by Hankla+22 feedback model if included.
     This is an exact copy of mcfacts.physics.migration.type1.type1
 
     Parameters
     ----------
     smbh_mass : float
         mass of supermassive black hole in units of solar masses
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Full binary array.
     disk_surf_model : function
         returns AGN gas disk surface density in kg/m^2 given a distance from the SMBH in r_g
@@ -246,11 +247,11 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     disk_radius_trap : float
         location of migration trap in units of r_g. From Bellovary+16, should be 700r_g for Sirko & Goodman '03, 245r_g for Thompson et al. '05
     disk_bh_pro_orb_ecc_crit : float
-        User defined critical orbital eccentricity for pro BH, below which BH are considered circularized        
+        User defined critical orbital eccentricity for pro BH, below which BH are considered circularized
 
     Returns
     -------
-    disk_bin_bhbh_pro_array : float array 
+    disk_bin_bhbh_pro_array : float array
         Returns modified disk_bin_bhbh_pro_array with updated center of masses of the binary bhbh.
     """
 
@@ -267,7 +268,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     if isinstance(disk_aspect_ratio_model, float):
         disk_aspect_ratio = disk_aspect_ratio_model
     else:
-        disk_aspect_ratio = disk_aspect_ratio_model(bin_com) 
+        disk_aspect_ratio = disk_aspect_ratio_model(bin_com)
 
     # This is an exact copy of mcfacts.physics.migration.type1.type1.
     tau_mig = ((disk_aspect_ratio**2)* scipy.constants.c/(3.0*scipy.constants.G) * (smbh_mass/bin_mass) / disk_surface_density) / np.sqrt(bin_com)
@@ -284,7 +285,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     all_inwards_migrators = bin_com[index_inwards_modified]
 
     #Given a population migrating inwards
-    if index_inwards_size > 0: 
+    if index_inwards_size > 0:
         for i in range(0,index_inwards_size):
                 # Among all inwards migrators, find location in disk & compare to trap radius
                 critical_distance = all_inwards_migrators[i]
@@ -304,21 +305,21 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
                 if critical_distance == disk_radius_trap:
                     disk_bin_bhbh_pro_orbs_a[actual_index] = bin_com[actual_index]
 
-    # Find indices of objects where feedback ratio >1; these migrate outwards. 
+    # Find indices of objects where feedback ratio >1; these migrate outwards.
     index_outwards_modified = np.where(feedback_ratio >1)[0]
 
     if index_outwards_modified.size > 0:
         disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = bin_com[index_outwards_modified] +(migration_distance[index_outwards_modified]*(feedback_ratio[index_outwards_modified]-1))
         # catch to keep stuff from leaving the outer radius of the disk!
-        if disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer: disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = disk_radius_outer
-
+        disk_bin_bhbh_pro_orbs_a[np.where(disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer)] = disk_radius_outer
+    
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
     index_unchanged = np.where(feedback_ratio == 1)[0]
     if index_unchanged.size > 0:
     # If BH location > trap radius, migrate inwards
         for i in range(0,index_unchanged.size):
             locn_index = index_unchanged[i]
-            if bin_com[locn_index] > disk_radius_trap:    
+            if bin_com[locn_index] > disk_radius_trap:
                 disk_bin_bhbh_pro_orbs_a[locn_index] = bin_com[locn_index] - migration_distance[locn_index]
             # if new location is <= trap radius, set location to trap radius
                 if disk_bin_bhbh_pro_orbs_a[locn_index] <= disk_radius_trap:
@@ -340,10 +341,13 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
         # If circularized then migrate
         if disk_bin_bhbh_pro_array[18,i] <= disk_bh_pro_orb_ecc_crit:
             disk_bin_bhbh_pro_array[9,i] = disk_bin_bhbh_pro_orbs_a[i]
-        # If not circularized, no migration    
+        # If not circularized, no migration
         if disk_bin_bhbh_pro_array[18,i] > disk_bh_pro_orb_ecc_crit:
             pass
 
+    # Assert that things are not allowed to migrate out of the disk.
+    mask_disk_radius_outer = disk_radius_outer > disk_bin_bhbh_pro_array
+    disk_bin_bhbh_pro_array[mask_disk_radius_outer] = disk_radius_outer
     return disk_bin_bhbh_pro_array
 
 
