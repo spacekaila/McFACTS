@@ -24,7 +24,7 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     disk_aspect_ratio_func : function
         returns AGN gas disk aspect ratio given a distance from the SMBH in r_g
         can accept a simple float (constant), but this is deprecated
-    timestep_duration : float
+    timestep_duration_yr : float
         size of timestep in years
     disk_feedback_ratio_func : function
         ratio of heating/migration torque. If ratio <1, migration inwards, but slows by factor tau_mig/(1-R)
@@ -73,7 +73,7 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # c, G and disk_surface_density in SI units
     tau = ((disk_aspect_ratio**2)* scipy.constants.c/(3.0*scipy.constants.G) * (smbh_mass/disk_bh_mass_pro) / disk_surface_density) / np.sqrt(disk_bh_orb_a_pro)
     # ratio of timestep to tau_mig (timestep in years so convert)
-    dt = timestep_duration * scipy.constants.year / tau
+    dt = timestep_duration_yr * scipy.constants.year / tau
     # migration distance is original locations times fraction of tau_mig elapsed
     disk_bh_dist_mig = disk_bh_orb_a_pro * dt
     #Mask migration distance with zeros if orb ecc >= e_crit.
