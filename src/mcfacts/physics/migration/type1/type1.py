@@ -142,7 +142,7 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # new locations are original ones - distance traveled
     #bh_new_locations = prograde_bh_locations - migration_distance
     # Assert that things are not allowed to migrate out of the disk.
-    mask_disk_radius_outer = disk_radius_outer > disk_bh_pro_a_new
+    mask_disk_radius_outer = disk_radius_outer < disk_bh_pro_a_new
     disk_bh_pro_a_new[mask_disk_radius_outer] = disk_radius_outer
     
     return disk_bh_pro_a_new
