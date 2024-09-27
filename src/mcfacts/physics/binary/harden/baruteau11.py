@@ -76,7 +76,7 @@ def bin_harden_baruteau(blackholes_binary, smbh_mass, timestep_duration_yr,
 
     # Binary will not merge in this timestep
     # new bin_sep according to Baruteu+11 prescription
-    bin_sep[time_to_merger_gw > timestep_duration_yr] = bin_sep[time_to_merger_gw > timestep_duration_yr] * np.power(0.5, scaled_num_orbits)
+    bin_sep[time_to_merger_gw > timestep_duration_yr] = bin_sep[time_to_merger_gw > timestep_duration_yr] * np.power(0.5, scaled_num_orbits[time_to_merger_gw > timestep_duration_yr])
     blackholes_binary.bin_sep[idx_non_mergers[time_to_merger_gw > timestep_duration_yr]] = bin_sep[time_to_merger_gw > timestep_duration_yr]
 
     # Otherwise binary will merge in this timestep
