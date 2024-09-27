@@ -1166,7 +1166,7 @@ def main():
                     opts.timestep_duration_yr,
                     old_gw_freq,
                     opts.smbh_mass,
-                    opts.agn_redshift
+                    agn_redshift
                 )
 
 
