@@ -28,7 +28,7 @@ MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 #### Setup ####
 SEED=3456789012
 #FNAME_INI= ${HERE}/recipes/p1_thompson.ini
-FNAME_INI= ${HERE}/recipes/model_choice_old.ini
+FNAME_INI= ${HERE}/src/mcfacts/inputs/data/model_choice.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
 # NAL files might not exist unless you download them from
 # https://gitlab.com/xevra/nal-data
