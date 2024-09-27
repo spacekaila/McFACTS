@@ -117,8 +117,6 @@ Inifile
     "delta_energy_strong"           : float
         Average energy change per strong interaction.
         de can be 20% in cluster interactions. May be 10% on average (with gas)
-    "agn_redshift"                  : float
-        Redshift of AGN activity
     "inner_disk_outer_radius"       : float
         Outer radius of the inner disk (Rg)
     "disk_inner_stable_circ_orb"    : float
@@ -190,7 +188,6 @@ INPUT_TYPES = {
     "disk_bh_pro_orb_ecc_crit"      : float,
     "flag_dynamic_enc"              : int,
     "delta_energy_strong"           : float,
-    "agn_redshift"                  : float,
     "inner_disk_outer_radius"       : float,
     "disk_inner_stable_circ_orb"    : float,
     "mass_pile_up"                  : float,
@@ -506,7 +503,7 @@ def construct_disk_pAGN(
 
     # Run pAGN
     pagn_model =dm_pagn.AGNGasDiskModel(disk_type=pagn_name,**base_args)
-    disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, bonus_structures  = \
+    disk_surf_dens_func, disk_aspect_ratio_func, disk_opacity_func, bonus_structures = \
         pagn_model.return_disk_surf_model()
 
     # Define properties we want to return
@@ -625,8 +622,8 @@ def ReadInputs_prior_mergers(fname='recipes/sg1Myrx2_survivors.dat', verbose=Fal
         (wasn't involved in merger in previous episode; but accretion=mass/spin changed)
     )
     """
-    with open('../recipes/sg1Myrx2_survivors.dat') as filedata:
-        prior_mergers_file = np.genfromtxt('../recipes/sg1Myrx2_survivors.dat', unpack = True)
+    with open(fname, 'r') as filedata:
+        prior_mergers_file = np.genfromtxt(filedata, unpack = True)
 
 
     #Clean the file of galaxy lines (of form 3.0 3.0 3.0 3.0 3.0 etc for it=3.0, same value across each column)

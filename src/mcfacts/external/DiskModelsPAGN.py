@@ -42,7 +42,7 @@ class AGNGasDiskModel(object):
         else:
             np.savetxt(filename, np.vstack((R/ct.pc, Omega, T, rho, h, cs, tauV, Q)).T)
 
-    def return_disk_surf_model(self, no_truncate=True):
+    def return_disk_surf_model(self, flag_truncate_disk=True):
         """Generate disk surface model functions
 
         Interpolate and return disk surface model functions as a function of the disk radius.
@@ -54,9 +54,9 @@ class AGNGasDiskModel(object):
         
         Parameters
         ----------
-        no_truncate : bool, optional
-            If `False`, truncate these functions to the extent of the where starformation starts
-            in the gas disk. If `True`, do not truncate, by default True.
+        flag_truncate_disk : bool, optional
+            If `True`, truncate these functions at the radius where star formation starts
+            in the gas disk. If `False`, do not truncate, by default `True`.
 
         Returns
         -------
@@ -77,7 +77,7 @@ class AGNGasDiskModel(object):
         R_agn = self.disk_model.R_AGN / (self.disk_model.Rs / 2)
         Sigma = 2 * self.disk_model.h * self.disk_model.rho  # SI density
         kappa = 2 * self.disk_model.tauV / Sigma # Opacity = 2*tau/Sigma
-        if not(no_truncate): # truncate to gas part of disk (no SFR)
+        if flag_truncate_disk: # truncate to gas part of disk (no SFR)
             R=R[:self.disk_model.isf]
             Sigma = Sigma[:self.disk_model.isf]
             kappa = kappa[:self.disk_model.isf]
@@ -93,7 +93,7 @@ class AGNGasDiskModel(object):
 
         # Generate aspect ratio (h/r) interpolator function
         ln_aspect_ratio = np.log(self.disk_model.h/self.disk_model.R)
-        if not(no_truncate): # truncate to gas part of disk (no SFR)
+        if flag_truncate_disk: # truncate to gas part of disk (no SFR)
             ln_aspect_ratio = ln_aspect_ratio[:self.disk_model.isf]
         aspect_func_log = scipy.interpolate.CubicSpline(
                                                         np.log(R),

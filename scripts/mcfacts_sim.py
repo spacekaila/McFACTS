@@ -63,7 +63,7 @@ def arg():
     parser.add_argument("--fname-snapshots-bh",
                         default="output_bh_[single|binary]_$(index).dat",
                         help="output of BH index file ")
-    parser.add_argument("--no-snapshots", action='store_true')
+    parser.add_argument("--save-snapshots", action='store_true')
     parser.add_argument("--verbose", action='store_true')
     parser.add_argument("-w", "--work-directory",
                         default=Path().parent.resolve(),
@@ -202,9 +202,9 @@ def main():
         # Fills run number with leading zeros to stay sequential
         galaxy_zfilled_str = f"{galaxy:>0{int(np.log10(opts.galaxy_num))+1}}"
         try:  # Make subdir, exit if it exists to avoid clobbering.
-            os.makedirs(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}"), exist_ok=False)
+            os.makedirs(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}"), exist_ok=False)
         except FileExistsError:
-            raise FileExistsError(f"Directory \'run{galaxy_zfilled_str}\' exists. Exiting so I don't delete your data.")
+            raise FileExistsError(f"Directory \'gal{galaxy_zfilled_str}\' exists. Exiting so I don't delete your data.")
 
         # Housekeeping for array initialization
         blackholes_binary = AGNBinaryBlackHole()
@@ -218,6 +218,11 @@ def main():
         # (ie less than this value gets fixed to zero)
         # e.g 0.02 rad=1deg
         disk_bh_spin_resolution_min = 0.02
+        agn_redshift = 0.1
+        #------------------       HARDCODING agn_redshift = 0.1 HERE       -----------------------------------
+        # This is for computing the gw strain for sources and NOTHING else if you are 
+        #   not using our strain this parameter will do nothing. If you are using our strain and you want to put 
+        #   your sources at a different distance, scale them to the value here DO NOT CHANGE 
 
         # Set up number of BH in disk
         disk_bh_num = setupdiskblackholes.setup_disk_nbh(
@@ -303,8 +308,8 @@ def main():
                                    new_disk_inner_outer=np.zeros(stars.num))
 
         # Writing initial parameters to file
-        stars.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_star.dat"))
-        blackholes.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/initial_params_bh.dat"))
+        stars.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_star.dat"))
+        blackholes.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_bh.dat"))
 
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
@@ -450,16 +455,14 @@ def main():
         timestep_current_num = 0
 
         while time_passed < time_final:
-            # Record
-            if not (opts.no_snapshots):
+            # Record snapshots if user wishes
+            if opts.save_snapshots:
 
-                if (opts.verbose):
-                    blackholes_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
-                    blackholes_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                    stars_pro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
-                    stars_retro.to_file(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
-
-                    blackholes_binary.to_txt(os.path.join(opts.work_directory, f"run{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
+                blackholes_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
+                blackholes_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
+                stars_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
+                stars_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
+                blackholes_binary.to_txt(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
                                              cols=binary_cols)
                 timestep_current_num += 1
 
@@ -722,7 +725,7 @@ def main():
                         
                     # Harden binaries via gas
                     # Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
-                    blackholes_binary = baruteau11.bin_harden_baruteau_obj(
+                    blackholes_binary = baruteau11.bin_harden_baruteau(
                         blackholes_binary,
                         opts.smbh_mass,
                         opts.timestep_duration_yr,
@@ -731,10 +734,10 @@ def main():
                     )
 
                     # Check closeness of binary. Are black holes at merger condition separation
-                    blackholes_binary = evolve.contact_check_obj(blackholes_binary, opts.smbh_mass)
-                    
+                    blackholes_binary = evolve.contact_check(blackholes_binary, opts.smbh_mass)
+
                     # Accrete gas onto binary components
-                    blackholes_binary = evolve.change_bin_mass_obj(
+                    blackholes_binary = evolve.change_bin_mass(
                         blackholes_binary,
                         opts.disk_bh_eddington_ratio,
                         disk_bh_eddington_mass_growth_rate,
@@ -742,7 +745,7 @@ def main():
                     )
 
                     # Spin up binary components
-                    blackholes_binary = evolve.change_bin_spin_magnitudes_obj(
+                    blackholes_binary = evolve.change_bin_spin_magnitudes(
                         blackholes_binary,
                         opts.disk_bh_eddington_ratio,
                         opts.disk_bh_torque_condition,
@@ -750,7 +753,7 @@ def main():
                     )
 
                     # Torque angle of binary spin components
-                    blackholes_binary = evolve.change_bin_spin_angles_obj(
+                    blackholes_binary = evolve.change_bin_spin_angles(
                         blackholes_binary,
                         opts.disk_bh_eddington_ratio,
                         opts.disk_bh_torque_condition,
@@ -782,7 +785,7 @@ def main():
                     # Migrate binaries
                     # First if feedback present, find ratio of feedback heating torque to migration torque
                     if opts.flag_thermal_feedback > 0:
-                        ratio_heat_mig_torques_bin_com_obj = evolve.com_feedback_hankla_obj(
+                        ratio_heat_mig_torques_bin_com = evolve.com_feedback_hankla(
                             blackholes_binary,
                             disk_surface_density,
                             disk_opacity,
@@ -790,8 +793,9 @@ def main():
                             opts.disk_alpha_viscosity,
                             opts.disk_radius_outer
                         )
+
                     else:
-                        ratio_heat_mig_torques_bin_com_obj = np.ones(blackholes_binary.num)
+                        ratio_heat_mig_torques_bin_com = np.ones(blackholes_binary.num)
 
                     # Migrate binaries center of mass
                     blackholes_binary = evolve.bin_migration_obj(
@@ -800,7 +804,7 @@ def main():
                         disk_surface_density,
                         disk_aspect_ratio,
                         opts.timestep_duration_yr,
-                        ratio_heat_mig_torques_bin_com_obj,
+                        ratio_heat_mig_torques_bin_com,
                         opts.disk_radius_trap,
                         opts.disk_bh_pro_orb_ecc_crit,
                         opts.disk_radius_outer
@@ -827,7 +831,7 @@ def main():
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
                             old_bbh_gw_freq,
-                            opts.agn_redshift
+                            agn_redshift
                             )
 
                         blackholes_binary_gw.add_binaries(new_id_num=bh_binary_id_num_gw,
@@ -856,14 +860,14 @@ def main():
                                                           )
 
                     # Evolve GW frequency and strain
-                    blackholes_binary = evolve.evolve_gw_obj(
+                    blackholes_binary = evolve.evolve_gw(
                         blackholes_binary,
                         opts.smbh_mass,
-                        opts.agn_redshift
+                        agn_redshift
                     )
 
                     # Check and see if any binaries are ionized.
-                    bh_binary_id_num_ionization = evolve.ionization_check_obj(blackholes_binary, opts.smbh_mass)
+                    bh_binary_id_num_ionization = evolve.ionization_check(blackholes_binary, opts.smbh_mass)
                     if bh_binary_id_num_ionization.size > 0:
                         # Append 2 new BH to arrays of single BH locations, masses, spins, spin angles & gens
                         # For now add 2 new orb ecc term of 0.01. inclination is 0.0 as well. TO DO: calculate v_kick and resulting perturbation to orb ecc.
@@ -1035,7 +1039,7 @@ def main():
                     filing_cabinet.id_max,
                     opts.fraction_bin_retro,
                     opts.smbh_mass,
-                    opts.agn_redshift
+                    agn_redshift
                 )
 
                 # Add new binaries to filing cabinet and delete prograde singleton black holes
@@ -1143,8 +1147,8 @@ def main():
                                       new_info=np.full(len(bh_id_num_retro_inner_disk), -1))
 
             if (blackholes_inner_disk.num > 0):
-                #FIX THIS: Return the new evolved bh_orb_ecc_inner_disk as they decay inwards.
-                #Potentially move inner disk behaviour to module that is not dynamics (e.g inner disk module)
+                # FIX THIS: Return the new evolved bh_orb_ecc_inner_disk as they decay inwards.
+                # Potentially move inner disk behaviour to module that is not dynamics (e.g inner disk module)
                 blackholes_inner_disk.orb_a = dynamics.bh_near_smbh(opts.smbh_mass,
                                                                     blackholes_inner_disk.orb_a,
                                                                     blackholes_inner_disk.mass,
@@ -1158,12 +1162,13 @@ def main():
                     old_gw_freq = emri_gw_freq
 
                 emri_gw_strain, emri_gw_freq = evolve.evolve_emri_gw(
-                    blackholes_inner_disk.orb_a,
-                    blackholes_inner_disk.mass,
-                    opts.smbh_mass,
+                    blackholes_inner_disk,
                     opts.timestep_duration_yr,
                     old_gw_freq,
+                    opts.smbh_mass,
+                    opts.agn_redshift
                 )
+
 
             if blackholes_inner_disk.num > 0:
                 blackholes_emris.add_blackholes(new_mass=blackholes_inner_disk.mass,
@@ -1313,7 +1318,7 @@ def main():
                                               new_galaxy=blackholes_binary_gw.galaxy)
 
         # Save the mergers
-        galaxy_save_name = f"run{galaxy_zfilled_str}/{opts.fname_output_mergers}"
+        galaxy_save_name = f"gal{galaxy_zfilled_str}/{opts.fname_output_mergers}"
         blackholes_merged.to_txt(os.path.join(opts.work_directory, galaxy_save_name), cols=merger_cols)
 
         # Append each galaxy result to outputs
