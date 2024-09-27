@@ -305,6 +305,34 @@ def main():
         # Writing initial parameters to file
         stars.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_star.dat"))
         blackholes.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_bh.dat"))
+        
+        # Assume any star with mass above 100 Msun immediately explodes and turns into a BH
+        stars_bh_id_num = stars.id_num[stars.mass > 100]
+        new_bh_spin = setupdiskblackholes.setup_disk_blackholes_spins(
+                len(stars_bh_id_num),
+                opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
+        new_bh_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(
+                len(stars_bh_id_num),
+                new_bh_spin)
+        new_bh_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(
+                len(stars_bh_id_num))
+        blackholes.add_blackholes(new_id_num=stars_bh_id_num,
+                                  new_mass=stars.at_id_num(stars_bh_id_num, "mass"),
+                                  new_spin=new_bh_spin,
+                                  new_spin_angle=new_bh_spin_angle,
+                                  new_orb_a=stars.at_id_num(stars_bh_id_num, "orb_a"),
+                                  new_orb_inc=stars.at_id_num(stars_bh_id_num, "orb_inc"),
+                                  new_orb_ang_mom=new_bh_orb_ang_mom,
+                                  new_orb_ecc=stars.at_id_num(stars_bh_id_num, "orb_ecc"),
+                                  new_orb_arg_periapse=stars.at_id_num(stars_bh_id_num, "orb_arg_periapse"),
+                                  new_gen=stars.at_id_num(stars_bh_id_num, "gen"),
+                                  new_galaxy=stars.at_id_num(stars_bh_id_num, "galaxy"),
+                                  new_time_passed=stars.at_id_num(stars_bh_id_num, "time_passed"))
+
+        # Remove from stars and update filing cabinet
+        stars.remove_id_num(stars_bh_id_num)
+        filing_cabinet.update(stars_bh_id_num, "category", np.zeros(len(stars_bh_id_num)))
+        filing_cabinet.update(stars_bh_id_num, "size", np.full(len(stars_bh_id_num), -1))
 
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
