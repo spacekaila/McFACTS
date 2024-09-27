@@ -218,6 +218,11 @@ def main():
         # (ie less than this value gets fixed to zero)
         # e.g 0.02 rad=1deg
         disk_bh_spin_resolution_min = 0.02
+        agn_redshift = 0.1
+        #------------------       HARDCODING agn_redshift = 0.1 HERE       -----------------------------------
+        # This is for computing the gw strain for sources and NOTHING else if you are 
+        #   not using our strain this parameter will do nothing. If you are using our strain and you want to put 
+        #   your sources at a different distance, scale them to the value here DO NOT CHANGE 
 
         # Set up number of BH in disk
         disk_bh_num = setupdiskblackholes.setup_disk_nbh(
@@ -854,7 +859,7 @@ def main():
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
                             old_bbh_gw_freq,
-                            opts.agn_redshift
+                            agn_redshift
                             )
 
                         blackholes_binary_gw.add_binaries(new_id_num=bh_binary_id_num_gw,
@@ -886,7 +891,7 @@ def main():
                     blackholes_binary = evolve.evolve_gw(
                         blackholes_binary,
                         opts.smbh_mass,
-                        opts.agn_redshift
+                        agn_redshift
                     )
 
                     # Check and see if any binaries are ionized.
@@ -1062,7 +1067,7 @@ def main():
                     filing_cabinet.id_max,
                     opts.fraction_bin_retro,
                     opts.smbh_mass,
-                    opts.agn_redshift
+                    agn_redshift
                 )
 
                 # Add new binaries to filing cabinet and delete prograde singleton black holes
@@ -1189,7 +1194,7 @@ def main():
                     opts.timestep_duration_yr,
                     old_gw_freq,
                     opts.smbh_mass,
-                    opts.agn_redshift
+                    agn_redshift
                 )
 
 

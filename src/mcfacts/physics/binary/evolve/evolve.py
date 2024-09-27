@@ -361,7 +361,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
             pass
 
     # Assert that things are not allowed to migrate out of the disk.
-    mask_disk_radius_outer = disk_radius_outer > disk_bin_bhbh_pro_array
+    mask_disk_radius_outer = disk_radius_outer < disk_bin_bhbh_pro_array
     disk_bin_bhbh_pro_array[mask_disk_radius_outer] = disk_radius_outer
     return disk_bin_bhbh_pro_array
 
