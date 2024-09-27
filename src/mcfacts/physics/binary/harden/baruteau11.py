@@ -69,10 +69,6 @@ def bin_harden_baruteau(blackholes_binary, smbh_mass, timestep_duration_yr,
     # Timescale for binary merger via GW emission alone, scaled to bin parameters
     time_to_merger_gw = time_gw_normalization*((bin_sep)**(4.0))*((mass_binary/10.0)**(-2))*((mass_reduced/2.5)**(-1.0))*ecc_factor
     blackholes_binary.time_to_merger_gw[idx_non_mergers] = time_to_merger_gw
-    print("idx_non_mergers type",type(idx_non_mergers))
-    print("idx_non_mergers",(idx_non_mergers))
-    print("time_to_merger_gw > timestep_duration_yr type", type(time_to_merger_gw > timestep_duration_yr))
-    print("time_to_merger_gw > timestep_duration_yr", (time_to_merger_gw > timestep_duration_yr))
 
     # Binary will not merge in this timestep
     # new bin_sep according to Baruteu+11 prescription
