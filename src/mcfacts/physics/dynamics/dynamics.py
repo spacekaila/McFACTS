@@ -1146,7 +1146,7 @@ def bin_recapture(blackholes_binary, timestep_duration_yr):
 
     idx_gtr_0 = blackholes_binary.bin_orb_inc > 0
 
-    if (idx_gtr_0[0].shape[0] == 0):
+    if (idx_gtr_0.shape[0] == 0):
         return (blackholes_binary)
     
     bin_orb_inc = blackholes_binary.bin_orb_inc[idx_gtr_0]
@@ -1154,7 +1154,7 @@ def bin_recapture(blackholes_binary, timestep_duration_yr):
     bin_orb_a = blackholes_binary.bin_orb_a[idx_gtr_0]
 
     less_crit_inc1_mask = bin_orb_inc < crit_inc1
-    bwtwn_crit_inc1_inc2_mask = (bin_orb_inc > crit_inc1) and (bin_orb_inc < crit_inc2)
+    bwtwn_crit_inc1_inc2_mask = (bin_orb_inc > crit_inc1) & (bin_orb_inc < crit_inc2)
 
     # is bin orbital inclination <5deg in SG disk?
     bin_orb_inc[less_crit_inc1_mask] = bin_orb_inc[less_crit_inc1_mask] * (1. - ((timestep_duration_yr/1e6) * (bin_mass[less_crit_inc1_mask] / 10.) * (bin_orb_a[less_crit_inc1_mask] / 1.e4)))
