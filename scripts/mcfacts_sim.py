@@ -196,7 +196,7 @@ def main():
     for galaxy in range(opts.galaxy_num):
         print("Galaxy", galaxy)
         # Set random number generator for this run with incremented seed
-        reset_random(opts.seed+galaxy)
+        rng = reset_random(opts.seed+galaxy)
 
         # Make subdirectories for each galaxy
         # Fills run number with leading zeros to stay sequential
@@ -463,11 +463,11 @@ def main():
                 stars_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
                 stars_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
                 blackholes_binary.to_txt(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
-                                             cols=binary_cols)
+                                         cols=binary_cols)
                 timestep_current_num += 1
 
             # Order of operations:
-            # No migration until orbital eccentricity damped to e_crit 
+            # No migration until orbital eccentricity damped to e_crit
             # 1. check orb. eccentricity to see if any prograde_bh_location BH have orb. ecc. <e_crit.
             #    Create array prograde_bh_location_ecrit for those (mask prograde_bh_locations?)
             #       If yes, migrate those BH.
@@ -644,7 +644,7 @@ def main():
 
             # Perturb eccentricity via dynamical encounters
             if opts.flag_dynamic_enc > 0:
-                bh_orb_a_orb_ecc_pro = dynamics.circular_singles_encounters_prograde(
+                blackholes_pro.orb_a, blackholes_pro.orb_ecc = dynamics.circular_singles_encounters_prograde(
                     opts.smbh_mass,
                     blackholes_pro.orb_a,
                     blackholes_pro.mass,
@@ -653,10 +653,8 @@ def main():
                     opts.disk_bh_pro_orb_ecc_crit,
                     opts.delta_energy_strong,
                 )
-                blackholes_pro.orb_a = bh_orb_a_orb_ecc_pro[0][0]
-                blackholes_pro.orb_ecc = bh_orb_a_orb_ecc_pro[1][0]
 
-                star_orb_a_orb_ecc_pro = dynamics.circular_singles_encounters_prograde(
+                stars_pro.orb_a, stars_pro.orb_ecc = dynamics.circular_singles_encounters_prograde(
                     opts.smbh_mass,
                     stars_pro.orb_a,
                     stars_pro.mass,
@@ -665,8 +663,6 @@ def main():
                     opts.disk_bh_pro_orb_ecc_crit,
                     opts.delta_energy_strong,
                 )
-                stars_pro.orb_a = star_orb_a_orb_ecc_pro[0][0]
-                stars_pro.orb_ecc = star_orb_a_orb_ecc_pro[1][0]
 
             # Do things to the binaries--first check if there are any:
             #if (blackholes_binary.num > 0):
@@ -686,7 +682,7 @@ def main():
                 else:
                     # If there are binaries, evolve them
                     # Damp binary orbital eccentricity
-                    blackholes_binary = orbital_ecc.orbital_bin_ecc_damping_obj(
+                    blackholes_binary = orbital_ecc.orbital_bin_ecc_damping(
                         opts.smbh_mass,
                         blackholes_binary,
                         disk_surface_density,
@@ -699,6 +695,7 @@ def main():
                         # Harden/soften binaries via dynamical encounters
                         # Harden binaries due to encounters with circular singletons (e.g. Leigh et al. 2018)
                         # FIX THIS: RETURN perturbed circ singles (orb_a, orb_ecc)
+
                         blackholes_binary = dynamics.circular_binaries_encounters_circ_prograde_obj(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -712,6 +709,7 @@ def main():
 
                         # Soften/ ionize binaries due to encounters with eccentric singletons
                         # Return 3 things: perturbed biary_bh_array, disk_bh_pro_orbs_a, disk_bh_pro_orbs_ecc
+
                         blackholes_binary = dynamics.circular_binaries_encounters_ecc_prograde_obj(
                             opts.smbh_mass,
                             blackholes_pro.orb_a,
@@ -722,7 +720,7 @@ def main():
                             opts.delta_energy_strong,
                             blackholes_binary,
                         )
-                        
+
                     # Harden binaries via gas
                     # Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
                     blackholes_binary = baruteau11.bin_harden_baruteau(
@@ -764,6 +762,7 @@ def main():
                     if (opts.flag_dynamic_enc > 0):
                         # Spheroid encounters
                         # FIX THIS: Replace nsc_imf_bh below with nsc_imf_stars_ since pulling from stellar MF
+
                         blackholes_binary = dynamics.bin_spheroid_encounter_obj(
                             opts.smbh_mass,
                             opts.timestep_duration_yr,
@@ -777,7 +776,7 @@ def main():
                     if (opts.flag_dynamic_enc > 0):
                         # Recapture bins out of disk plane. 
                         # FIX THIS: Replace this with orb_inc_damping but for binary bhbh OBJECTS (KN)
-                        blackholes_binary = dynamics.bin_recapture_obj(
+                        blackholes_binary = dynamics.bin_recapture(
                             blackholes_binary,
                             opts.timestep_duration_yr
                         )
