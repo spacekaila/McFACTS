@@ -187,7 +187,7 @@ def circular_singles_encounters_prograde(
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
                         random_uniform_number = rng.random()
-                        #print(f"++++++++++circular_singles_encounters_prograde {random_uniform_number}")
+                        print(f"++++++++++circular_singles_encounters_prograde {random_uniform_number}")
                         if random_uniform_number < prob_enc_per_timestep:
                             indx_array = circ_prograde_population_indices[0]
                             num_encounters = num_encounters + 1
@@ -414,7 +414,7 @@ def circular_binaries_encounters_ecc_prograde(
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
                         random_uniform_number = rng.random()
-                        #print(f"++++++++++circular_binaries_encounters_ecc_prograde {random_uniform_number}")
+                        print(f"++++++++++circular_binaries_encounters_ecc_prograde {random_uniform_number}")
 
                         if random_uniform_number < prob_enc_per_timestep:
                             #Perturb *this* ith binary depending on how hard it already is.
@@ -699,7 +699,7 @@ def circular_binaries_encounters_circ_prograde(
                         if prob_enc_per_timestep > 1:
                             prob_enc_per_timestep = 1
                         random_uniform_number = rng.random()
-                        #print(f"++++++++++circular_binaries_encounters_circ_prograde {random_uniform_number}")
+                        print(f"++++++++++circular_binaries_encounters_circ_prograde {random_uniform_number}")
                         if random_uniform_number < prob_enc_per_timestep:
                             #Perturb *this* ith binary depending on how hard it already is.
                             num_encounters = num_encounters + 1
@@ -997,20 +997,20 @@ def bin_spheroid_encounter(
 
         # Based on est encounter rate, calculate if binary actually has a spheroid encounter
         random_uniform_number = rng.random()
-        #print(f"++++++++++bin_spheroid_rand1 {random_uniform_number}")
+        print(f"++++++++++bin_spheroid_rand1 {random_uniform_number}")
 
         if random_uniform_number < enc_rate:
             # Have already generated spheroid interaction, so a_3 is not far off a_bbh (unless super high ecc). 
             # Assume a_3 is similar to a_bbh (within a factor of O(3), so allowing for modest relative eccentricity)    
             # i.e. a_3=[10^-0.5,10^0.5]*a_bbh.
             random_uniform_number2 = -0.5 + rng.random()
-            #print(f"++++++++++bin_spheroid_rand2 {random_uniform_number2}")
+            print(f"++++++++++bin_spheroid_rand2 {random_uniform_number2}")
             radius_3 = bin_coms[i]*(10**(random_uniform_number2))
             # Generate random interloper mass from IMF
             # NOTE: Stars should be most common sph component. Switch to BH after some long time.
             mode_star = 2.0
             mass_3 = (rng.pareto(nsc_bh_imf_powerlaw_index,1)+1)*mode_star
-            #print(f"++++++++++bin_spheroid_mass3 {mass_3}")
+            print(f"++++++++++bin_spheroid_mass3 {mass_3}")
             # K.E_3 in Joules
             # Keplerian velocity of ecc prograde orbiter around SMBH (=c/sqrt(a/r_g))
             v3 = scipy.constants.c/np.sqrt(radius_3)
@@ -1044,7 +1044,7 @@ def bin_spheroid_encounter(
                     # All stars captured out to 1.e4r_g after 100Myrs
                     excluded_angles = 0.01*(time_passed/crit_time)*180
                     i3 = rng.integers(excluded_angles,360-(excluded_angles))
-                #print(f"++++++++++bin_spheroid_i3xxx {i3}")
+                print(f"++++++++++bin_spheroid_i3xxx {i3}")
 
             #Convert i3 to radians
             i3_rad = np.radians(i3)
