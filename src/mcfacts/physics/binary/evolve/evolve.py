@@ -387,6 +387,12 @@ def gw_strain_freq(mass_1, mass_2, obj_sep, timestep_duration_yr, old_gw_freq, s
     This function takes in two masses, their separation, the previous frequency, and the redshift and
     calculates the new GW strain (unitless) and frequency (Hz).
 
+    Note from Saavik about hardcoding strain_factor to 4e3 if nu_gw > 1e-6:
+        basically we are implicitly assuming if the frequency is low enough the source is monochromatic
+        in LISA over the course of 1yr, so that's where those values come from... and we do need to make
+        a decision about that... and that's an ok decision for now. But if someone were to be considering
+        a different observatory they might not like that decision?
+
     Parameters
     ----------
     mass_1 : numpy array
@@ -405,7 +411,15 @@ def gw_strain_freq(mass_1, mass_2, obj_sep, timestep_duration_yr, old_gw_freq, s
         redshift of the SMBH
     flag_include_old_gw_freq : boolean
         flag indicating if old_gw_freq should be included in calculations
+        if not, we use the hardcoded value (see note above)
         0 if no, 1 if yes
+
+    Returns
+    -------
+    char_strain : numpy array
+        dimensionless characteristic strain
+    nu_gw : numpy array
+        GW frequency in Hz
     """
 
     redshift_d_obs_dict = {0.1: 421*u.Mpc,
@@ -426,8 +440,7 @@ def gw_strain_freq(mass_1, mass_2, obj_sep, timestep_duration_yr, old_gw_freq, s
     # If separation is less than rg_chirp then cap separation at rg_chirp.
     bin_sep[bin_sep < rg_chirp] = rg_chirp[bin_sep < rg_chirp]
 
-    nu_gw = (1.0/np.pi)*np.sqrt(mass_total * const.G /
-                               (bin_sep**(3.0)))
+    nu_gw = (1.0/np.pi) * np.sqrt(mass_total * const.G / np.power(bin_sep, 3))
     nu_gw = nu_gw.to(u.Hz)
 
     # For local distances, approx d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc
