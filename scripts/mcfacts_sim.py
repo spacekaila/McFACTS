@@ -680,6 +680,13 @@ def main():
                     blackholes_binary.remove_id_num(bh_binary_id_num_unphysical)
                     filing_cabinet.remove_id_num(bh_binary_id_num_unphysical)
 
+                # Check for bin_ecc unphysical
+                bh_binary_id_num_unphysical_ecc = blackholes_binary.id_num[blackholes_binary.bin_ecc >= 1.]
+                if bh_binary_id_num_unphysical_ecc.size > 0:
+                    # The binary has unphysical eccentricity. Delete
+                    blackholes_binary.remove_id_num(bh_binary_id_num_unphysical_ecc)
+                    filing_cabinet.remove_id_num(bh_binary_id_num_unphysical_ecc)
+
                 # If there are binaries, evolve them
                 # Damp binary orbital eccentricity
                 blackholes_binary = orbital_ecc.orbital_bin_ecc_damping(
@@ -720,6 +727,14 @@ def main():
                         opts.delta_energy_strong,
                         blackholes_binary,
                     )
+
+                # Check for bin_ecc unphysical
+                # We need a second check here
+                bh_binary_id_num_unphysical_ecc = blackholes_binary.id_num[blackholes_binary.bin_ecc >= 1.]
+                if bh_binary_id_num_unphysical_ecc.size > 0:
+                    # The binary has unphysical eccentricity. Delete
+                    blackholes_binary.remove_id_num(bh_binary_id_num_unphysical_ecc)
+                    filing_cabinet.remove_id_num(bh_binary_id_num_unphysical_ecc)
 
                 # Harden binaries via gas
                 # Choose between Baruteau et al. 2011 gas hardening, or gas hardening from LANL simulations. To do: include dynamical hardening/softening from encounters
