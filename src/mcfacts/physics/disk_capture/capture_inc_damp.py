@@ -60,10 +60,10 @@ def orb_inc_damping(smbh_mass, disk_bh_retro_orbs_a, disk_bh_retro_masses, disk_
 
     # throw most things into SI units (that's right, ENGINEER UNITS!)
     #    or more locally convenient variable names
-    smbh_mass = smbh_mass * mc_const.KgPerMsun  # kg
+    smbh_mass = smbh_mass * mc_const.mass_per_msun  # kg
     semi_maj_axis = disk_bh_retro_orbs_a * scipy.constants.G * smbh_mass \
                     / (scipy.constants.c) ** 2  # m
-    retro_mass = disk_bh_retro_masses * mc_const.KgPerMsun  # kg
+    retro_mass = disk_bh_retro_masses * mc_const.mass_per_msun  # kg
     omega = disk_bh_retro_arg_periapse  # radians
     ecc = disk_bh_retro_orbs_ecc  # unitless
     inc = disk_bh_retro_orbs_inc  # radians

@@ -21,6 +21,104 @@ def check_1d_length(arr_list):
 # TODO: issue: right now you can pass AGNStar arrays that are 8-elements long for the star parameters and 10-elements long 
 #       for the AGNObject parameters and it doesn't complain.
 
+# Empty array to pass
+empty_arr = np.array([])
+
+attr_bh = ["id_num", "orb_a", "mass", "spin", "spin_angle",
+           "orb_inc", "orb_ecc", "orb_arg_periapse", "orb_ang_mom",
+           "gen", "galaxy", "time_passed",
+           "gw_freq", "gw_strain"]
+
+attr_star = ["id_num", "orb_a", "mass", "spin", "spin_angle",
+             "orb_inc", "orb_ecc", "orb_arg_periapse", "orb_ang_mom",
+             "gen", "galaxy", "time_passed",
+             "star_X", "star_Y", "star_Z", "radius"]
+
+attr_binary_bh = ["id_num", "orb_a_1", "orb_a_2", "mass_1", "mass_2", #"mass_total",
+                  "spin_1", "spin_2", "spin_angle_1", "spin_angle_2",
+                  "bin_sep", "bin_orb_a", "time_to_merger_gw", "flag_merging",
+                  "time_merged", "bin_ecc", "gen_1", "gen_2", "bin_orb_ang_mom",
+                  "bin_orb_inc", "bin_orb_ecc", "gw_freq", "gw_strain", "galaxy", ]#"time_passed"]
+
+attr_merged_bh = ["id_num", "galaxy", "bin_orb_a", "mass_final",
+                  "spin_final", "spin_angle_final",
+                  "mass_1", "mass_2",
+                  "spin_1", "spin_2",
+                  "spin_angle_1", "spin_angle_2",
+                  "gen_1", "gen_2",
+                  "chi_eff", "chi_p", "time_merged"]
+
+attr_filing_cabinet = ["id_num", "category", "orb_a", "mass", "size",
+                       "direction", "disk_inner_outer"]
+
+
+def get_attr_list(obj):
+    """
+    Returns list of array attributes for each type of AGNObject
+
+    Parameters
+    ----------
+    obj : AGNObject subclass
+        Instance of one of the AGNObject subclasses
+
+    Returns
+    -------
+    attr_$TYPE : array of str
+        array of names of attributes for each object in obj
+    """
+    if isinstance(obj, AGNBlackHole):
+        return (attr_bh)
+    elif isinstance(obj, AGNStar):
+        return (attr_star)
+    elif isinstance(obj, AGNFilingCabinet):
+        return (attr_filing_cabinet)
+    elif isinstance(obj, AGNMergedBlackHole):
+        return (attr_merged_bh)
+    elif isinstance(obj, AGNBinaryBlackHole):
+        return (attr_binary_bh)
+    else:
+        raise TypeError("obj is not an AGNObject subclass")
+
+
+def obj_to_binary_bh_array(obj):
+    """
+    Function to rewrite the AGNBinaryBlackHole object in the same
+    format as the existing binary_bh_array so that the functions
+    still work.
+
+    Parameters
+    ----------
+    obj : AGNBinaryBlackHole
+        binary black hole object
+
+    Returns
+    -------
+    binary_bh_array : numpy array with shape (22, $SIZE)
+        the same data formatted in the binary_bh_array style
+    """
+
+    data = (obj.orb_a_1, obj.orb_a_2,  # 0, 1  distance from SMBH in r_g
+            obj.mass_1, obj.mass_2,  # 2, 3  mass in Msun
+            obj.spin_1, obj.spin_2,  # 4, 5  dimensionless spin magnitude
+            obj.spin_angle_1, obj.spin_angle_2,  # 6, 7  spin angle wrt disk gas in radians
+            obj.bin_sep,  # 8  separation of binary components in r_g (semi-major axis around binary CoM)
+            obj.bin_orb_a,  # 9  binary's distance from SMBH in r_g
+            obj.time_to_merger_gw,  # 10  time to merger through GW alone
+            obj.flag_merging,  # 11  merger flag, -2 if merging this timestep, else 0
+            obj.time_merged,  # 12  time of merger if binary has already merged
+            obj.bin_ecc,  # 13  binary eccentricity around binary CoM
+            obj.gen_1, obj.gen_2,  # 14, 15  generations
+            obj.bin_orb_ang_mom,  # 16  binary orbital angular momentum (+1 prograde, -1 retrograde)
+            obj.bin_orb_inc,  # 17  binary orbital inclination
+            obj.bin_orb_ecc,  # 18  binary orbital eccentricity of CoM around SMBH
+            obj.gw_freq,  # 19  GW frequency in Hz
+            obj.gw_strain,  # 20  GW dimensionless strain of binary
+            obj.id_num)  # 21  ID number
+
+    binary_bh_array = np.vstack(data)
+
+    return (binary_bh_array)
+
 
 class AGNObject(object):
     """
@@ -32,79 +130,56 @@ class AGNObject(object):
     if the subclass is a Binary object, then attributes are for the total
     quantities (total mass, etc.), not the binary components.
     No instances of the AGNObject class should be created, it is a superclass
-    to the AGNStar, AGNBlackHole, etc. classes. If the 
+    to the AGNStar, AGNBlackHole, etc. classes.
     """
 
     def __init__(self,
-                 mass=None,
-                 spin=None,  # internal quantity. total J for a binary
-                 spin_angle=None,  # angle between J and orbit around SMBH for binary
-                 orb_a=None,  # location
-                 orb_inc=None,  # of CoM for binary around SMBH
+                 mass=empty_arr,
+                 spin=empty_arr,  # internal quantity. total J for a binary
+                 spin_angle=empty_arr,  # angle between J and orbit around SMBH for binary
+                 orb_a=empty_arr,  # location
+                 orb_inc=empty_arr,  # of CoM for binary around SMBH
                  # orb_ang_mom = None,  # redundant, should be computed from keplerian orbit formula for L in terms of mass, a, eccentricity
-                 orb_ecc=None,
-                 orb_arg_periapse=None,
-                 smbh_mass=None,
-                 obj_num=None,
-                 id_start_val=None):
+                 orb_ecc=empty_arr,
+                 orb_arg_periapse=empty_arr,
+                 galaxy=empty_arr,
+                 time_passed=empty_arr,
+                 obj_num=0,
+                 id_start_val=0):
         """
         Creates an instance of the AGNObject class.
 
         Parameters
         ----------
         mass : numpy array
-            masses
+            masses in Msun
         spin : numpy array
             spins
         spin_angle : numpy array
-            spin angles
+            spin angles in radians
         orb_a : numpy array
-            orbital semi-major axis with respect to the SMBH
+            orbital semi-major axis with respect to the SMBH in R_g
         orb_inc : numpy array
             orbital inclination with respect to the SMBH
         orb_ecc : numpy array
             orbital eccentricity with respect to the SMBH
         orb_arg_periapse : numpy array
             argument of the orbital periapse with respect to the SMBH
-        smbh_mass : numpy array
-            mass of the SMBH
+            set to -1 if not otherwise set. currently used only for retros
+        galaxy : numpy array
+            galaxy iteration
+        time_passed : numpy array
+            time passed
         obj_num : int, optional
-            number of objects, by default None
+            number of objects, by default 0
         id_start_val : numpy array
-            ID numbers for the objects, by default None
+            ID numbers for the objects, by default 0
         """
 
-        # Make sure all inputs are included
-        """ if mass is None: raise AttributeError("mass is not included in inputs")
-        if spin is None: raise AttributeError('spin is not included in inputs')
-        if spin_angle is None: raise AttributeError('spin_angle is not included in inputs')
-        if orb_a is None: raise AttributeError('orb_a is not included in inputs')
-        if orb_inc is None: raise AttributeError('orb_inc is not included in inputs')
-        #if orb_ang_mom is None: raise AttributeError('orb_ang_mom is not included in inputs')
-        if orb_ecc is None: raise AttributeError('orb_ecc is not included in inputs') """
+        if (obj_num == 0):
+            obj_num = mass.shape[0]
 
-        """
-
-        assert mass.shape == (obj_num,),"mass: all arrays must be 1d and the same length"
-        assert spin.shape == (obj_num,),"spin: all arrays must be 1d and the same length"
-        assert spin_angle.shape == (obj_num,),"spin_angle: all arrays must be 1d and the same length"
-        assert orb_a.shape == (obj_num,),"orb_a: all arrays must be 1d and the same length"
-        assert orb_inc.shape == (obj_num,),"orb_inc: all arrays must be 1d and the same length"
-        #assert orb_ang_mom.shape == (obj_num,),"orb_ang_mom: all arrays must be 1d and the same length"
-        assert orb_ecc.shape == (obj_num,),"orb_ecc: all arrays must be 1d and the same length" """
-
-        if mass is None:
-            # creating an empty object
-            # i know this is a terrible way to do things
-            self.gen = None
-            self.id_num = None
-        else:
-            if obj_num is None: obj_num = mass.size
-            self.gen = np.full(obj_num, 1)
-            if id_start_val is None:
-                self.id_num = np.arange(0, len(mass))  # creates ID numbers sequentially from 0
-            else:  # if we have an id_start_val aka these aren't the first objects in the disk
-                self.id_num = np.arange(id_start_val, id_start_val + len(mass), 1)
+        assert spin.shape == (obj_num,), "obj_num must match the number of objects"
 
         self.mass = mass
         self.spin = spin
@@ -113,19 +188,29 @@ class AGNObject(object):
         self.orb_inc = orb_inc
         self.orb_ecc = orb_ecc
         self.orb_arg_periapse = orb_arg_periapse
+        self.gen = np.full(obj_num, 1)
+        self.id_num = np.arange(id_start_val, id_start_val + obj_num, 1)
+        self.galaxy = galaxy
+        self.time_passed = time_passed
+
+        self.num = obj_num
+
+        self.check_consistency()
 
     def add_objects(self,
-                    new_mass=None,
-                    new_spin=None,
-                    new_spin_angle=None,
-                    new_orb_a=None,
-                    new_orb_inc=None,
-                    new_orb_ang_mom=None,
-                    new_orb_ecc=None,
-                    new_orb_arg_periapse=None,
-                    new_gen=None,
-                    new_id_num=None,
-                    obj_num=None):
+                    new_mass=empty_arr,
+                    new_spin=empty_arr,
+                    new_spin_angle=empty_arr,
+                    new_orb_a=empty_arr,
+                    new_orb_inc=empty_arr,
+                    new_orb_ang_mom=empty_arr,
+                    new_orb_ecc=empty_arr,
+                    new_orb_arg_periapse=empty_arr,
+                    new_gen=empty_arr,
+                    new_galaxy=empty_arr,
+                    new_time_passed=empty_arr,
+                    new_id_num=empty_arr,
+                    obj_num=0):
         """
         Append new objects to the AGNObject. This method is not called
         directly, it is only called by the subclasses' add methods.
@@ -150,30 +235,20 @@ class AGNObject(object):
             orbital arguments of the periapse to be added
         new_gen : numpy array
             generations to be added
+        new_galaxy : numpy array
+            galaxy iteration to be added, set to -1 if not passed
+        new_time_passed : numpy array
+            time passed to be added, set to -1 if not passed
         new_id_num : numpy array,optional
             ID numbers to be added
         obj_num : int, optional
             Number of objects to be added.
-        """        
+        """
 
-        # Make sure all inputs are included
-        """ if new_mass is None: raise AttributeError('new_mass is not included in inputs')
-        if new_spin is None: raise AttributeError('new_spin is not included in inputs')
-        if new_spin_angle is None: raise AttributeError('new_spin_angle is not included in inputs')
-        if new_a is None: raise AttributeError('new_a is not included in inputs')
-        if new_inc is None: raise AttributeError('new_inc is not included in inputs')
-        #if new_orb_ang_mom is None: raise AttributeError('new_orb_ang_mom is not included in inputs')
-        if new_e is None: raise AttributeError('new_e is not included in inputs')
+        if (obj_num == 0):
+            obj_num = new_mass.shape[0]
 
-        if obj_num is None: obj_num = new_mass.size
-
-        assert new_mass.shape == (obj_num,),"new mass: all arrays must be 1d and the same length"
-        assert new_spin.shape == (obj_num,),"new_spin: all arrays must be 1d and the same length"
-        assert new_spin_angle.shape == (obj_num,),"new_spin_angle: all arrays must be 1d and the same length"
-        assert new_a.shape == (obj_num,),"new_a: all arrays must be 1d and the same length"
-        assert new_inc.shape == (obj_num,),"new_inc: all arrays must be 1d and the same length"
-        #assert new_orb_ang_mom.shape == (obj_num,),"new_orb_ang_mom: all arrays must be 1d and the same length"
-        assert new_e.shape == (obj_num,),"new_e: all arrays must be 1d and the same length" """
+        assert new_mass.shape == (obj_num,), "obj_num must match the number of objects"
 
         self.mass = np.concatenate([self.mass, new_mass])
         self.spin = np.concatenate([self.spin, new_spin])
@@ -185,8 +260,14 @@ class AGNObject(object):
         self.orb_arg_periapse = np.concatenate([self.orb_arg_periapse, new_orb_arg_periapse])
         self.gen = np.concatenate([self.gen, new_gen])
         self.id_num = np.concatenate([self.id_num, new_id_num])
+        self.galaxy = np.concatenate([self.galaxy, new_galaxy])
+        self.time_passed = np.concatenate([self.time_passed, new_time_passed])
 
-    def remove_objects(self, idx_remove=None):
+        self.num += obj_num
+
+        self.check_consistency()
+
+    def remove_index(self, idx_remove=None):
         """
         Removes objects at specified indices.
 
@@ -196,18 +277,43 @@ class AGNObject(object):
             indices to remove
         """
 
-        # Check that the index array is a numpy array.
-        # assert isinstance(idx_remove,np.ndarray),"idx_remove must be numpy array"
-
         if idx_remove is None:
             return None
-        
+
         idx_change = np.ones(len(self.mass), dtype=bool)
         idx_change[idx_remove] = False
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[idx_change])
-   
-    def keep_objects(self, idx_keep=None):
+
+        self.num -= np.sum(idx_change)
+
+        self.check_consistency()
+
+    def remove_id_num(self, id_num_remove=None):
+        """
+        Filters AGNObject to remove the objects at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num_keep : numpy array
+            ID numbers to keep, others are removed
+        """
+
+        if id_num_remove is None:
+            return None
+
+        keep_mask = ~(np.isin(getattr(self, "id_num"), id_num_remove))
+        attr_list = get_attr_list(self)
+        #for attr in vars(self).keys():
+        for attr in attr_list:
+            setattr(self, attr, getattr(self, attr)[keep_mask])
+
+        self.num -= np.sum(~keep_mask)
+
+        self.check_consistency()
+
+    def keep_index(self, idx_keep):
         """
         Filters AGNObject to only keep the objects at the specified indices.
 
@@ -217,16 +323,65 @@ class AGNObject(object):
             indices to keep, others are removed.
         """
 
-        # Check that the index array is a numpy array.
-        # assert isinstance(idx_remove,np.ndarray),"idx_remove must be numpy array"
-
         if idx_keep is None:
             return None
-        
+
         idx_change = np.zeros(len(self.mass), dtype=bool)
         idx_change[idx_keep] = True
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[idx_change])
+
+        self.num -= np.sum(idx_change)
+
+        self.check_consistency()
+
+    def keep_id_num(self, id_num_keep):
+        """
+        Filters AGNObject to only keep the objects at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num_keep : numpy array
+            ID numbers to keep, others are removed
+        """
+
+        if id_num_keep is None:
+            return None
+
+        keep_mask = (np.isin(getattr(self, "id_num"), id_num_keep))
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
+            setattr(self, attr, getattr(self, attr)[keep_mask])
+
+        self.num -= np.sum(~keep_mask)
+
+        self.check_consistency()
+
+    def at_id_num(self, id_num, attr):
+        """
+        Returns the attribute at the specified ID numbers
+
+        Parameters
+        ----------
+        id_num : numpy array
+            ID numbers of objects to return
+        attr : str
+            attribute to return
+
+        Returns
+        -------
+        val : numpy array
+            specified attribute at specified ID numbers
+        """
+        id_mask = (np.isin(getattr(self, "id_num"), id_num))
+
+        try:
+            val = getattr(self, attr)[id_mask]
+        except:
+            raise AttributeError("{} is not an attribute of the AGNObject".format(attr))
+
+        return (val)
 
     def copy(self):
         """
@@ -271,7 +426,8 @@ class AGNObject(object):
         sort_idx = np.argsort(sort_attr)
 
         # Each attribute is then sorted to be in this order
-        for attr in vars(self).keys():
+        attr_list = get_attr_list(self)
+        for attr in attr_list:
             setattr(self, attr, getattr(self, attr)[sort_idx])
 
     def return_params(self):
@@ -303,14 +459,16 @@ class AGNObject(object):
             dictionary array of all attributes in the AGNObject. Everything
             is written as a float.
         """
-
-        dtype = np.dtype([(attr, 'float') for attr in vars(self).keys()])
+        attr_list = get_attr_list(self)
+        #dtype = np.dtype([(attr, 'float') for attr in vars(self).keys()])
+        dtype = np.dtype([(attr, 'float') for attr in attr_list])
         dat_out = np.empty(len(self.mass), dtype=dtype)
-        for attr in vars(self).keys():
+        #for attr in vars(self).keys():
+        for attr in attr_list:
             dat_out[attr] = getattr(self, attr)
         return (dat_out)
 
-    def to_file(self, fname=None):
+    def to_file(self, fname=None, col_order=None):
         """
         Writes AGNObject to csv file. Header row started with `#` character.
 
@@ -318,14 +476,62 @@ class AGNObject(object):
         ----------
         fname : str
             filename including path
+        col_order : array of str
+            array of header names to re-order or cut out columns, optional
         """
+
+        assert fname is not None, "Need to pass filename"
+
+        self.check_consistency()
 
         import pandas
         samples_out = self.return_record_array()
         dframe = pandas.DataFrame(samples_out)
+        if col_order is not None:
+            dframe = dframe[col_order]
+        dframe = dframe.fillna(value=np.nan)
         dframe.to_csv(fname, sep=' ',
                       header=[f"#{x}" if x == dframe.columns[0] else x for x in dframe.columns],
                       index=False)  # `#` is not pre-appended...just boolean
+
+    def to_txt(self, fname=None, cols=None, extra_header=None):
+        """
+        Loads AGNObject into temporary multi-dim numpy array
+        and then uses np.savetxt to save to file. Avoids the
+        issue of pandas writing non-values as blanks instead
+        of NaNs.
+
+        Parameters
+        ----------
+        fname : str
+            filename including path
+        cols : array of str
+            array of header names to re-order or cut out columns, optional
+        extra_header : str
+            extra information to go a line above the column names, optional
+        """
+
+        assert fname is not None, "Need to pass filename"
+
+        header = " ".join(cols)
+
+        if extra_header is not None:
+            header = extra_header + header
+
+        self.check_consistency()
+
+        if cols is not None:
+            attributes = cols
+        else:
+            attributes = get_attr_list(self)
+
+        attrs_list = []
+        for attr in attributes:
+            attrs_list.append(getattr(self, attr))
+
+        temp_array = np.column_stack((tuple(attrs_list)))
+
+        np.savetxt(fname, temp_array, header=header)
 
     def init_from_file(self, fname=None):
         """
@@ -338,9 +544,47 @@ class AGNObject(object):
             file to read in
         """
 
+        assert fname is not None, "Need to pass filename"
+
         dat_in = np.genfromtxt(fname, names=True)
         for name in dat_in.dtype.names:
             setattr(self, name, dat_in[name])
+
+    def check_consistency(self):
+        """
+        Prints the size of each attribute to check that everything is
+        consistent. Raises an AttributeError if all arrays do not have
+        the same length.
+        """
+        attr_list = get_attr_list(self)
+
+        # shape of the first attr in array (arbitrary, just need a comparison value)
+        shape = getattr(self, attr_list[0]).shape
+        not_consistent = 0
+        for attr in attr_list:
+            if (getattr(self, attr).shape != shape):
+                not_consistent += 1
+
+        if not_consistent > 0:
+            print("Inconsistent attribute length, see below:")
+            for attr in attr_list:
+                print(f"{attr}.shape = {getattr(self, attr).shape}")
+            raise AttributeError("Attributes are not all the same size")
+        
+        if self.num != shape[0]:
+            print(f"num = {self.num}, num objects = {shape[0]}")
+            raise AttributeError("num does not match number of objects in AGNObject")
+
+    def unique_id_nums(self):
+        """
+        Checks that ID numbers are unique.
+        """
+
+        if (self.id_num.size != np.unique(self.id_num).size):
+            print(f"There are {self.id_num.size} ID numbers stored and {np.unique(self.id_num).size} unique ID numbers.")
+            print("See ID numbers below:")
+            print(self.id_num)
+            raise ValueError("ID numbers are not unique.")
 
 
 class AGNStar(AGNObject):
@@ -350,13 +594,13 @@ class AGNStar(AGNObject):
     """
 
     def __init__(self,
-                 mass=None,
-                 radius=None,
-                 orb_a=None,
-                 orb_inc=None,
-                 star_Y=None,
-                 star_Z=None,
-                 star_num=None,
+                 mass=empty_arr,
+                 orb_a=empty_arr,
+                 orb_inc=empty_arr,
+                 star_X=empty_arr,
+                 star_Y=empty_arr,
+                 star_Z=empty_arr,
+                 star_num=0,
                  smbh_mass=None,
                  **kwargs):
         """Creates an instance of the AGNStar class. This is a subclass
@@ -367,19 +611,17 @@ class AGNStar(AGNObject):
         Parameters
         ----------
         mass : numpy array
-            _description_, by default None
-        radius : numpy array
-            _description_, by default None
+            star mass
         orb_a : numpy array
-            _description_, by default None
+            star orbital semi-major axis with respect to the SMBH
         orb_inc : numpy array
-            _description_, by default None
+            star orbital inclination with respect to the SMBH
         star_Y : numpy array
             helium fraction of stars
         star_Z : numpy array
             metals fraction of stars
         star_num : int, optional
-            number of stars, by default None
+            number of stars, by default 0
         smbh_mass : float
             mass of the SMBH
         """
@@ -388,43 +630,30 @@ class AGNStar(AGNObject):
         """ if star_Y is None: raise AttributeError('star_Y is not included in inputs')
         if star_Z is None: raise AttributeError('star_Z is not included in inputs') """
 
-        if star_num is None: star_num = radius.size
+        if (star_num == 0):
+            star_num = mass.shape[0]
 
-        # Make sure inputs are numpy arrays
-        if radius is None:
-            self.radius = setupdiskstars.setup_disk_stars_radii(masses=mass)
+        assert mass.shape == (star_num,), "star_num must match the number of objects"
 
+        if mass is empty_arr:
+            self.radius = empty_arr
+            self.orb_ang_mom = empty_arr
         else:
-            assert isinstance(radius, np.ndarray),"radius is not a numpy array"
-            self.radius = radius
+            self.radius = setupdiskstars.setup_disk_stars_radius(masses=mass)
+            mass_total = mass + smbh_mass
+            mass_reduced = mass*smbh_mass/mass_total
+            self.orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(star_num=star_num,
+                                                                           mass_reduced=mass_reduced,
+                                                                           mass_total=mass_total,
+                                                                           orb_a=orb_a,
+                                                                           orb_inc=orb_inc)
 
-        if (np.any(star_Y + star_Z > 1.)):
-            raise ValueError("star_Y and star_Z must sum to 1 or less.")
+        if (np.any(star_X + star_Y + star_Z > 1.)):
+            raise ValueError("star_X, star_Y, and star_Z must sum to 1 or less.")
 
-        if ((isinstance(star_Y, float) and (isinstance(star_Z, float)))):
-            self.star_X = np.ones(len(radius)) - np.full(len(radius),star_Y) - np.full(len(radius),star_Z)
-            self.star_Y = np.full(len(radius), star_Y)
-            self.star_Z = np.full(len(radius), star_Z)
-
-        elif ((isinstance(star_Y, np.ndarray) and isinstance(star_Z, np.ndarray))):
-            assert radius.shape == (star_num,), "radius: all arrays must be 1d and the same length"
-            assert star_Y.shape == (star_num,), "star_Y, array: all arrays must be 1d and the same length"
-            assert star_Z.shape == (star_num,), "star_Z, array: all arrays must be 1d and the same length"
-
-            self.star_X = 1. - star_Y - star_Z
-            self.star_Y = star_Y
-            self.star_Z = star_Z
-
-        else:
-            raise TypeError("star_Y and star_Z must be either both floats or numpy arrays")
-
-        mass_total = mass + smbh_mass
-        mass_reduced = mass*smbh_mass/mass_total
-        self.orb_ang_mom = setupdiskstars.setup_disk_stars_orb_ang_mom(star_num=star_num,
-                                                                       mass_reduced=mass_reduced,
-                                                                       mass_total=mass_total,
-                                                                       orb_a=orb_a,
-                                                                       orb_inc=orb_inc)
+        self.star_X = star_X
+        self.star_Y = star_Y
+        self.star_Z = star_Z
 
         super(AGNStar, self).__init__(mass=mass, orb_a=orb_a, orb_inc=orb_inc, obj_num=star_num, **kwargs)  # calls top level functions
 
@@ -438,10 +667,16 @@ class AGNStar(AGNObject):
         totals : str
             number of stars in AGNStar
         """
-        totals = 'AGNStar(): {} single stars'.format(len(self.mass))
+        totals = 'AGNStar(): {} single stars'.format(self.num)
         return (totals)
 
-    def add_stars(self, new_radius=None, new_Y=None, new_Z=None, obj_num=None, **kwargs):
+    def add_stars(self,
+                  new_radius=empty_arr,
+                  new_X=empty_arr,
+                  new_Y=empty_arr,
+                  new_Z=empty_arr,
+                  star_num=0,
+                  **kwargs):
         """
         Append new stars to the end of AGNStar. This method updates the star
         specific parameters and then sends the rest to the AGNObject
@@ -459,47 +694,68 @@ class AGNStar(AGNObject):
             number of objects to be added, by default None
         """
 
-        # Make sure all inputs are included
-        if new_radius is None: raise AttributeError("new_radius is not included in inputs")
-        if new_Y is None: raise AttributeError("new_Y is not included in inputs")
-        if new_Z is None: raise AttributeError("new_Z is not included in inputs")
+        if (star_num == 0):
+            star_num = new_radius.shape[0]
 
-        if obj_num is None: obj_num = new_radius.size
+        assert new_radius.shape == (star_num,), "star_num must match the number of objects"
 
-        assert new_radius.shape == (obj_num,), "new_radius: all arrays must be 1d and the same length"
+        if (np.any(new_X + new_Y + new_Z) > 1.): raise ValueError("new_Y and new_Z must sum to 1 or less")
+
+        self.star_X = np.concatenate([self.star_X, new_X])
+        self.star_Y = np.concatenate([self.star_Y, new_Y])
+        self.star_Z = np.concatenate([self.star_Z, new_Z])
         self.radius = np.concatenate([self.radius, new_radius])
 
-        if (np.any(new_Y + new_Z) > 1.) : raise ValueError("new_Y and new_Z must sum to 1 or less")
-
-        if ((isinstance(new_Y, float)) and (isinstance(new_Z, float))):
-            self.star_X = np.concatenate(self.star_X, np.full(obj_num, 1.-new_Y-new_Z))
-            self.star_Y = np.concatenate([self.star_Y, np.full(obj_num, new_Y)])
-            self.star_Z = np.concatenate([self.star_Z, np.full(obj_num, new_Z)])
-            
-        if ((isinstance(new_Y, np.ndarray)) and (isinstance(new_Z, np.ndarray))):
-            self.star_X = np.concatenate([self.star_X, np.ones(obj_num) - new_Y - new_Z])
-            self.star_Y = np.concatenate([self.star_Y, new_Y])
-            self.star_Z = np.concatenate([self.star_Z, new_Z])
-        super(AGNStar, self).add_objects(obj_num=obj_num, **kwargs)
+        super(AGNStar, self).add_objects(obj_num=star_num, **kwargs)
 
 
 class AGNBlackHole(AGNObject):
     """
-    A subclass of AGNObject for single black holes. It extends AGNObject. It
-    calculates orbital angular momentum for black holes.
+    A subclass of AGNObject for single black holes. It extends AGNObject and
+    adds attributes for GW frequency and strain. This is only relevant for
+    EMRIs and BBH, so if a value is not passed these attributes are set to -1.
+    AGNBlackHole also calculates orbital angular momentum for black holes.
     """
-    def __init__(self, mass=None, **kwargs):
+    def __init__(self, mass=empty_arr,
+                 gw_freq=empty_arr,
+                 gw_strain=empty_arr,
+                 bh_num=0,
+                 **kwargs):
         """Creates an instance of AGNStar object.
 
         Parameters
         ----------
         mass : numpy array
-            black hole masses
+            black hole masses [Msun]
+        gw_freq : numpy array
+            gravitational wave frequency [Hz]
+        gw_strain : numpy array
+            gravitational wave strain [unitless]
         """
 
-        self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(n_bh=len(mass))
+        if (bh_num == 0):
+            bh_num = mass.shape[0]
 
-        super(AGNBlackHole, self).__init__(mass=mass, **kwargs)
+        assert mass.shape == (bh_num,), "bh_num must match the number of objects"
+
+        if mass is empty_arr:
+            self.orb_ang_mom = empty_arr
+            self.gw_freq = empty_arr
+            self.gw_strain = empty_arr
+        else:
+            self.orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(bh_num)
+
+            if ((gw_freq is empty_arr) and (gw_strain is empty_arr)):
+                self.gw_freq = np.full(bh_num, -1)
+                self.gw_strain = np.full(bh_num, -1)
+
+            elif ((gw_freq is not empty_arr) and (gw_strain is not empty_arr)):
+                self.gw_freq = gw_freq
+                self.gw_strain = gw_strain
+            else:
+                raise AttributeError("something messy with gw_freq and gw_strain")
+
+        super(AGNBlackHole, self).__init__(mass=mass, obj_num=bh_num, **kwargs)
 
     def __repr__(self):
         """
@@ -512,10 +768,15 @@ class AGNBlackHole(AGNObject):
             number of black holes in AGNBlackHole
         """
 
-        totals = 'AGNBlackHole(): {} single black holes'.format(len(self.mass))
+        totals = 'AGNBlackHole(): {} single black holes'.format(self.num)
         return (totals)
 
-    def add_blackholes(self, obj_num=None, **kwargs):
+    def add_blackholes(self,
+                       new_mass=empty_arr,
+                       new_gw_freq=empty_arr,
+                       new_gw_strain=empty_arr,
+                       bh_num=0,
+                       **kwargs):
         """
         Append black holes to the AGNBlackHole object.
 
@@ -524,7 +785,23 @@ class AGNBlackHole(AGNObject):
         obj_num : int, optional
             number of black holes to be added, by default None
         """
-        super(AGNBlackHole, self).add_objects(obj_num=obj_num, **kwargs)
+
+        if (bh_num == 0):
+            bh_num = new_mass.shape[0]
+
+        assert new_mass.shape == (bh_num,),"bh_num must match the number of objects"
+
+        if new_gw_freq is empty_arr:
+            self.gw_freq = np.concatenate([self.gw_freq, np.full(bh_num, -1)])
+        else:
+            self.gw_freq = np.concatenate([self.gw_freq, new_gw_freq])
+        
+        if new_gw_strain is empty_arr:
+            self.gw_strain = np.concatenate([self.gw_strain, np.full(bh_num, -1)])
+        else:
+            self.gw_strain = np.concatenate([self.gw_strain, new_gw_strain])
+
+        super(AGNBlackHole, self).add_objects(obj_num=bh_num, new_mass=new_mass, **kwargs)
 
 
 class AGNBinaryStar(AGNObject):
@@ -741,13 +1018,13 @@ class AGNBinaryStar(AGNObject):
 
         new_total_mass = new_star_mass1 + new_star_mass2
 
-        super(AGNBinaryStar,self).add_objects(new_mass = new_total_mass,
-                                                   new_spin=None,
-                                                   new_spin_angle=None,
-                                                   new_a = new_cm_orb_a,
-                                                   new_inc=new_cm_orb_inc,
-                                                   new_e=new_cm_orb_ecc,
-                                                   obj_num=obj_num)
+        super(AGNBinaryStar, self).add_objects(new_mass=new_total_mass,
+                                              new_spin=None,
+                                              new_spin_angle=None,
+                                              new_a=new_cm_orb_a,
+                                              new_inc=new_cm_orb_inc,
+                                              new_e=new_cm_orb_ecc,
+                                              obj_num=obj_num)
 
 
 class AGNBinaryBlackHole(AGNObject):
@@ -755,179 +1032,436 @@ class AGNBinaryBlackHole(AGNObject):
     An array of binary black holes. Should include all objects of this type. No other objects should contain objects of this type.
     """
 
-    def __init__(self, bh_mass1 = None,
-                       bh_mass2 = None,
-                       bh_orb_a1 = None,
-                       bh_orb_a2 = None,
-                       bh_spin1 = None,
-                       bh_spin2 = None,
-                       bh_spin_angle1 = None,
-                       bh_spin_angle2 = None,
-                       bh_orb_ang_mom1 = None,
-                       bh_orb_ang_mom2 = None,
-                       bin_e = None,
-                       bin_a = None,
-                       bin_inc=None,
-                       #com_orb_a=None,
-                       com_orb_inc=None,
-                       com_orb_ecc=None,
-                       obj_num = None,
-                     **kwargs):
-        
+    def __init__(self,
+                 mass_1=empty_arr,
+                 mass_2=empty_arr,
+                 orb_a_1=empty_arr,
+                 orb_a_2=empty_arr,
+                 spin_1=empty_arr,
+                 spin_2=empty_arr,
+                 spin_angle_1=empty_arr,
+                 spin_angle_2=empty_arr,
+                 bin_sep=empty_arr,
+                 bin_orb_a=empty_arr,
+                 time_to_merger_gw=empty_arr,
+                 flag_merging=empty_arr,
+                 time_merged=empty_arr,
+                 bin_ecc=empty_arr,
+                 gen_1=empty_arr,
+                 gen_2=empty_arr,
+                 bin_orb_ang_mom=empty_arr,
+                 bin_orb_inc=empty_arr,
+                 bin_orb_ecc=empty_arr,
+                 gw_freq=empty_arr,
+                 gw_strain=empty_arr,
+                 galaxy=empty_arr,
+                 time_passed=empty_arr,
+                 bin_bh_num=0,
+                 id_num=empty_arr):
 
-        #if obj_num is None: obj_num = bh_mass1.size
+        """
+        Create an instance of AGNBinaryBlackHole
 
-        self.mass1 = None
-        self.mass2 = None
-        self.orb_smbh_a1 = None
-        self.orb_smbh_a2 = None
-        self.spin1 = None
-        self.spin2 = None
-        self.spin_angle1 = None
-        self.spin_angle2 = None
-        self.bin_orb_a = None
-        self.bin_com = None
-        self.t_gw = None
-        self.merger_flag = None
-        self.t_mgr = None
-        self.bin_orb_e = None
-        self.gen1 = None
-        self.gen2 = None
-        self.bin_orb_ang_mom = None
-        self.bin_orb_inc = None
-        self.bin_smbh_orb_e = None
+        Parameters
+        ----------
+        mass_1 : numpy array
+            mass of object 1 in Msun
+        mass_2 : numpy array
+            mass of object 2 in Msun
+        orb_a_1 : numpy array
+            orbital semi-major axis of object 1 wrt SMBH in R_g
+        orb_a_2 : numpy array
+            orbital semi-major axis of object 2 wrt SMBH in R_g
+        spin_1 : numpy array
+            dimensionless spin magnitude of object 1
+        spin_2 : numpy array
+            dimensionless spin magnitude of object 2
+        spin_angle_1 : numpy array
+            spin angle of object 1 wrt disk gas in radians
+        spin_angle_2 : numpy array
+            spin angle of object 2 wrt disk gas in radians
+        bin_sep : numpy array
+            separation of binary in R_g
+            (semi-major axis around center of mass)
+        bin_orb_a : numpy array
+            semi-major axis of the binary's center of mass wrt SMBH in R_g
+            (location in disk)
+        time_to_merger_gw : numpy array
+            time until binary will merge through GW alone
+        flag_merging : numpy array of ints
+            flag for if binary is merging this timestep (-2 if merging, 0 else)
+        time_merged : numpy array
+            time the binary merged (for things that already merged)
+        bin_ecc : numpy array
+            eccentricity of the binary around the center of mass
+        gen_1 : numpy array of ints
+            generation of object 1 (1 = natal black hole, no prior mergers)
+        gen_2 : numpy array of ints
+            generation of object 2 (1 = natal black hole, no prior mergers)
+        bin_orb_ang_mom : numpy array
+            angular momentum of the binary wrt SMBH (+1 prograde / -1 retrograde)
+        bin_orb_inc : numpy array
+            orbital inclination of the binary wrt SMBH
+        bin_orb_ecc : numpy array
+            orbital eccentricity of the binary wrt SMBH
+        gw_freq : numpy array
+            GW frequency of binary
+            nu_gw = 1./pi * sqrt(G * M_bin / bin_sep^3)
+        gw_strain : numpy array
+            GW strain of binary
+            h = (4/d_obs) *(GM_chirp/c^2)*(pi*nu_gw*GM_chirp/c^3)^(2/3)
+            where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
+            For local distances, approx 
+            d=cz/H0 = 3e8m/s(z)/70km/s/Mpc =3.e8 (z)/7e4 Mpc =428 Mpc
+            assume 1Mpc = 3.1e22m.
+            From Ned Wright's calculator
+            (https://www.astro.ucla.edu/~wright/CosmoCalc.html)
+            (z=0.1)=421Mpc. (z=0.5)=1909 Mpc
+        id_num : numpy array
+            unique ID numbers
+        bin_bh_num : int
+            number of binaries
+        """
 
+        # Assign attributes
+        self.mass_1 = mass_1
+        self.mass_2 = mass_2
+        self.orb_a_1 = orb_a_1
+        self.orb_a_2 = orb_a_2
+        self.spin_1 = spin_1
+        self.spin_2 = spin_2
+        self.spin_angle_1 = spin_angle_1
+        self.spin_angle_2 = spin_angle_2
+        self.bin_sep = bin_sep
+        self.bin_orb_a = bin_orb_a
+        self.time_to_merger_gw = time_to_merger_gw
+        self.flag_merging = flag_merging
+        self.time_merged = time_merged
+        self.bin_ecc = bin_ecc
+        self.gen_1 = gen_1
+        self.gen_2 = gen_2
+        self.bin_orb_ang_mom = bin_orb_ang_mom
+        self.bin_orb_inc = bin_orb_inc
+        self.bin_orb_ecc = bin_orb_ecc
+        self.gw_freq = gw_freq
+        self.gw_strain = gw_strain
+        self.id_num = id_num
+        self.galaxy = galaxy
+        #self.time_passed = time_passed
 
-        #Now assign attributes
-        """  self.bh_mass1 = bh_mass1
-        self.bh_mass2 = bh_mass2
-        self.bh_orb_a1 = bh_orb_a1
-        self.bh_orb_a2 = bh_orb_a2
-        self.bh_spin1 = bh_spin1
-        self.bh_spin2 = bh_spin2
-        self.bh_spin_angle1 = bh_spin_angle1
-        self.bh_spin_angle2 = bh_spin_angle2
-        self.bh_orb_ang_mom1 = bh_orb_ang_mom1
-        self.bh_orb_ang_mom2 = bh_orb_ang_mom2
-        self.bin_e = bin_e
-        self.bin_a = bin_a
-        self.bin_inc = bin_inc
-        #self.com_orb_a = cm_orb_a
-        self.com_orb_ecc = com_orb_ecc
-        self.com_orb_inc = com_orb_inc
-        self.com_orb_ang_mom = None """
+        if (bin_bh_num == 0):
+            bin_bh_num = mass_1.shape[0]
 
-        #self.com_orb_a = np.abs(bh_orb_a1 - bh_orb_a2)
+        self._mass_total = mass_1 + mass_2
 
-        #Now calculate properties for the AGNObject class aka the totals
-        #total_mass = bh_mass1 + bh_mass2
-        #total_spin = None # we will pass None for now, until we decide how to treat angular momentum
-        #total_spin_angle = None  # we will pass None for now, until we decide how to treat angular momentum
+        self.num = bin_bh_num
 
-
-        """ super(AGNBinaryBlackHole,self).__init__(mass = total_mass,
-                                                spin = total_spin,
-                                                spin_angle = total_spin_angle,
-                                                orb_a = self.cm_orb_a,
-                                                orb_inc=self.cm_orb_inc,
-                                                orb_ecc = self.cm_orb_ecc,
-                                                orb_arg_periapse=None,# TODO ISSUE
-                                                smbh_mass = None, # TODO ISSUE
-                                                obj_num=obj_num) # TODO ISSUE """
-        super(AGNBinaryBlackHole,self).__init__(mass = None,
-                                                spin = None,
-                                                spin_angle = None,
-                                                orb_a = None,
-                                                orb_inc=None,
-                                                orb_ecc = None,
-                                                orb_arg_periapse=None) # TODO ISSUE
-
+        self.check_consistency()
 
     def __repr__(self):
-        return('AGNBinaryStar(): {} black hole binaries'.format(len(self.mass)))
-    
-    """def add_binaries(self, new_bh_mass1 = None,
-                       new_bh_mass2 = None,
-                       new_bh_orb_a1 = None,
-                       new_bh_orb_a2 = None,
-                       new_bh_spin1 = None,
-                       new_bh_spin2 = None,
-                       new_bh_spin_angle1 = None,
-                       new_bh_spin_angle2 = None,
-                       new_bin_e = None,
-                       new_bin_a = None,
-                       new_bin_inc=None,
-                       new_cm_orb_a=None,
-                       new_cm_orb_inc=None,
-                       new_cm_orb_ecc=None,
-                       obj_num = None,
-                    **kwargs):
-        
-
-
-        if obj_num is None: obj_num = new_bh_mass1.size
-
-        self.bh_mass1 = np.concatenate([self.bh_mass1, new_bh_mass1])
-        self.bh_mass2 = np.concatenate([self.bh_mass2, new_bh_mass2])
-        self.bh_orb_a1 = np.concatenate([self.bh_orb_a1, new_bh_orb_a1])
-        self.bh_orb_a2 = np.concatenate([self.bh_orb_a2, new_bh_orb_a2])
-        self.bh_spin1 = np.concatenate([self.bh_spin1, new_bh_spin1])
-        self.bh_spin2 = np.concatenate([self.bh_spin2, new_bh_spin2])
-        self.bh_spin_angle1 = np.concatenate([self.bh_spin_angle1, new_bh_spin_angle1])
-        self.bh_spin_angle2 = np.concatenate([self.bh_spin_angle2, new_bh_spin_angle2])
-        self.bin_e = np.concatenate([self.bh_bin_e, new_bh_bin_e])
-        self.bin_a = np.concatenate([self.bh_bin_a, new_bh_bin_a])
-        self.bin_inc = np.concatenate([self.bin_inc, new_bin_inc])
-        self.cm_orb_a = np.concatenate([self.cm_orb_a, new_cm_orb_a])
-        self.cm_orb_inc = np.concatenate([self.cm_orb_inc, new_cm_orb_inc])
-        self.cm_orb_ecc = np.concatenate([self.cm_orb_ecc, new_cm_orb_ecc])
-
-        new_total_mass = new_bh_mass1 + new_bh_mass2
-        new_spin = new_bh_spin1 + new_bh_spin2
-        new_spin_angle = new_bh_spin_angle1 + new_bh_spin_angle2
-
-        super(AGNBinaryBlackHole,self).add_objects(new_mass = new_total_mass,
-                                                   new_spin=None,
-                                                   new_spin_angle=None,
-                                                   new_a = new_cm_orb_a,
-                                                   new_inc=new_cm_orb_inc,
-                                                   new_e=new_cm_orb_ecc,
-                                                   obj_num=obj_num) """
+        return ('AGNBinaryBlackHole(): {} black hole binaries'.format(self.num))
 
     def add_binaries(self,
-                     blackholes,
-                     close_encounters,
-                     retro,
-                    obj_num = None,
-                    **kwargs):
-        
-        if obj_num is None: obj_num = blackholes.mass.size
+                     new_mass_1=empty_arr,
+                     new_mass_2=empty_arr,
+                     new_orb_a_1=empty_arr,
+                     new_orb_a_2=empty_arr,
+                     new_spin_1=empty_arr,
+                     new_spin_2=empty_arr,
+                     new_spin_angle_1=empty_arr,
+                     new_spin_angle_2=empty_arr,
+                     new_bin_sep=empty_arr,
+                     new_bin_orb_a=empty_arr,
+                     new_time_to_merger_gw=empty_arr,
+                     new_flag_merging=empty_arr,
+                     new_time_merged=empty_arr,
+                     new_bin_ecc=empty_arr,
+                     new_gen_1=empty_arr,
+                     new_gen_2=empty_arr,
+                     new_bin_orb_ang_mom=empty_arr,
+                     new_bin_orb_inc=empty_arr,
+                     new_bin_orb_ecc=empty_arr,
+                     new_gw_freq=empty_arr,
+                     new_gw_strain=empty_arr,
+                     new_id_num=empty_arr,
+                     new_galaxy=empty_arr,
+                     new_bin_bh_num=0):
+        """
+        Creates an instance of the AGNBinaryBlackHole class.
 
-        #need to basically copy the add_new_binary.add_to_binary_array2 function
+        Parameters
+        ----------
+        new_mass_1 : numpy array
+            mass of object 1 in Msun
+        new_mass_2 : numpy array
+            mass of object 2 in Msun
+        new_orb_a_1 : numpy array
+            orbital semi-major axis of object 1 wrt SMBH in R_g
+        new_orb_a_2 : numpy array
+            orbital semi-major axis of object 2 wrt SMBH in R_g
+        new_spin_1 : numpy array
+            dimensionless spin magnitude of object 1
+        new_spin_2 : numpy array
+            dimensionless spin magnitude of object 2
+        new_spin_angle_1 : numpy array
+            spin angle of object 1 wrt disk gas in radians
+        new_spin_angle_2 : numpy array
+            spin angle of object 2 wrt disk gas in radians
+        new_bin_sep : numpy array
+            separation of binary in R_g
+            (semi-major axis around center of mass)
+        new_bin_orb_a : numpy array
+            semi-major axis of the binary's center of mass wrt SMBH in R_g
+            (location in disk)
+        new_time_to_merger_gw : numpy array
+            time until binary will merge through GW alone
+        new_flag_merging : numpy array of ints
+            flag for if binary is merging this timestep (-2 if merging, 0 else)
+        new_time_merged : numpy array
+            time the binary merged (for things that already merged)
+        new_bin_ecc : numpy array
+            eccentricity of the binary around the center of mass
+        new_gen_1 : numpy array of ints
+            generation of object 1 (1 = natal black hole, no prior mergers)
+        new_gen_2 : numpy array of ints
+            generation of object 2 (1 = natal black hole, no prior mergers)
+        new_bin_orb_ang_mom : numpy array
+            angular momentum of the binary wrt SMBH (+1 prograde / -1 retrograde)
+        new_bin_orb_inc : numpy array
+            orbital inclination of the binary wrt SMBH
+        new_bin_orb_ecc : numpy array
+            orbital eccentricity of the binary wrt SMBH
+        new_gw_freq : numpy array
+            GW frequency of binary
+        new_gw_strain : numpy array
+            GW strain of binary
+        new_id_num : numpy array
+            unique ID numbers
+        new_bin_bh_num : int
+            number of binaries to add
+        """
 
-        super(AGNBinaryBlackHole, self).add_objects(new_mass=new_total_mass,
-                                                    new_spin=None,
-                                                    new_spin_angle=None,
-                                                    new_a = new_cm_orb_a,
-                                                    new_inc=new_cm_orb_inc,
-                                                    new_e=new_cm_orb_ecc,
-                                                    obj_num=obj_num)
+        if (new_bin_bh_num == 0):
+            new_bin_bh_num = new_mass_1.size
+
+        self.mass_1 = np.concatenate([self.mass_1, new_mass_1])
+        self.mass_2 = np.concatenate([self.mass_2, new_mass_2])
+        self.orb_a_1 = np.concatenate([self.orb_a_1, new_orb_a_1])
+        self.orb_a_2 = np.concatenate([self.orb_a_2, new_orb_a_2])
+        self.spin_1 = np.concatenate([self.spin_1, new_spin_1])
+        self.spin_2 = np.concatenate([self.spin_2, new_spin_2])
+        self.spin_angle_1 = np.concatenate([self.spin_angle_1, new_spin_angle_1])
+        self.spin_angle_2 = np.concatenate([self.spin_angle_2, new_spin_angle_2])
+        self.bin_sep = np.concatenate([self.bin_sep, new_bin_sep])
+        self.bin_orb_a = np.concatenate([self.bin_orb_a, new_bin_orb_a])
+        self.time_to_merger_gw = np.concatenate([self.time_to_merger_gw, new_time_to_merger_gw])
+        self.flag_merging = np.concatenate([self.flag_merging, new_flag_merging])
+        self.time_merged = np.concatenate([self.time_merged, new_time_merged])
+        self.bin_ecc = np.concatenate([self.bin_ecc, new_bin_ecc])
+        self.gen_1 = np.concatenate([self.gen_1, new_gen_1])
+        self.gen_2 = np.concatenate([self.gen_2, new_gen_2])
+        self.bin_orb_ang_mom = np.concatenate([self.bin_orb_ang_mom, new_bin_orb_ang_mom])
+        self.bin_orb_inc = np.concatenate([self.bin_orb_inc, new_bin_orb_inc])
+        self.bin_orb_ecc = np.concatenate([self.bin_orb_ecc, new_bin_orb_ecc])
+        self.gw_freq = np.concatenate([self.gw_freq, new_gw_freq])
+        self.gw_strain = np.concatenate([self.gw_strain, new_gw_strain])
+        self.id_num = np.concatenate([self.id_num, new_id_num])
+        self.galaxy = np.concatenate([self.galaxy, new_galaxy])
+
+        self.num += new_bin_bh_num
+
+        #self.mass_total = np.concatenate([self.mass_total, new_mass_1 + new_mass_2])
+
+        self.check_consistency()
+
+    @property
+    def mass_total(self):
+        """Return the total mass
+
+        Returns
+        -------
+        id : int
+            The maximum id created up until now
+        """
+        self._mass_total = self.mass_1 + self.mass_2
+        return self._mass_total
 
 
-obj_types = {0 : "single black hole",
-             1 : "single star",
-             2 : "binary black hole",
-             3 : "binary star",
-             4 : "exploded star"
-            }
+class AGNMergedBlackHole(AGNObject):
+    """
+    Array of merged black holes.
+    """
+    def __init__(self,
+                 id_num=empty_arr,
+                 galaxy=empty_arr,
+                 bin_orb_a=empty_arr,
+                 mass_final=empty_arr,
+                 spin_final=empty_arr,                 
+                 spin_angle_final=empty_arr,
+                 mass_1=empty_arr,
+                 mass_2=empty_arr,
+                 spin_1=empty_arr,
+                 spin_2=empty_arr,
+                 spin_angle_1=empty_arr,
+                 spin_angle_2=empty_arr,
+                 gen_1=empty_arr,
+                 gen_2=empty_arr,
+                 chi_eff=empty_arr,
+                 chi_p=empty_arr,
+                 time_merged=empty_arr,
+                 num_obj_merge=0):
+        """Creates an instance of AGNMergedBlackHole.
 
-obj_direction = {0 : "orbit direction undetermined",
-                 1 : "prograde orbiter",
-                -1 : "retrograde orbiter"}
+        Parameters
+        ----------
+        galaxy : numpy array
+            galaxy (iteration)
+        bin_orb_a : numpy array
+            orbital semi-major axis of binary wrt SMBH prior to merger in R_g
+        mass_final : numpy array
+            mass post-merger in Msun
+        spin_final : numpy array
+            spin post-merger
+        spin_angle_final : numpy array
+            spin angle post-merger in radians
+        mass_1 : numpy array
+            mass of the first component prior to merger in Msun
+        mass_2 : numpy array
+            mass of the second component prior to merger in Msun
+        spin_1 : numpy array
+            spin of the first component prior to merger
+        spin_2 : numpy array
+            spin of the second component prior to merger
+        spin_angle_1 : numpy array
+            spin angle of the first component prior to merger in radians
+        spin_angle_2 : numpy array
+            spin angle of the second component prior to merger in radians
+        gen_1 : numpy array
+            merger generation of the first component
+        gen_2 : numpy array
+            merger generation of the second component
+        chi_eff : numpy array
+            effective spin prior to merger
+        chi_p : numpy array
+            precessing spin component of the binary prior to merger
+        time_merged : numpy array
+            the timestep of merger
+        num_obj_merge : int
+            number of objects
+        """
 
-obj_disk_loc = {0 : "disk location undetermined",
-                1 : "outer disk",
-               -1 : "inner disk"}
+        if (num_obj_merge == 0):
+            num_obj_merge = mass_final.shape[0]
+
+        self.id_num = id_num
+        self.galaxy = galaxy
+        self.bin_orb_a = bin_orb_a
+        self.mass_final = mass_final
+        self.spin_final = spin_final
+        self.spin_angle_final = spin_angle_final
+        self.mass_1 = mass_1
+        self.mass_2 = mass_2
+        self.spin_1 = spin_1
+        self.spin_2 = spin_2
+        self.spin_angle_1 = spin_angle_1
+        self.spin_angle_2 = spin_angle_2
+        self.gen_1 = gen_1
+        self.gen_2 = gen_2
+        self.chi_eff = chi_eff
+        self.chi_p = chi_p
+        self.time_merged = time_merged
+
+        self.num = num_obj_merge
+
+        self.check_consistency()
+
+    def add_blackholes(self, new_id_num=empty_arr, new_galaxy=empty_arr, new_bin_orb_a=empty_arr,
+                       new_mass_final=empty_arr, new_spin_final=empty_arr, new_spin_angle_final=empty_arr,
+                       new_mass_1=empty_arr, new_mass_2=empty_arr, new_spin_1=empty_arr, new_spin_2=empty_arr,
+                       new_spin_angle_1=empty_arr, new_spin_angle_2=empty_arr, new_gen_1=empty_arr, new_gen_2=empty_arr,
+                       new_chi_eff=empty_arr, new_chi_p=empty_arr, new_time_merged=empty_arr, num_obj_merge=0):
+        """
+        Add blackholes to the AGNMergedBlackHoles object
+
+        Parameters
+        ----------
+        new_galaxy : numpy array
+            galaxy (iteration)
+        new_bin_orb_a : numpy array
+            orbital semi-major axis of binary wrt SMBH prior to merger in R_g
+        new_mass_final : numpy array
+            mass post-merger in Msun
+        new_spin_final : numpy array
+            spin post-merger
+        new_spin_angle_final : numpy array
+            spin angle post-merger in radians
+        new_mass_1 : numpy array
+            mass of the first component prior to merger in Msun
+        new_mass_2 : numpy array
+            mass of the second component prior to merger in Msun
+        new_spin_1 : numpy array
+            spin of the first component prior to merger
+        new_spin_2 : numpy array
+            spin of the second component prior to merger
+        new_spin_angle_1 : numpy array
+            spin angle of the first component prior to merger in radians
+        new_spin_angle_2 : numpy array
+            spin angle of the second component prior to merger in radians
+        new_gen_1 : numpy array
+            merger generation of the first component
+        new_gen_2 : numpy array
+            merger generation of the second component
+        new_chi_eff : numpy array
+            effective spin prior to merger
+        new_chi_p : numpy array
+            precessing spin component of the binary prior to merger
+        new_time_merged : numpy array
+            the timestep of merger
+        num_obj_merge : int
+            number of objects to be added
+        """
+
+        self.id_num = np.concatenate([self.id_num, new_id_num])
+        self.galaxy = np.concatenate([self.galaxy, new_galaxy])
+        self.bin_orb_a = np.concatenate([self.bin_orb_a, new_bin_orb_a])
+        self.mass_final = np.concatenate([self.mass_final, new_mass_final])
+        self.spin_final = np.concatenate([self.spin_final, new_spin_final])
+        self.spin_angle_final = np.concatenate([self.spin_angle_final, new_spin_angle_final])
+        self.mass_1 = np.concatenate([self.mass_1, new_mass_1])
+        self.mass_2 = np.concatenate([self.mass_2, new_mass_2])
+        self.spin_1 = np.concatenate([self.spin_1, new_spin_1])
+        self.spin_2 = np.concatenate([self.spin_2, new_spin_2])
+        self.spin_angle_1 = np.concatenate([self.spin_angle_1, new_spin_angle_1])
+        self.spin_angle_2 = np.concatenate([self.spin_angle_2, new_spin_angle_2])
+        self.gen_1 = np.concatenate([self.gen_1, new_gen_1])
+        self.gen_2 = np.concatenate([self.gen_2, new_gen_2])
+        self.chi_eff = np.concatenate([self.chi_eff, new_chi_eff])
+        self.chi_p = np.concatenate([self.chi_p, new_chi_p])
+        self.time_merged = np.concatenate([self.time_merged, new_time_merged])
+
+        if (num_obj_merge == 0):
+            num_obj_merge = new_mass_final.shape[0]
+
+        self.num += num_obj_merge
+
+        self.check_consistency()
+
+
+
+obj_types = {0: "single black hole",
+             1: "single star",
+             2: "binary black hole",
+             3: "binary star",}
+             #5: "exploded star"
+             #} # Other types are not in use yet
+
+obj_direction = {0: "orbit direction undetermined",
+                 1: "prograde orbiter",
+                -1: "retrograde orbiter"}
+
+obj_disk_loc = {0: "disk location undetermined",
+                1: "outer disk",
+               -1: "inner disk"}
 
 
 class AGNFilingCabinet(AGNObject):
@@ -943,7 +1477,8 @@ class AGNFilingCabinet(AGNObject):
                  mass,
                  size,
                  direction=None,
-                 disk_inner_outer=None):
+                 disk_inner_outer=None,
+                 fc_num=0):
         """
         Creates an instance of AGNFilingCabinet. It extends AGNObject by
         recording ID numbers for each object and their category, so that
@@ -967,10 +1502,18 @@ class AGNFilingCabinet(AGNObject):
             direction of the orbit of the objects, optional
         disk_inner_outer : numpy array
             if the object is in the inner or outer disk
-        """ 
+        """
+
+        if (fc_num == 0):
+            fc_num = id_num.shape[0]
 
         # Set attributes
         self.id_num = id_num
+        # Set _id_max
+        if len(id_num) > 0:
+            self._id_max = id_num.max()
+        else:
+            self._id_max = 0
         # future: pass an int to category and it fills in the rest
         self.category = category
         self.orb_a = orb_a
@@ -981,17 +1524,21 @@ class AGNFilingCabinet(AGNObject):
         # Set direction as 0 (undetermined) if not passed
         # Otherwise set as what is passed
         if direction is None:
-            self.direction = np.full(id_num.shape,0)
+            self.direction = np.full(id_num.shape, 0)
         else:
             self.direction = direction
         
         # Set disk_inner_outer as 0 (undetermined if not passed)
         # Otherwise set as what is passed
         if disk_inner_outer is None:
-            self.disk_inner_outer = np.full(id_num.shape,0)
+            self.disk_inner_outer = np.full(id_num.shape, 0)
         else:
             self.disk_inner_outer = disk_inner_outer
-        
+
+        self.num = fc_num
+
+        self.check_consistency()
+
     def __repr__(self):
         """
         Creates a string representation of AGNFilingCabinet. Prints out
@@ -1015,7 +1562,20 @@ class AGNFilingCabinet(AGNObject):
         #     for loc in obj_disk_loc:
         #         totals += (f"\t\t{obj_disk_loc[loc]}: {np.sum((getattr(self,"category") == key) & (getattr(self,"disk_inner_outer") == loc))}\n")
         # totals += f"{len(getattr(self,"category"))} objects total"
-        return()
+        return ()
+
+    @property
+    def id_max(self):
+        """Return the maximum id which has been created up to this point
+
+        Returns
+        -------
+        id : int
+            The maximum id created up until now
+        """
+        if len(self.id_num) > 0:
+            self._id_max = max(self._id_max, self.id_num.max())
+        return self._id_max
 
     def update(self, id_num, attr, new_info):
         """Update a given attribute in AGNFilingCabinet for the given ID numbers
@@ -1032,15 +1592,19 @@ class AGNFilingCabinet(AGNObject):
 
         if not isinstance(attr, str):
             raise TypeError("`attr` must be passed as a string")
-        
-        getattr(self,attr)[np.isin(getattr(self,"id_num"),id_num)] = new_info
+
+        try:
+            getattr(self, attr)
+        except:
+            raise AttributeError("{} is not an attribute of AGNFilingCabinet".format(attr))
+
+        getattr(self, attr)[np.isin(getattr(self, "id_num"), id_num)] = new_info
 
 
     def add_objects(self, new_id_num, new_category, new_orb_a,
-                    new_mass, new_size, new_direction, new_disk_inner_outer):
+                    new_mass, new_size, new_direction, new_disk_inner_outer,fc_num=0):
         """
-        Append objects to the AGNFilingCabinet. This method appends the category and direction
-        attributes and sends the rest to the AGNObject add_objects() method.
+        Append objects to the AGNFilingCabinet.
 
         Parameters
         ----------
@@ -1059,7 +1623,12 @@ class AGNFilingCabinet(AGNObject):
             orbital directions of objects to be added
         new_disk_inner_outer : numpy array
             new inner/outer disk locations to be added
+        fc_num : int
+            number of objects to be added
         """
+
+        if (fc_num == 0):
+            fc_num = new_mass.shape[0]
         
         self.id_num = np.concatenate([self.id_num, new_id_num])
         self.category = np.concatenate([self.category, new_category])
@@ -1068,3 +1637,7 @@ class AGNFilingCabinet(AGNObject):
         self.size = np.concatenate([self.size, new_size])
         self.direction = np.concatenate([self.direction, new_direction])
         self.disk_inner_outer = np.concatenate([self.disk_inner_outer, new_disk_inner_outer])
+
+        self.num += fc_num
+
+        self.check_consistency()

@@ -26,7 +26,7 @@ MSTAR_RUNS_EXE = ${HERE}/scripts/vera_mstar_bins.py
 MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
-SEED=3456789012
+SEED=3456789108
 #FNAME_INI= ${HERE}/recipes/p1_thompson.ini
 FNAME_INI= ${HERE}/recipes/model_choice_old.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
@@ -68,7 +68,7 @@ mcfacts_sim: clean
 	mkdir -p runs
 	cd runs; \
 		python ../${MCFACTS_SIM_EXE} \
-		--galaxy_num 10 \
+		--galaxy_num 100 \
 		--fname-ini ../${FNAME_INI} \
 		--fname-log out.log \
 		--seed ${SEED}
@@ -80,24 +80,24 @@ plots: mcfacts_sim
 
 vera_plots: mcfacts_sim
 	python ${VERA_PLOTS_EXE} \
-		--cdf chi_eff chi_p M gen1 gen2 t_merge \
+		--cdf-fields chi_eff chi_p final_mass gen1 gen2 time_merge \
 		--verbose
 
 mstar_runs:
 	python ${MSTAR_RUNS_EXE} \
-		--fname-ini ${FNAME_INI} \
-		--number_of_timesteps 1000 \
-		--n_bins_max 10000 \
-		--galaxy_num 3 \
-		--dynamics \
-		--feedback \
+		--fname-ini recipes/p3_pAGN_off.ini \
+		--timestep_num 1000 \
+		--bin_num_max 10000 \
+		--nbins 33 \
+		--galaxy_num 100 \
 		--mstar-min 1e9 \
 		--mstar-max 1e13 \
-		--nbins 33 \
 		--scrub \
 		--fname-nal ${FNAME_GWTC2_NAL} \
 		--wkdir ${MSTAR_RUNS_WKDIR}
-	python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}
+		#--nbins 33 
+		#--timestep_num 1000 \
+	#python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}
 		
 
 #### CLEAN ####
