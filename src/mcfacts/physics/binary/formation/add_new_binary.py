@@ -6,7 +6,7 @@ from mcfacts.physics.binary.evolve.evolve import gw_strain_freq
 def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, id_start_val, fraction_bin_retro, smbh_mass, agn_redshift):
     """
     Create new BH binaries with appropriate parameters.
-    
+
     We take the semi-maj axis, masses, spins, spin angles and generations
     from the relevant singletons, found in hillsphere.binary_check2, and sort
     those parameters into disk_bins_bhbh. We then ADD additional parameters
