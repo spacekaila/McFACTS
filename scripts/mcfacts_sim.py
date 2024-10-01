@@ -998,7 +998,6 @@ def main():
                                                       new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
                                                       new_time_passed=np.full(bh_binary_id_num_merger.size, time_passed),
                                                       new_id_num=bh_binary_id_num_merger)
-                        
                         # Update filing cabinet
                         filing_cabinet.update(id_num=bh_binary_id_num_merger,
                                               attr="category",
