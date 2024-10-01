@@ -121,7 +121,9 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
 
     if disk_bh_mig_outward_mod.size > 0:
         disk_bh_pro_a_new[disk_bh_mig_outward_mod] = disk_bh_orb_a_pro[disk_bh_mig_outward_mod] +(disk_bh_dist_mig[disk_bh_mig_outward_mod]*(disk_feedback_ratio_func[disk_bh_mig_outward_mod]-1))
-    
+        # catch to keep stuff from leaving the outer radius of the disk
+        disk_bh_pro_a_new[disk_bh_mig_outward_mod[np.where(disk_bh_pro_a_new[disk_bh_mig_outward_mod] > disk_radius_outer)]] = disk_radius_outer
+
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
     disk_bh_mig_unchanged = np.where(disk_feedback_ratio_func == 1)[0]
     if disk_bh_mig_unchanged.size > 0:
