@@ -203,6 +203,11 @@ def circular_singles_encounters_prograde(
             num_poss_ints = 0
             num_encounters = 0
 
+    # Check finite
+    assert np.isfinite(disk_bh_pro_orbs_a).all(), \
+        "Finite check failed for disk_bh_pro_orbs_a"
+    assert np.isfinite(disk_bh_pro_orbs_ecc).all(), \
+        "Finite check failed for disk_bh_pro_orbs_ecc"
     #new_disk_bh_pro_orbs_a_ecc = [[disk_bh_pro_orbs_a],[disk_bh_pro_orbs_ecc]]
     #return new_disk_bh_pro_orbs_a_ecc
     return (disk_bh_pro_orbs_a, disk_bh_pro_orbs_ecc)
@@ -455,6 +460,14 @@ def circular_binaries_encounters_ecc_prograde(
         disk_bins_bhbh[13,j] = bin_eccentricities[j]
 
     # TO DO: ALSO return new array of singletons with changed params.
+
+    # Check finite
+    assert np.isfinite(disk_bins_bhbh[8,:]).all(), \
+        "Finite check failure: bin_separations"
+    assert np.isfinite(disk_bins_bhbh[18,:]).all(), \
+        "Finite check failure: bin_orbital_eccentricities"
+    assert np.isfinite(disk_bins_bhbh[13,:]).all(), \
+        "Finite check failure: bin_eccentricities"
 
     #temp_dynamics_array =[[disk_bins_bhbh],[ecc_prograde_population_locations],[ecc_prograde_population_eccentricities]]
     #return temp_dynamics_array
@@ -746,6 +759,14 @@ def circular_binaries_encounters_circ_prograde(
         disk_bins_bhbh[13,j] = bin_eccentricities[j]
 
     #TO DO: Also return array of modified circularized orbiters.
+    
+    # Check finite
+    assert np.isfinite(disk_bins_bhbh[8,:]).all(), \
+        "Finite check failure: bin_separations"
+    assert np.isfinite(disk_bins_bhbh[18,:]).all(), \
+        "Finite check failure: bin_orbital_eccentricities"
+    assert np.isfinite(disk_bins_bhbh[13,:]).all(), \
+        "Finite check failure: bin_eccentricities"
 
     return disk_bins_bhbh
 

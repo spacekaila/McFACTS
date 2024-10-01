@@ -83,7 +83,7 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # If feedback off, then feedback_ratio= ones and migration is unchanged
     # Construct empty array same size as prograde_bh_locations 
 
-    disk_bh_pro_a_new = np.empty_like(disk_bh_orb_a_pro)
+    disk_bh_pro_a_new = np.zeros_like(disk_bh_orb_a_pro)
 
     # Find indices of objects where feedback ratio <1; these still migrate inwards, but more slowly
     # feedback ratio is a tuple, so need [0] part not [1] part (ie indices not details of array)
@@ -111,6 +111,9 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
                 #If at trap, stays there
                 elif disk_bh_mig_inward_all[i] == disk_radius_trap:
                     disk_bh_pro_a_new[disk_bh_mig_inward_index] = disk_bh_orb_a_pro[disk_bh_mig_inward_index]
+                # Something wrong has happened
+                else:
+                    raise RuntimeError("Forbidden case")
 
     # Find indices of objects where feedback ratio >1; these migrate outwards. 
     # In Sirko & Goodman (2003) disk model this is well outside migration trap region.
@@ -144,6 +147,8 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # Assert that things are not allowed to migrate out of the disk.
     mask_disk_radius_outer = disk_radius_outer < disk_bh_pro_a_new
     disk_bh_pro_a_new[mask_disk_radius_outer] = disk_radius_outer
+    assert np.sum(disk_bh_pro_a_new == 0) == 0, \
+        "disk_bh_pro_a_new was not set properly; a case was missed"
     
     return disk_bh_pro_a_new
 

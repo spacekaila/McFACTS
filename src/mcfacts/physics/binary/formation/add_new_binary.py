@@ -105,7 +105,7 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
         else:
             # choose uniformly between [0.0,1.0), double it, subtract 1.0, and
             #   round to nearest integer to get -1.0 or 1.0
-            bin_orb_ang_mom[i] = (2.0*np.around(rng.uniform(size=1))) - 1.0
+            bin_orb_ang_mom[i] = rng.choice(a=[1.,-1.])
 
     gw_strain, gw_freq = gw_strain_freq(mass_1=mass_1, mass_2=mass_2, obj_sep=bin_sep, timestep_duration_yr=-1,
                                         old_gw_freq=-1, smbh_mass=smbh_mass, agn_redshift=agn_redshift,

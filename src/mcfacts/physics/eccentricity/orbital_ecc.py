@@ -59,6 +59,9 @@ def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, 
     bh_new_orb_ecc : float array
         updated orbital eccentricities damped by AGN gas
     """
+    # Check incoming eccentricities for nans
+    assert np.isfinite(disk_bh_pro_orbs_ecc).all(), \
+        "Finite check failed for disk_bh_pro_orbs_ecc"
 
     # get surface density function, or deal with it if only a float
     if isinstance(disk_surf_density_func, float):
@@ -72,7 +75,7 @@ def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, 
         disk_aspect_ratio = disk_aspect_ratio_func(disk_bh_pro_orbs_a)
 
     # Set up new_disk_bh_pro_orbs_ecc
-    new_disk_bh_pro_orbs_ecc = np.empty_like(disk_bh_pro_orbs_ecc)
+    new_disk_bh_pro_orbs_ecc = np.zeros_like(disk_bh_pro_orbs_ecc)
 
     # Calculate & normalize all the parameters above in t_damp
     # E.g. normalize q=bh_mass/smbh_mass to 10^-7
@@ -132,6 +135,8 @@ def orbital_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, 
                                         disk_bh_pro_orb_ecc_crit, new_disk_bh_pro_orbs_ecc)
 
     # print("Old ecc, New ecc",disk_bh_pro_orbs_ecc,new_disk_bh_pro_orbs_ecc)
+    assert np.isfinite(new_disk_bh_pro_orbs_ecc).all(), \
+        "Finite check failed for new_disk_bh_pro_orbs_ecc"
     return new_disk_bh_pro_orbs_ecc
 
 
@@ -183,6 +188,9 @@ def orbital_bin_ecc_damping(smbh_mass, blackholes_binary, disk_surf_density_func
     blackholes_binary : AGNBinaryBlackHole
         binaries with updated orbital eccentricities damped by AGN gas
     """
+    # Check incoming eccentricities for nans
+    assert np.isfinite(blackholes_binary.bin_ecc).all(), \
+        "Finite check failed for blackholes_binary.bin_ecc"
 
     # get surface density function, or deal with it if only a float
     if isinstance(disk_surf_density_func, float):
@@ -196,7 +204,7 @@ def orbital_bin_ecc_damping(smbh_mass, blackholes_binary, disk_surf_density_func
         disk_aspect_ratio = disk_aspect_ratio_func(blackholes_binary.bin_orb_a)
 
     # Set up new_bin_orb_ecc
-    new_bin_orb_ecc = np.empty_like(blackholes_binary.bin_orb_ecc)
+    new_bin_orb_ecc = np.zeros_like(blackholes_binary.bin_orb_ecc)
 
     # Calculate & normalize all the parameters above in t_damp
     # E.g. normalize q=bh_mass/smbh_mass to 10^-7
@@ -232,10 +240,13 @@ def orbital_bin_ecc_damping(smbh_mass, blackholes_binary, disk_surf_density_func
     new_bin_orb_ecc[mask3] = blackholes_binary.bin_orb_ecc[mask3] * np.exp(-large_timescale_ratio[mask3])
 
     new_bin_orb_ecc[new_bin_orb_ecc < disk_bh_pro_orb_ecc_crit] = np.full(np.sum(new_bin_orb_ecc < disk_bh_pro_orb_ecc_crit), disk_bh_pro_orb_ecc_crit)
+    # Check output
+    assert np.isfinite(new_bin_orb_ecc).all(), \
+        "Finite check failed for new_bin_orb_ecc"
 
     blackholes_binary.bin_orb_ecc = new_bin_orb_ecc
 
-    return (blackholes_binary)
+    return
 
 
 def bin_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, disk_surf_density_func,
@@ -307,6 +318,9 @@ def bin_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, disk
     bh_new_orb_ecc : float array
         updated orbital eccentricities damped by AGN gas
     """
+    # Check incoming eccentricities for nans
+    assert np.isfinite(disk_bh_pro_orbs_ecc).all(), \
+        "Finite check failed for disk_bh_pro_orbs_ecc"
     # get surface density function, or deal with it if only a float
     if isinstance(disk_surf_density_func, float):
         disk_surface_density = disk_surf_density_func
@@ -318,7 +332,7 @@ def bin_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, disk
     else:
         disk_aspect_ratio = disk_aspect_ratio_func(disk_bh_pro_orbs_a)
     # Set up new_disk_bh_pro_orbs_ecc
-    new_disk_bh_pro_orbs_ecc = np.empty_like(disk_bh_pro_orbs_ecc)
+    new_disk_bh_pro_orbs_ecc = np.zeros_like(disk_bh_pro_orbs_ecc)
 
     # Calculate & normalize all the parameters above in t_damp
     # E.g. normalize q=bh_mass/smbh_mass to 10^-7
@@ -377,4 +391,7 @@ def bin_ecc_damping(smbh_mass, disk_bh_pro_orbs_a, disk_bh_pro_orbs_masses, disk
                                         new_disk_bh_pro_orbs_ecc)
 
     # print("Old ecc, New ecc",disk_bh_pro_orbs_ecc,new_disk_bh_pro_orbs_ecc)
+    # Check new eccentricities
+    assert np.isfinite(new_disk_bh_pro_orbs_ecc).all(),\
+        "Finite check failed for new_disk_bh_pro_orbs_ecc"
     return new_disk_bh_pro_orbs_ecc
