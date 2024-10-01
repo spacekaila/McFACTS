@@ -61,7 +61,7 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
     time_merged = np.zeros(bin_num)
     # Set up binary eccentricity around its own center of mass.
     # Draw uniform value btwn [0,1]
-    bin_ecc = rng.random(bin_num)
+    bin_ecc = rng.uniform(size=bin_num)
     gen_1 = np.zeros(bin_num)
     gen_2 = np.zeros(bin_num)
     bin_orb_ang_mom = np.zeros(bin_num)
@@ -103,7 +103,9 @@ def add_to_binary_obj(blackholes_binary, blackholes_pro, bh_pro_id_num_binary, i
         if fraction_bin_retro == 0:
             bin_orb_ang_mom[i] = 1.
         else:
-            bin_orb_ang_mom[i] = (2.0*np.around(rng.random())) - 1.0
+            # choose uniformly between [0.0,1.0), double it, subtract 1.0, and
+            #   round to nearest integer to get -1.0 or 1.0
+            bin_orb_ang_mom[i] = (2.0*np.around(rng.uniform(size=1))) - 1.0
 
     gw_strain, gw_freq = gw_strain_freq(mass_1=mass_1, mass_2=mass_2, obj_sep=bin_sep, timestep_duration_yr=-1,
                                         old_gw_freq=-1, smbh_mass=smbh_mass, agn_redshift=agn_redshift,
