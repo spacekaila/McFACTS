@@ -21,9 +21,14 @@ def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius,disk_inner_sta
     """
     # ISCO defined here. Need to put this in the .ini file.
     #disk_inner_stable_circ_orbit = 6.0
-    bh_initial_locations = disk_outer_radius * rng.uniform(size=disk_bh_num)
-    sma_too_small = np.where(bh_initial_locations < disk_inner_stable_circ_orb)
-    bh_initial_locations[sma_too_small] = disk_inner_stable_circ_orb
+    #bh_initial_locations = disk_outer_radius * rng.uniform(size=disk_bh_num)
+    #sma_too_small = np.where(bh_initial_locations < disk_inner_stable_circ_orb)
+    #bh_initial_locations[sma_too_small] = disk_inner_stable_circ_orb
+    bh_initial_locations = rng.uniform(
+        low  = disk_inner_stable_circ_orb,
+        high = disk_outer_radius,
+        size = disk_bh_num,
+    )
     return bh_initial_locations
 
 def setup_prior_blackholes_indices(prograde_n_bh, prior_bh_locations):
@@ -127,8 +132,7 @@ def setup_disk_blackholes_orb_ang_mom(disk_bh_num):
             Array of initial BH orb ang mom of size disk_bh_num
     """
 
-    random_uniform_number = rng.uniform(size=disk_bh_num)
-    disk_bh_initial_orb_ang_mom = (2.0*np.around(random_uniform_number)) - 1.0
+    disk_bh_initial_orb_ang_mom = rng.choice(a=[1.,-1.],size=disk_bh_num)
     return disk_bh_initial_orb_ang_mom
 
 def setup_disk_blackholes_eccentricity_thermal(disk_bh_num):
@@ -255,10 +259,7 @@ def setup_disk_blackholes_arg_periapse(disk_bh_num):
             Array of initial BH orb eccentricity of size disk_bh_num. Assumed circularized.
     """
 
-    random_uniform_number = rng.uniform(size=disk_bh_num)
-
-    bh_initial_orb_arg_periapse = 0.5 * np.pi * np.around(random_uniform_number)
-
+    bh_initial_orb_arg_periapse = rng.choice(a=[0.,0.5*np.pi],size=disk_bh_num)
     return bh_initial_orb_arg_periapse
 
 def setup_disk_nbh(nsc_mass,nsc_ratio_bh_num_star_num,nsc_ratio_mbh_mass_star_mass,nsc_radius_outer,nsc_density_index_outer,smbh_mass,disk_radius_outer,disk_aspect_ratio_avg,nsc_radius_crit,nsc_density_index_inner):

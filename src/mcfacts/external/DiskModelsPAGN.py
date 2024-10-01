@@ -77,10 +77,10 @@ class AGNGasDiskModel(object):
         R_agn = self.disk_model.R_AGN / (self.disk_model.Rs / 2)
         Sigma = 2 * self.disk_model.h * self.disk_model.rho  # SI density
         kappa = 2 * self.disk_model.tauV / Sigma # Opacity = 2*tau/Sigma
-        if flag_truncate_disk: # truncate to gas part of disk (no SFR)
-            R=R[:self.disk_model.isf]
-            Sigma = Sigma[:self.disk_model.isf]
-            kappa = kappa[:self.disk_model.isf]
+        #if flag_truncate_disk: # truncate to gas part of disk (no SFR)
+        #    R=R[:self.disk_model.isf]
+        #    Sigma = Sigma[:self.disk_model.isf]
+        #    kappa = kappa[:self.disk_model.isf]
 
         # Generate surface density (Sigma) interpolator function
         ln_Sigma = np.log(Sigma) # log of SI density
@@ -93,8 +93,8 @@ class AGNGasDiskModel(object):
 
         # Generate aspect ratio (h/r) interpolator function
         ln_aspect_ratio = np.log(self.disk_model.h/self.disk_model.R)
-        if flag_truncate_disk: # truncate to gas part of disk (no SFR)
-            ln_aspect_ratio = ln_aspect_ratio[:self.disk_model.isf]
+        #if flag_truncate_disk: # truncate to gas part of disk (no SFR)
+        #    ln_aspect_ratio = ln_aspect_ratio[:self.disk_model.isf]
         aspect_func_log = scipy.interpolate.CubicSpline(
                                                         np.log(R),
                                                         ln_aspect_ratio,
