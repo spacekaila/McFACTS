@@ -1000,29 +1000,29 @@ def main():
                                                          new_chi_p=bh_chi_p_merged,
                                                          new_time_merged=np.full(bh_binary_id_num_merger.size, time_passed))
 
-                    # # New bh generation is max of generations involved in merger plus 1
-                    blackholes_pro.add_blackholes(new_mass=blackholes_merged.at_id_num(bh_binary_id_num_merger, "mass_final"),
-                                                  new_orb_a=blackholes_merged.at_id_num(bh_binary_id_num_merger, "bin_orb_a"),
-                                                  new_spin=blackholes_merged.at_id_num(bh_binary_id_num_merger, "spin_final"),
-                                                  new_spin_angle=np.zeros(bh_binary_id_num_merger.size),
-                                                  new_orb_inc=np.zeros(bh_binary_id_num_merger.size),
-                                                  new_orb_ang_mom=np.ones(bh_binary_id_num_merger.size),
-                                                  new_orb_ecc=np.full(bh_binary_id_num_merger.size, 0.01),
-                                                  new_gen=np.maximum(blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_1"),
-                                                                     blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_2")) + 1.0,
-                                                  new_orb_arg_periapse=np.full(bh_binary_id_num_merger.size, -1),
-                                                  new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
-                                                  new_time_passed=np.full(bh_binary_id_num_merger.size, time_passed),
-                                                  new_id_num=bh_binary_id_num_merger)
-                    
-                    # Update filing cabinet
-                    filing_cabinet.update(id_num=bh_binary_id_num_merger,
-                                          attr="category",
-                                          new_info=np.full(bh_binary_id_num_merger.size, 0))
-                    filing_cabinet.update(id_num=bh_binary_id_num_merger,
-                                          attr="size",
-                                          new_info=np.full(bh_binary_id_num_merger.size, -1))
-                    blackholes_binary.remove_id_num(bh_binary_id_num_merger)
+                        # # New bh generation is max of generations involved in merger plus 1
+                        blackholes_pro.add_blackholes(new_mass=blackholes_merged.at_id_num(bh_binary_id_num_merger, "mass_final"),
+                                                    new_orb_a=blackholes_merged.at_id_num(bh_binary_id_num_merger, "bin_orb_a"),
+                                                    new_spin=blackholes_merged.at_id_num(bh_binary_id_num_merger, "spin_final"),
+                                                    new_spin_angle=np.zeros(bh_binary_id_num_merger.size),
+                                                    new_orb_inc=np.zeros(bh_binary_id_num_merger.size),
+                                                    new_orb_ang_mom=np.ones(bh_binary_id_num_merger.size),
+                                                    new_orb_ecc=np.full(bh_binary_id_num_merger.size, 0.01),
+                                                    new_gen=np.maximum(blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_1"),
+                                                                        blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_2")) + 1.0,
+                                                    new_orb_arg_periapse=np.full(bh_binary_id_num_merger.size, -1),
+                                                    new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
+                                                    new_time_passed=np.full(bh_binary_id_num_merger.size, time_passed),
+                                                    new_id_num=bh_binary_id_num_merger)
+                        
+                        # Update filing cabinet
+                        filing_cabinet.update(id_num=bh_binary_id_num_merger,
+                                            attr="category",
+                                            new_info=np.full(bh_binary_id_num_merger.size, 0))
+                        filing_cabinet.update(id_num=bh_binary_id_num_merger,
+                                            attr="size",
+                                            new_info=np.full(bh_binary_id_num_merger.size, -1))
+                        blackholes_binary.remove_id_num(bh_binary_id_num_merger)
 
                     # Append new merged BH to arrays of single BH locations, masses, spins, spin angles & gens
                     # For now add 1 new orb ecc term of 0.01. TO DO: calculate v_kick and resulting perturbation to orb ecc.
