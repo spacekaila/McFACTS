@@ -2,7 +2,7 @@ import numpy as np
 import scipy
 
 
-def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_density_func, disk_aspect_ratio_func, timestep_duration, disk_feedback_ratio_func, disk_radius_trap, disk_bh_orb_ecc_pro, disk_bh_pro_orb_ecc_crit):
+def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_density_func, disk_aspect_ratio_func, timestep_duration_yr, disk_feedback_ratio_func, disk_radius_trap, disk_bh_orb_ecc_pro, disk_bh_pro_orb_ecc_crit,disk_radius_outer):
     """This function calculates how far an object migrates in an AGN gas disk in a time
     of length timestep, assuming a gas disk surface density and aspect ratio profile, for
     objects of specified masses and starting locations, and returns their new locations
@@ -24,7 +24,7 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     disk_aspect_ratio_func : function
         returns AGN gas disk aspect ratio given a distance from the SMBH in r_g
         can accept a simple float (constant), but this is deprecated
-    timestep_duration : float
+    timestep_duration_yr : float
         size of timestep in years
     disk_feedback_ratio_func : function
         ratio of heating/migration torque. If ratio <1, migration inwards, but slows by factor tau_mig/(1-R)
@@ -73,7 +73,7 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # c, G and disk_surface_density in SI units
     tau = ((disk_aspect_ratio**2)* scipy.constants.c/(3.0*scipy.constants.G) * (smbh_mass/disk_bh_mass_pro) / disk_surface_density) / np.sqrt(disk_bh_orb_a_pro)
     # ratio of timestep to tau_mig (timestep in years so convert)
-    dt = timestep_duration * scipy.constants.year / tau
+    dt = timestep_duration_yr * scipy.constants.year / tau
     # migration distance is original locations times fraction of tau_mig elapsed
     disk_bh_dist_mig = disk_bh_orb_a_pro * dt
     #Mask migration distance with zeros if orb ecc >= e_crit.
@@ -83,7 +83,7 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # If feedback off, then feedback_ratio= ones and migration is unchanged
     # Construct empty array same size as prograde_bh_locations 
 
-    disk_bh_pro_a_new = np.empty_like(disk_bh_orb_a_pro)
+    disk_bh_pro_a_new = np.zeros_like(disk_bh_orb_a_pro)
 
     # Find indices of objects where feedback ratio <1; these still migrate inwards, but more slowly
     # feedback ratio is a tuple, so need [0] part not [1] part (ie indices not details of array)
@@ -111,6 +111,9 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
                 #If at trap, stays there
                 elif disk_bh_mig_inward_all[i] == disk_radius_trap:
                     disk_bh_pro_a_new[disk_bh_mig_inward_index] = disk_bh_orb_a_pro[disk_bh_mig_inward_index]
+                # Something wrong has happened
+                else:
+                    raise RuntimeError("Forbidden case")
 
     # Find indices of objects where feedback ratio >1; these migrate outwards. 
     # In Sirko & Goodman (2003) disk model this is well outside migration trap region.
@@ -141,6 +144,11 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     #print('migration distance2',migration_distance, prograde_bh_orb_ecc)
     # new locations are original ones - distance traveled
     #bh_new_locations = prograde_bh_locations - migration_distance
+    # Assert that things are not allowed to migrate out of the disk.
+    mask_disk_radius_outer = disk_radius_outer < disk_bh_pro_a_new
+    disk_bh_pro_a_new[mask_disk_radius_outer] = disk_radius_outer
+    assert np.sum(disk_bh_pro_a_new == 0) == 0, \
+        "disk_bh_pro_a_new was not set properly; a case was missed"
     
     return disk_bh_pro_a_new
 
