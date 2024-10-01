@@ -642,9 +642,13 @@ def ionization_check(blackholes_binary, smbh_mass):
 def contact_check(blackholes_binary, smbh_mass):
     """
     This function tests to see if the binary separation has shrunk so that the binary is touching!
-    Touching condition is where binary separation is <= R_g(M_chirp).
+
+    Touching condition is where binary separation is <= R_schw(M_1) + R_schw(M_2)
+                                                      = 2(R_g(M_1) + R_g(M_2))
+                                                      = 2G(M_1+M_2) / c^{2}
+
     Since binary separation is in units of r_g (GM_smbh/c^2) then condition is simply:
-        binary_separation < M_chirp/M_smbh
+        binary_separation <= 2M_bin/M_smbh
     
     Parameters
     ---------- 
@@ -660,19 +664,12 @@ def contact_check(blackholes_binary, smbh_mass):
     """
 
     mass_binary = blackholes_binary.mass_1 + blackholes_binary.mass_2
-    mass_chirp = np.power(blackholes_binary.mass_1 * blackholes_binary.mass_2, 3. / 5.) / np.power(mass_binary, 1. / 5.)
 
-    # Condition is if binary separation < R_g(M_chirp). 
-    # Binary separation is in units of r_g(M_smbh) so 
-    # condition is separation < R_g(M_chirp)/R_g(M_smbh) =M_chirp/M_smbh
-    # where m_chirp =(M_1 M_2)^(3/5) /(M_bin)^(1/5)
-    # M1,M2, M_smbh are all in units of M_sun
+    # We assume bh are not spinning when in contact. TODO: Consider spin in future.
+    contact_condition = 2 * (mass_binary / smbh_mass)
+    mask_condition = (blackholes_binary.bin_sep <= contact_condition)
 
-    contact_condition = mass_chirp / smbh_mass
-
-    mask_condition = (blackholes_binary.bin_sep < contact_condition)
-
-    # If binary separation < merge condition, set binary separation to merge condition
+    # If binary separation <= contact condition, set binary separation to contact condition
     blackholes_binary.bin_sep[mask_condition] = contact_condition[mask_condition]
     blackholes_binary.flag_merging[mask_condition] = np.full(np.sum(mask_condition), -2)
 
