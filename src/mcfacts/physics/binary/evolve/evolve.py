@@ -347,6 +347,12 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
                 if disk_bin_bhbh_pro_orbs_a[locn_index] >= disk_radius_trap:
                     disk_bin_bhbh_pro_orbs_a[locn_index] = disk_radius_trap
 
+    # Finite check
+    assert np.isfinite(disk_bin_bhbh_pro_orbs_a).all(),\
+        "Finite check failed for disk_bin_bhbh_pro_orbs_a"
+    # Zero check
+    assert (disk_bin_bhbh_pro_orbs_a != 0.).all(),\
+        "Some disk_bin_bhbh_pro_orbs_a are zero"
     # Distance travelled per binary is old location of com minus new location of com. Is +ive(-ive) if migrating in(out)
     dist_travelled = disk_bin_bhbh_pro_array[9,:] - disk_bin_bhbh_pro_orbs_a
 
@@ -360,6 +366,9 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
         if disk_bin_bhbh_pro_array[18,i] > disk_bh_pro_orb_ecc_crit:
             pass
 
+    # Finite check
+    assert np.isfinite(disk_bin_bhbh_pro_array[18,:]).all(),
+        "Fintie check failure: disk_bin_bhbh_pro_array"
     # Assert that things are not allowed to migrate out of the disk.
     mask_disk_radius_outer = disk_radius_outer < disk_bin_bhbh_pro_array
     disk_bin_bhbh_pro_array[mask_disk_radius_outer] = disk_radius_outer

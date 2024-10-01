@@ -689,7 +689,7 @@ def main():
 
                 # If there are binaries, evolve them
                 # Damp binary orbital eccentricity
-                blackholes_binary = orbital_ecc.orbital_bin_ecc_damping(
+                orbital_ecc.orbital_bin_ecc_damping(
                     opts.smbh_mass,
                     blackholes_binary,
                     disk_surface_density,
@@ -1042,7 +1042,11 @@ def main():
                 # If a close encounter within mutual Hill sphere add a new Binary
                 # check which binaries should get made
             close_encounters_indices = hillsphere.binary_check(
-                blackholes_pro.orb_a, blackholes_pro.mass, opts.smbh_mass, blackholes_pro.orb_ecc, opts.disk_bh_pro_orb_ecc_crit
+                blackholes_pro.orb_a,
+                blackholes_pro.mass,
+                opts.smbh_mass,
+                blackholes_pro.orb_ecc,
+                opts.disk_bh_pro_orb_ecc_crit
             )
             close_encounters_id_num = blackholes_pro.id_num[close_encounters_indices]
 
