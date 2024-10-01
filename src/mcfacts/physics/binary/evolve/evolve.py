@@ -91,7 +91,6 @@ def change_bin_spin_magnitudes(blackholes_binary, disk_bh_eddington_ratio,
     if (idx_non_mergers[0].shape[0] == 0):
         return (blackholes_binary)
 
-
     spin_change_factor = 4.4e-3 * disk_bh_eddington_ratio_normalized * disk_bh_torque_condition_normalized * timestep_duration_yr_normalized
 
     spin_1_before = blackholes_binary.spin_1[idx_non_mergers]
@@ -147,7 +146,6 @@ def change_bin_spin_angles(blackholes_binary, disk_bh_eddington_ratio,
     # If all BH have merged then nothing to do
     if (idx_non_mergers[0].shape[0] == 0):
         return (blackholes_binary)
-
 
     spin_angle_change_factor = 6.98e-3 * disk_bh_eddington_ratio_normalized * disk_bh_torque_condition_normalized * timestep_duration_yr_normalized
 
@@ -326,7 +324,7 @@ def bin_migration(smbh_mass, disk_bin_bhbh_pro_array, disk_surf_model, disk_aspe
     if index_outwards_modified.size > 0:
         disk_bin_bhbh_pro_orbs_a[index_outwards_modified] = bin_com[index_outwards_modified] +(migration_distance[index_outwards_modified]*(feedback_ratio[index_outwards_modified]-1))
         # catch to keep stuff from leaving the outer radius of the disk!
-        disk_bin_bhbh_pro_orbs_a[np.where(disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer)] = disk_radius_outer
+        disk_bin_bhbh_pro_orbs_a[index_outwards_modified[np.where(disk_bin_bhbh_pro_orbs_a[index_outwards_modified] > disk_radius_outer)]] = disk_radius_outer
     
     #Find indices where feedback ratio is identically 1; shouldn't happen (edge case) if feedback on, but == 1 if feedback off.
     index_unchanged = np.where(feedback_ratio == 1)[0]
