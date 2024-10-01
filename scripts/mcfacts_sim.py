@@ -317,16 +317,14 @@ def main():
         # Assume all drawn from prograde population for now.
         #   SF: Is this assumption important here? Where does it come up?
 
-        # Test if any BH or BBH are in the danger-zone (<disk_radius_safe_min, default =50r_g) from SMBH.
+        # Test if any BH or BBH are in the danger-zone (<inner_disk_outer_radius, default =50r_g) from SMBH.
         # Potential EMRI/BBH EMRIs.
         # Find prograde BH in inner disk. Define inner disk as <=50r_g. 
         # Since a 10Msun BH will decay into a 10^8Msun SMBH at 50R_g in ~38Myr and decay time propto a^4.
         # e.g at 25R_g, decay time is only 2.3Myr.
 
-        disk_radius_safe_min = 50.0
-
         # Find inner disk BH (potential EMRI)
-        bh_id_num_inner_disk = blackholes.id_num[blackholes.orb_a < disk_radius_safe_min]
+        bh_id_num_inner_disk = blackholes.id_num[blackholes.orb_a < opts.inner_disk_outer_radius]
         blackholes_inner_disk = blackholes.copy()
         blackholes_inner_disk.keep_id_num(bh_id_num_inner_disk)
 
@@ -347,7 +345,7 @@ def main():
         blackholes_emris = AGNBlackHole()
 
         # Find inner disk stars (potential TDEs)
-        star_id_num_inner_disk = stars.id_num[stars.orb_a < disk_radius_safe_min]
+        star_id_num_inner_disk = stars.id_num[stars.orb_a < opts.inner_disk_outer_radius]
         stars_inner_disk = stars.copy()
         stars_inner_disk.keep_id_num(star_id_num_inner_disk)
 
@@ -1136,7 +1134,7 @@ def main():
             # e.g at 25R_g, decay time is only 2.3Myr.
 
             # Check if any prograde BHs are in the inner disk
-            bh_id_num_pro_inner_disk = blackholes_pro.id_num[blackholes_pro.orb_a < disk_radius_safe_min]
+            bh_id_num_pro_inner_disk = blackholes_pro.id_num[blackholes_pro.orb_a < opts.inner_disk_outer_radius]
             if (bh_id_num_pro_inner_disk.size > 0):
                 # Add BH to inner_disk_arrays
                 blackholes_inner_disk.add_blackholes(
@@ -1161,7 +1159,7 @@ def main():
                                       new_info=np.full(len(bh_id_num_pro_inner_disk), -1))
 
             # Check if any retrograde BHs are in the inner disk
-            bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < disk_radius_safe_min]
+            bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < opts.inner_disk_outer_radius]
             if (bh_id_num_retro_inner_disk.size > 0):
                 # Add BH to inner_disk_arrays
                 blackholes_inner_disk.add_blackholes(
@@ -1224,8 +1222,8 @@ def main():
                                                 new_time_passed=np.full(emri_gw_freq.size, time_passed),
                                                 new_id_num=blackholes_inner_disk.id_num)
 
-            merger_dist = 1.0
-            emri_merger_id_num = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= merger_dist]
+            #merger_dist = 1.0
+            emri_merger_id_num = blackholes_inner_disk.id_num[blackholes_inner_disk.orb_a <= opts.disk_inner_stable_circ_orb]
 
             # if mergers occurs, remove from inner_disk arrays and stop evolving
             # still getting some nans, but I think that's bc there's retros that should have been
@@ -1239,7 +1237,7 @@ def main():
             # Here is where we need to move retro to prograde if they've flipped in this timestep
             # If they're IN the disk prograde, OR if they've circularized:
             # stop treating them with crude retro evolution--it will be sad
-            # SF: fix the inc threshhold later!!!
+            # SF: fix the inc threshhold later to be truly 'in disk' but should be non-stupid as-is!!!
             inc_threshhold = 5.0 * np.pi/180.0
             bh_id_num_flip_to_pro = blackholes_retro.id_num[np.where((np.abs(blackholes_retro.orb_inc) <= inc_threshhold) | (blackholes_retro.orb_ecc == 0.0))]
             if (bh_id_num_flip_to_pro.size > 0):
