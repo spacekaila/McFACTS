@@ -848,30 +848,31 @@ def main():
                         agn_redshift
                         )
 
-                    blackholes_binary_gw.add_binaries(new_id_num=bh_binary_id_num_gw,
-                                                      new_mass_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1"),
-                                                      new_mass_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_2"),
-                                                      new_orb_a_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "orb_a_1"),
-                                                      new_orb_a_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "orb_a_2"),
-                                                      new_spin_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_1"),
-                                                      new_spin_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_2"),
-                                                      new_spin_angle_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_angle_1"),
-                                                      new_spin_angle_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_angle_2"),
-                                                      new_bin_sep=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_sep"),
-                                                      new_bin_orb_a=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_a"),
-                                                      new_time_to_merger_gw=blackholes_binary.at_id_num(bh_binary_id_num_gw, "time_to_merger_gw"),
-                                                      new_flag_merging=blackholes_binary.at_id_num(bh_binary_id_num_gw, "flag_merging"),
-                                                      new_time_merged=np.full(bh_binary_id_num_gw.size, time_passed),
-                                                      new_bin_ecc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_ecc"),
-                                                      new_gen_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "gen_1"),
-                                                      new_gen_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "gen_2"),
-                                                      new_bin_orb_ang_mom=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_ang_mom"),
-                                                      new_bin_orb_inc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_inc"),
-                                                      new_bin_orb_ecc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_ecc"),
-                                                      new_gw_freq=bbh_gw_freq,
-                                                      new_gw_strain=bbh_gw_strain,
-                                                      new_galaxy=np.full(bh_binary_id_num_gw.size, galaxy),
-                                                      )
+                    blackholes_binary_gw.add_binaries(
+                        new_id_num=bh_binary_id_num_gw,
+                        new_mass_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_1"),
+                        new_mass_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "mass_2"),
+                        new_orb_a_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "orb_a_1"),
+                        new_orb_a_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "orb_a_2"),
+                        new_spin_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_1"),
+                        new_spin_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_2"),
+                        new_spin_angle_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_angle_1"),
+                        new_spin_angle_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "spin_angle_2"),
+                        new_bin_sep=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_sep"),
+                        new_bin_orb_a=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_a"),
+                        new_time_to_merger_gw=blackholes_binary.at_id_num(bh_binary_id_num_gw, "time_to_merger_gw"),
+                        new_flag_merging=blackholes_binary.at_id_num(bh_binary_id_num_gw, "flag_merging"),
+                        new_time_merged=np.full(bh_binary_id_num_gw.size, time_passed),
+                        new_bin_ecc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_ecc"),
+                        new_gen_1=blackholes_binary.at_id_num(bh_binary_id_num_gw, "gen_1"),
+                        new_gen_2=blackholes_binary.at_id_num(bh_binary_id_num_gw, "gen_2"),
+                        new_bin_orb_ang_mom=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_ang_mom"),
+                        new_bin_orb_inc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_inc"),
+                        new_bin_orb_ecc=blackholes_binary.at_id_num(bh_binary_id_num_gw, "bin_orb_ecc"),
+                        new_gw_freq=bbh_gw_freq,
+                        new_gw_strain=bbh_gw_strain,
+                        new_galaxy=np.full(bh_binary_id_num_gw.size, galaxy),
+                    )
 
                 # Evolve GW frequency and strain
                 blackholes_binary = evolve.evolve_gw(
@@ -886,37 +887,47 @@ def main():
                     # Append 2 new BH to arrays of single BH locations, masses, spins, spin angles & gens
                     # For now add 2 new orb ecc term of 0.01. inclination is 0.0 as well. TO DO: calculate v_kick and resulting perturbation to orb ecc.
 
-                    blackholes_pro.add_blackholes(new_mass=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_1"),
-                                                                           blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_2")]),
-                                                  new_spin=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_1"),
-                                                                           blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_2")]),
-                                                  new_spin_angle=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_angle_1"),
-                                                                                 blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_angle_2")]),
-                                                  new_orb_a=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_1"),
-                                                                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_2")]),
-                                                  new_gen=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "gen_1"),
-                                                                          blackholes_binary.at_id_num(bh_binary_id_num_ionization, "gen_2")]),
-                                                  new_orb_ecc=np.full(bh_binary_id_num_ionization.size * 2, 0.01),
-                                                  new_orb_inc=np.full(bh_binary_id_num_ionization.size * 2, 0.0),
-                                                  new_orb_ang_mom=np.ones(bh_binary_id_num_ionization.size * 2),
-                                                  new_orb_arg_periapse=np.full(bh_binary_id_num_ionization.size * 2, -1),
-                                                  new_gw_freq=np.full(bh_binary_id_num_ionization.size * 2, -1),
-                                                  new_gw_strain=np.full(bh_binary_id_num_ionization.size * 2, -1),
-                                                  new_galaxy=np.full(bh_binary_id_num_ionization.size * 2, galaxy),
-                                                  new_time_passed=np.full(bh_binary_id_num_ionization.size * 2, time_passed),
-                                                  new_id_num=np.arange(filing_cabinet.id_max+1, filing_cabinet.id_max + 1 + bh_binary_id_num_ionization.size * 2, 1)
-                                                  )
+                    blackholes_pro.add_blackholes(
+                        new_mass=np.concatenate([
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_1"),
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_2")]),
+                        new_spin=np.concatenate([
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_1"),
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_2")]),
+                        new_spin_angle=np.concatenate([
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_angle_1"),
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "spin_angle_2")]),
+                        new_orb_a=np.concatenate([
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_1"),
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_2")]),
+                        new_gen=np.concatenate([
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "gen_1"),
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "gen_2")]),
+                        new_orb_ecc=np.full(bh_binary_id_num_ionization.size * 2, 0.01),
+                        new_orb_inc=np.full(bh_binary_id_num_ionization.size * 2, 0.0),
+                        new_orb_ang_mom=np.ones(bh_binary_id_num_ionization.size * 2),
+                        new_orb_arg_periapse=np.full(bh_binary_id_num_ionization.size * 2, -1),
+                        new_gw_freq=np.full(bh_binary_id_num_ionization.size * 2, -1),
+                        new_gw_strain=np.full(bh_binary_id_num_ionization.size * 2, -1),
+                        new_galaxy=np.full(bh_binary_id_num_ionization.size * 2, galaxy),
+                        new_time_passed=np.full(bh_binary_id_num_ionization.size * 2, time_passed),
+                        new_id_num=np.arange(filing_cabinet.id_max+1, filing_cabinet.id_max + 1 + bh_binary_id_num_ionization.size * 2, 1)
+                    )
 
                     # Update filing cabinet
-                    filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_max+1, filing_cabinet.id_max + 1 + bh_binary_id_num_ionization.size * 2, 1),
-                                               new_category=np.zeros(bh_binary_id_num_ionization.size * 2),
-                                               new_orb_a=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_1"),
-                                                                         blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_2")]),
-                                               new_mass=np.concatenate([blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_1"),
-                                                                        blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_2")]),
-                                               new_size=np.full(bh_binary_id_num_ionization.size * 2, -1),
-                                               new_direction=np.ones(bh_binary_id_num_ionization.size * 2),
-                                               new_disk_inner_outer=np.zeros(bh_binary_id_num_ionization.size * 2))
+                    filing_cabinet.add_objects(
+                        new_id_num=np.arange(filing_cabinet.id_max+1, filing_cabinet.id_max + 1 + bh_binary_id_num_ionization.size * 2, 1),
+                        new_category=np.zeros(bh_binary_id_num_ionization.size * 2),
+                        new_orb_a=np.concatenate([
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_1"),
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "orb_a_2")]),
+                        new_mass=np.concatenate([
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_1"),
+                            blackholes_binary.at_id_num(bh_binary_id_num_ionization, "mass_2")]),
+                        new_size=np.full(bh_binary_id_num_ionization.size * 2, -1),
+                        new_direction=np.ones(bh_binary_id_num_ionization.size * 2),
+                        new_disk_inner_outer=np.zeros(bh_binary_id_num_ionization.size * 2)
+                    )
 
                     blackholes_binary.remove_id_num(bh_binary_id_num_ionization)
                     filing_cabinet.remove_id_num(bh_binary_id_num_ionization)
@@ -982,47 +993,51 @@ def main():
                                 blackholes_binary.at_id_num(bh_binary_id_num_merger, "bin_orb_inc")
                                 )
 
-                        blackholes_merged.add_blackholes(new_id_num=bh_binary_id_num_merger,
-                                                         new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
-                                                         new_bin_orb_a=blackholes_binary.at_id_num(bh_binary_id_num_merger, "bin_orb_a"),
-                                                         new_mass_final=bh_mass_merged,
-                                                         new_spin_final=bh_spin_merged,
-                                                         new_spin_angle_final=np.zeros(bh_binary_id_num_merger.size),
-                                                         new_mass_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
-                                                         new_mass_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
-                                                         new_spin_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
-                                                         new_spin_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_2"),
-                                                         new_spin_angle_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_angle_1"),
-                                                         new_spin_angle_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_angle_2"),
-                                                         new_gen_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "gen_1"),
-                                                         new_gen_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "gen_2"),
-                                                         new_chi_eff=bh_chi_eff_merged,
-                                                         new_chi_p=bh_chi_p_merged,
-                                                         new_time_merged=np.full(bh_binary_id_num_merger.size, time_passed))
+                        blackholes_merged.add_blackholes(
+                            new_id_num=bh_binary_id_num_merger,
+                            new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
+                            new_bin_orb_a=blackholes_binary.at_id_num(bh_binary_id_num_merger, "bin_orb_a"),
+                            new_mass_final=bh_mass_merged,
+                            new_spin_final=bh_spin_merged,
+                            new_spin_angle_final=np.zeros(bh_binary_id_num_merger.size),
+                            new_mass_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_1"),
+                            new_mass_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "mass_2"),
+                            new_spin_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_1"),
+                            new_spin_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_2"),
+                            new_spin_angle_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_angle_1"),
+                            new_spin_angle_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "spin_angle_2"),
+                            new_gen_1=blackholes_binary.at_id_num(bh_binary_id_num_merger, "gen_1"),
+                            new_gen_2=blackholes_binary.at_id_num(bh_binary_id_num_merger, "gen_2"),
+                            new_chi_eff=bh_chi_eff_merged,
+                            new_chi_p=bh_chi_p_merged,
+                            new_time_merged=np.full(bh_binary_id_num_merger.size, time_passed)
+                        )
 
-                    # # New bh generation is max of generations involved in merger plus 1
-                    blackholes_pro.add_blackholes(new_mass=blackholes_merged.at_id_num(bh_binary_id_num_merger, "mass_final"),
-                                                  new_orb_a=blackholes_merged.at_id_num(bh_binary_id_num_merger, "bin_orb_a"),
-                                                  new_spin=blackholes_merged.at_id_num(bh_binary_id_num_merger, "spin_final"),
-                                                  new_spin_angle=np.zeros(bh_binary_id_num_merger.size),
-                                                  new_orb_inc=np.zeros(bh_binary_id_num_merger.size),
-                                                  new_orb_ang_mom=np.ones(bh_binary_id_num_merger.size),
-                                                  new_orb_ecc=np.full(bh_binary_id_num_merger.size, 0.01),
-                                                  new_gen=np.maximum(blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_1"),
-                                                                     blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_2")) + 1.0,
-                                                  new_orb_arg_periapse=np.full(bh_binary_id_num_merger.size, -1),
-                                                  new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
-                                                  new_time_passed=np.full(bh_binary_id_num_merger.size, time_passed),
-                                                  new_id_num=bh_binary_id_num_merger)
+                        # # New bh generation is max of generations involved in merger plus 1
+                        blackholes_pro.add_blackholes(
+                            new_mass=blackholes_merged.at_id_num(bh_binary_id_num_merger, "mass_final"),
+                            new_orb_a=blackholes_merged.at_id_num(bh_binary_id_num_merger, "bin_orb_a"),
+                            new_spin=blackholes_merged.at_id_num(bh_binary_id_num_merger, "spin_final"),
+                            new_spin_angle=np.zeros(bh_binary_id_num_merger.size),
+                            new_orb_inc=np.zeros(bh_binary_id_num_merger.size),
+                            new_orb_ang_mom=np.ones(bh_binary_id_num_merger.size),
+                            new_orb_ecc=np.full(bh_binary_id_num_merger.size, 0.01),
+                            new_gen=np.maximum(blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_1"),
+                            blackholes_merged.at_id_num(bh_binary_id_num_merger, "gen_2")) + 1.0,
+                            new_orb_arg_periapse=np.full(bh_binary_id_num_merger.size, -1),
+                            new_galaxy=np.full(bh_binary_id_num_merger.size, galaxy),
+                            new_time_passed=np.full(bh_binary_id_num_merger.size, time_passed),
+                            new_id_num=bh_binary_id_num_merger
+                        )
                     
-                    # Update filing cabinet
-                    filing_cabinet.update(id_num=bh_binary_id_num_merger,
-                                          attr="category",
-                                          new_info=np.full(bh_binary_id_num_merger.size, 0))
-                    filing_cabinet.update(id_num=bh_binary_id_num_merger,
-                                          attr="size",
-                                          new_info=np.full(bh_binary_id_num_merger.size, -1))
-                    blackholes_binary.remove_id_num(bh_binary_id_num_merger)
+                        # Update filing cabinet
+                        filing_cabinet.update(id_num=bh_binary_id_num_merger,
+                                              attr="category",
+                                              new_info=np.full(bh_binary_id_num_merger.size, 0))
+                        filing_cabinet.update(id_num=bh_binary_id_num_merger,
+                                              attr="size",
+                                              new_info=np.full(bh_binary_id_num_merger.size, -1))
+                        blackholes_binary.remove_id_num(bh_binary_id_num_merger)
 
                     # Append new merged BH to arrays of single BH locations, masses, spins, spin angles & gens
                     # For now add 1 new orb ecc term of 0.01. TO DO: calculate v_kick and resulting perturbation to orb ecc.
@@ -1124,18 +1139,20 @@ def main():
             bh_id_num_pro_inner_disk = blackholes_pro.id_num[blackholes_pro.orb_a < disk_radius_safe_min]
             if (bh_id_num_pro_inner_disk.size > 0):
                 # Add BH to inner_disk_arrays
-                blackholes_inner_disk.add_blackholes(new_mass=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "mass"),
-                                                     new_spin=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin"),
-                                                     new_spin_angle=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin_angle"),
-                                                     new_orb_a=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_a"),
-                                                     new_orb_inc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_inc"),
-                                                     new_orb_ang_mom=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ang_mom"),
-                                                     new_orb_ecc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ecc"),
-                                                     new_orb_arg_periapse=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_arg_periapse"),
-                                                     new_gen=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "gen"),
-                                                     new_galaxy=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "galaxy"),
-                                                     new_time_passed=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "time_passed"),
-                                                     new_id_num=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "id_num"))
+                blackholes_inner_disk.add_blackholes(
+                    new_mass=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "mass"),
+                    new_spin=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin"),
+                    new_spin_angle=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "spin_angle"),
+                    new_orb_a=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_a"),
+                    new_orb_inc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_inc"),
+                    new_orb_ang_mom=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ang_mom"),
+                    new_orb_ecc=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_ecc"),
+                    new_orb_arg_periapse=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "orb_arg_periapse"),
+                    new_gen=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "gen"),
+                    new_galaxy=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "galaxy"),
+                    new_time_passed=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "time_passed"),
+                    new_id_num=blackholes_pro.at_id_num(bh_id_num_pro_inner_disk, "id_num")
+                )
 
                 # # Remove from blackholes_pro and update filing_cabinet
                 blackholes_pro.remove_id_num(bh_id_num_pro_inner_disk)
@@ -1147,18 +1164,20 @@ def main():
             bh_id_num_retro_inner_disk = blackholes_retro.id_num[blackholes_retro.orb_a < disk_radius_safe_min]
             if (bh_id_num_retro_inner_disk.size > 0):
                 # Add BH to inner_disk_arrays
-                blackholes_inner_disk.add_blackholes(new_mass=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "mass"),
-                                                     new_spin=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin"),
-                                                     new_spin_angle=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin_angle"),
-                                                     new_orb_a=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_a"),
-                                                     new_orb_inc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_inc"),
-                                                     new_orb_ang_mom=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ang_mom"),
-                                                     new_orb_ecc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ecc"),
-                                                     new_orb_arg_periapse=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_arg_periapse"),
-                                                     new_gen=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "gen"),
-                                                     new_galaxy=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "galaxy"),
-                                                     new_time_passed=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "time_passed"),
-                                                     new_id_num=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "id_num"))
+                blackholes_inner_disk.add_blackholes(
+                    new_mass=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "mass"),
+                    new_spin=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin"),
+                    new_spin_angle=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "spin_angle"),
+                    new_orb_a=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_a"),
+                    new_orb_inc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_inc"),
+                    new_orb_ang_mom=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ang_mom"),
+                    new_orb_ecc=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_ecc"),
+                    new_orb_arg_periapse=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "orb_arg_periapse"),
+                    new_gen=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "gen"),
+                    new_galaxy=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "galaxy"),
+                    new_time_passed=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "time_passed"),
+                    new_id_num=blackholes_retro.at_id_num(bh_id_num_retro_inner_disk, "id_num")
+                )
                 # Remove from blackholes_retro and update filing_cabinet
                 blackholes_retro.remove_id_num(bh_id_num_retro_inner_disk)
                 filing_cabinet.update(id_num=bh_id_num_retro_inner_disk,
@@ -1225,18 +1244,20 @@ def main():
             bh_id_num_flip_to_pro = blackholes_retro.id_num[np.where((np.abs(blackholes_retro.orb_inc) <= inc_threshhold) | (blackholes_retro.orb_ecc == 0.0))]
             if (bh_id_num_flip_to_pro.size > 0):
                 # add to prograde arrays
-                blackholes_pro.add_blackholes(new_mass=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "mass"),
-                                              new_orb_a=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_a"),
-                                              new_spin=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "spin"),
-                                              new_spin_angle=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "spin_angle"),
-                                              new_orb_inc=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_inc"),
-                                              new_orb_ang_mom=np.ones(bh_id_num_flip_to_pro.size),
-                                              new_orb_ecc=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_ecc"),
-                                              new_orb_arg_periapse=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_arg_periapse"),
-                                              new_galaxy=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "galaxy"),
-                                              new_time_passed=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "time_passed"),
-                                              new_gen=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "gen"),
-                                              new_id_num=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "id_num"))
+                blackholes_pro.add_blackholes(
+                    new_mass=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "mass"),
+                    new_orb_a=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_a"),
+                    new_spin=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "spin"),
+                    new_spin_angle=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "spin_angle"),
+                    new_orb_inc=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_inc"),
+                    new_orb_ang_mom=np.ones(bh_id_num_flip_to_pro.size),
+                    new_orb_ecc=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_ecc"),
+                    new_orb_arg_periapse=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "orb_arg_periapse"),
+                    new_galaxy=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "galaxy"),
+                    new_time_passed=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "time_passed"),
+                    new_gen=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "gen"),
+                    new_id_num=blackholes_retro.at_id_num(bh_id_num_flip_to_pro, "id_num")
+                )
                 # delete from retro arrays
                 blackholes_retro.remove_id_num(id_num_remove=bh_id_num_flip_to_pro)
                 # Update filing_cabinet
@@ -1267,27 +1288,31 @@ def main():
         # Assume that all BH binaries break apart
         # Note: eccentricity will relax, ignore
         # Inclination assumed 0deg
-        blackholes_pro.add_blackholes(new_mass=np.concatenate([blackholes_binary.mass_1, blackholes_binary.mass_1]),
-                                      new_spin=np.concatenate([blackholes_binary.spin_1, blackholes_binary.spin_2]),
-                                      new_spin_angle=np.concatenate([blackholes_binary.spin_angle_1, blackholes_binary.spin_angle_2]),
-                                      new_orb_a=np.concatenate([blackholes_binary.orb_a_1, blackholes_binary.orb_a_2]),
-                                      new_orb_inc=np.zeros(blackholes_binary.num * 2),  # Assume orb_inc = 0.0
-                                      new_orb_ang_mom=np.ones(blackholes_binary.num * 2),  # Assume all are prograde
-                                      new_orb_ecc=np.zeros(blackholes_binary.num * 2),  # Assume orb_ecc = 0.0
-                                      new_orb_arg_periapse=np.full(blackholes_binary.num * 2, -1),  # Assume orb_arg_periapse = -1
-                                      new_galaxy=np.full(blackholes_binary.num * 2, galaxy),
-                                      new_time_passed=np.full(blackholes_binary.num * 2, time_passed),
-                                      new_gen=np.concatenate([blackholes_binary.gen_1, blackholes_binary.gen_2]),
-                                      new_id_num=np.arange(filing_cabinet.id_max + 1, filing_cabinet.id_max + 1 + blackholes_binary.num * 2, 1))
+        blackholes_pro.add_blackholes(
+            new_mass=np.concatenate([blackholes_binary.mass_1, blackholes_binary.mass_1]),
+            new_spin=np.concatenate([blackholes_binary.spin_1, blackholes_binary.spin_2]),
+            new_spin_angle=np.concatenate([blackholes_binary.spin_angle_1, blackholes_binary.spin_angle_2]),
+            new_orb_a=np.concatenate([blackholes_binary.orb_a_1, blackholes_binary.orb_a_2]),
+            new_orb_inc=np.zeros(blackholes_binary.num * 2),  # Assume orb_inc = 0.0
+            new_orb_ang_mom=np.ones(blackholes_binary.num * 2),  # Assume all are prograde
+            new_orb_ecc=np.zeros(blackholes_binary.num * 2),  # Assume orb_ecc = 0.0
+            new_orb_arg_periapse=np.full(blackholes_binary.num * 2, -1),  # Assume orb_arg_periapse = -1
+            new_galaxy=np.full(blackholes_binary.num * 2, galaxy),
+            new_time_passed=np.full(blackholes_binary.num * 2, time_passed),
+            new_gen=np.concatenate([blackholes_binary.gen_1, blackholes_binary.gen_2]),
+            new_id_num=np.arange(filing_cabinet.id_max + 1, filing_cabinet.id_max + 1 + blackholes_binary.num * 2, 1)
+        )
 
         # Update filing_cabinet
-        filing_cabinet.add_objects(new_id_num=np.arange(filing_cabinet.id_max+1, filing_cabinet.id_max + 1 + blackholes_binary.num * 2, 1),
-                                   new_category=np.zeros(blackholes_binary.num * 2),
-                                   new_orb_a=np.concatenate([blackholes_binary.orb_a_1, blackholes_binary.orb_a_2]),
-                                   new_mass=np.concatenate([blackholes_binary.mass_1, blackholes_binary.mass_1]),
-                                   new_size=np.full(blackholes_binary.num * 2, -1),
-                                   new_direction=np.ones(blackholes_binary.num * 2),
-                                   new_disk_inner_outer=np.zeros(blackholes_binary.num * 2))
+        filing_cabinet.add_objects(
+            new_id_num=np.arange(filing_cabinet.id_max+1, filing_cabinet.id_max + 1 + blackholes_binary.num * 2, 1),
+            new_category=np.zeros(blackholes_binary.num * 2),
+            new_orb_a=np.concatenate([blackholes_binary.orb_a_1, blackholes_binary.orb_a_2]),
+            new_mass=np.concatenate([blackholes_binary.mass_1, blackholes_binary.mass_1]),
+            new_size=np.full(blackholes_binary.num * 2, -1),
+            new_direction=np.ones(blackholes_binary.num * 2),
+            new_disk_inner_outer=np.zeros(blackholes_binary.num * 2)
+        )
 
         blackholes_binary.remove_id_num(blackholes_binary.id_num)
         filing_cabinet.remove_id_num(blackholes_binary.id_num)
