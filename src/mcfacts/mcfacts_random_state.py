@@ -3,7 +3,7 @@ import numpy as np
 
 default_seed = 1
 # Initialize random number generator
-rng = np.random.default_rng(default_seed)
+rng = np.random.RandomState(seed=default_seed)
 
 
 def reset_random(seed):
@@ -20,5 +20,4 @@ def reset_random(seed):
     rng : numpy random number generator
         rng set with input value seed
     """
-    rng = np.random.default_rng(seed)
-    return (rng)
+    rng.seed(seed)
