@@ -25,10 +25,8 @@ from mcfacts.physics.binary.evolve import evolve
 from mcfacts.physics.binary.harden import baruteau11
 from mcfacts.physics.binary.merge import tichy08, chieff, tgw
 from mcfacts.physics.disk_capture import crude_retro_evol
-from mcfacts.outputs import mergerfile
 
 binary_field_names = "bin_orb_a1 bin_orb_a2 mass1 mass2 spin1 spin2 theta1 theta2 sep bin_com time_gw merger_flag time_mgr  gen_1 gen_2  bin_ang_mom bin_ecc bin_incl bin_orb_ecc nu_gw h_bin"
-merger_field_names = ' '.join(mergerfile.MERGER_FIELD_NAMES)
 
 # columns to write for incremental data files
 merger_cols = ["galaxy", "bin_orb_a", "mass_final", "chi_eff", "spin_final", "spin_angle_final", "mass_1", "mass_2",
