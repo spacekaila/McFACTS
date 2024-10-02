@@ -22,13 +22,14 @@ HERE=./
 MCFACTS_SIM_EXE = ${HERE}/scripts/mcfacts_sim.py
 POPULATION_PLOTS_EXE = ${HERE}/scripts/population_plots.py
 VERA_PLOTS_EXE = ${HERE}/scripts/vera_plots.py
-MSTAR_RUNS_EXE = ${HERE}/scripts/vera_mstar_bins_opacity.py
+MSTAR_RUNS_EXE = ${HERE}/scripts/vera_mstar_bins.py
 MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
 SEED=3456789108
 #FNAME_INI= ${HERE}/recipes/p1_thompson.ini
 FNAME_INI= ${HERE}/recipes/model_choice_old.ini
+FNAME_INI_MSTAR= ${HERE}/recipes/p3_pAGN_off.ini
 MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins_pAGN
 # NAL files might not exist unless you download them from
 # https://gitlab.com/xevra/nal-data
@@ -85,11 +86,11 @@ vera_plots: mcfacts_sim
 
 mstar_runs:
 	python ${MSTAR_RUNS_EXE} \
-		--fname-ini ${FNAME_INI} \
-		--timestep_num 50 \
+		--fname-ini ${FNAME_INI_MSTAR} \
+		--timestep_num 1000 \
 		--bin_num_max 10000 \
 		--nbins 33 \
-		--galaxy_num 3 \
+		--galaxy_num 100 \
 		--mstar-min 1e9 \
 		--mstar-max 1e13 \
 		--scrub \
