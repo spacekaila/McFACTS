@@ -3,9 +3,11 @@
 import numpy as np
 import os
 import sys
-from os.path import expanduser, join, isfile, isdir
+from os.path import expanduser, join, isfile, isdir, basename
 from basil_core.astro.relations import Neumayer_early_NSC_mass, Neumayer_late_NSC_mass
 from basil_core.astro.relations import SchrammSilvermanSMBH_mass_of_GSM as SMBH_mass_of_GSM
+from mcfacts.inputs.ReadInputs import ReadInputs_ini
+from mcfacts.inputs.ReadInputs import construct_disk_pAGN
 
 ######## Arg ########
 def arg():
@@ -20,7 +22,8 @@ def arg():
     parser.add_argument("--wkdir", default='./run_many', help="top level working directory")
     parser.add_argument("--mcfacts-exe", default="./scripts/mcfacts_sim.py", help="Path to mcfacts exe")
     parser.add_argument("--fname-ini", required=True, help="Path to mcfacts inifile")
-    #parser.add_argument("--vera-plots-exe", default="./scripts/vera_plots.py", help="Path to Vera plots script")
+    parser.add_argument("--vera-plots-exe", default="./scripts/vera_plots.py", help="Path to Vera plots script")
+    parser.add_argument("--plot-disk-exe", default="./scripts/plot_disk_properties.py")
     parser.add_argument("--fname-nal", default=join(expanduser("~"), "Repos", "nal-data", "GWTC-2.nal.hdf5" ),
         help="Path to Vera's data from https://gitlab.com/xevra/nal-data")
     parser.add_argument("--max-nsc-mass", default=1.e8, type=float,
@@ -35,6 +38,8 @@ def arg():
         help="Force overwrite and rerun everything?")
     parser.add_argument("--print-only", action="store_true",
         help="Don't run anything. Just print the commands.")
+    parser.add_argument("--truncate-opacity", action="store_true",
+        help="Truncate disk at opacity cliff")
     # Handle top level working directory
     opts = parser.parse_args()
     if not isdir(opts.wkdir):
@@ -46,7 +51,7 @@ def arg():
     return opts
 
 ######## Batch ########
-def make_batch(opts, wkdir, mcfacts_args, mass_smbh, mass_nsc):
+def make_batch(opts, wkdir, smbh_mass, nsc_mass):
     ## Early-type ##
     # identify output_mergers_population.dat
     outfile = join(wkdir, "output_mergers_population.dat")
@@ -87,19 +92,94 @@ def make_batch(opts, wkdir, mcfacts_args, mass_smbh, mass_nsc):
     else:
         # Nothing exists, and nothing needs to be forced
         pass
+    
+    ## Copy inifile
+    # Identify local inifile
+    fname_ini_local = join(wkdir, basename(opts.fname_ini))
+    # Load command
+    cmd = f"cp {opts.fname_ini} {fname_ini_local}"
+    print(cmd)
+    # Execute copy
+    if not opts.print_only:
+        os.system(cmd)
+        # Reality check
+        assert isfile(fname_ini_local)
+
+    ## Regex for known assumptions ##
+    # SMBH mass
+    cmd=f"sed --in-place 's/smbh_mass =.*/smbh_mass = {smbh_mass}/' {fname_ini_local}"
+    print(cmd)
+    if not opts.print_only: os.system(cmd)
+    # NSC mass
+    cmd=f"sed --in-place 's/nsc_mass =.*/nsc_mass = {nsc_mass}/' {fname_ini_local}"
+    print(cmd)
+    if not opts.print_only: os.system(cmd)
+    # timestep_num mass
+    cmd=f"sed --in-place 's/timestep_num =.*/timestep_num = {opts.timestep_num}/' {fname_ini_local}"
+    print(cmd)
+    if not opts.print_only: os.system(cmd)
+    # galaxy_num mass
+    cmd=f"sed --in-place 's/galaxy_num =.*/galaxy_num = {opts.galaxy_num}/' {fname_ini_local}"
+    print(cmd)
+    if not opts.print_only: os.system(cmd)
+    # bin_num_max mass
+    cmd=f"sed --in-place 's/bin_num_max =.*/bin_num_max = {opts.bin_num_max}/' {fname_ini_local}"
+    print(cmd)
+    if not opts.print_only: os.system(cmd)
+
+    # Read the inifile
+    if not opts.print_only: 
+        mcfacts_input_variables = ReadInputs_ini(fname_ini_local)
+    else:
+        mcfacts_input_variables = ReadInputs_ini(opts.fname_ini)
+    
+    # Check truncate opacity flag
+    if opts.truncate_opacity and not opts.print_only:
+        # Make sure pAGN is enabled
+        if not mcfacts_input_variables["flag_use_pagn"]:
+            raise NotImplementedError
+        # Load pAGN disk model
+        pagn_surf_dens_func, pagn_aspect_ratio_func, pagn_opacity_func, pagn_model, bonus_structures =\
+            construct_disk_pAGN(
+                mcfacts_input_variables["disk_model_name"],
+                smbh_mass,
+                mcfacts_input_variables["disk_radius_outer"],
+                mcfacts_input_variables["disk_alpha_viscosity"],
+                mcfacts_input_variables["disk_bh_eddington_ratio"],
+            )
+        # Load R and tauV
+        pagn_R = bonus_structures["R"]
+        pagn_tauV = bonus_structures["tauV"]
+        # Find where tauV is greater than its initial value
+        tau_drop_mask = (pagn_tauV < pagn_tauV[0]) & (np.log10(pagn_R) > 3)
+        # Find the drop index
+        tau_drop_index = np.argmax(tau_drop_mask)
+        # Find the drop radius
+        tau_drop_radius = pagn_R[tau_drop_index]
+
+        # Modify the inifile once again
+        # outer disk radius
+        cmd=f"sed --in-place 's/disk_radius_outer =.*/disk_radius_outer = {tau_drop_radius}/' {fname_ini_local}"
+        print(cmd)
+        if not opts.print_only: os.system(cmd)
 
     # Make all iterations
-    cmd = "python3 %s --fname-ini %s --smbh_mass %f --nsc_mass %f --work-directory %s %s"%(
-        opts.mcfacts_exe, opts.fname_ini, mass_smbh, mass_nsc, wkdir, mcfacts_args)
+    cmd = "python3 %s --fname-ini %s --work-directory %s"%(
+        opts.mcfacts_exe, fname_ini_local, wkdir)
     print(cmd)
     if not opts.print_only:
         os.system(cmd)
     # Make plots for all iterations
-    #cmd = "python3 %s --fname-mergers %s/output_mergers_population.dat --fname-nal %s --cdf chi_eff chi_p M gen1 gen2 t_merge"%(
-    #    opts.vera_plots_exe, wkdir, opts.fname_nal)
-    #print(cmd)
-    #if not opts.print_only:
-    #    os.system(cmd)
+    cmd = "python3 %s --fname-mergers %s/output_mergers_population.dat --fname-nal %s --cdf bin_com chi_eff final_mass time_merge"%(
+        opts.vera_plots_exe, wkdir, opts.fname_nal)
+    print(cmd)
+    if not opts.print_only:
+        os.system(cmd)
+    # Make disk plots
+    cmd = f"python3 {opts.plot_disk_exe} --fname-ini {fname_ini_local} --outdir {wkdir}"
+    print(cmd)
+    if not opts.print_only:
+        os.system(cmd)
 
     #raise Exception
     # Scrub runs
@@ -112,6 +192,8 @@ def make_batch(opts, wkdir, mcfacts_args, mass_smbh, mass_nsc):
 def main():
     # Load arguments
     opts = arg()
+    # Temporary check
+    if not opts.truncate_opacity: raise Exception
     # Get mstar array
     mstar_arr = np.logspace(np.log10(opts.mstar_min),np.log10(opts.mstar_max), opts.nbins)
     # Calculate SMBH and NSC mass 
@@ -127,22 +209,11 @@ def main():
     if not isdir(join(opts.wkdir, 'late')):
         os.mkdir(join(opts.wkdir, 'late'))
 
-    # Initialize mcfacts arguments dictionary
-    mcfacts_arg_dict = {
-                        "--timestep_num"    : opts.timestep_num,
-                        "--galaxy_num"      : opts.galaxy_num,
-                        "--fname-log"       : "out.log",
-                        "--bin_num_max"     : opts.bin_num_max,
-                       }
-    mcfacts_args = ""
-    for item in mcfacts_arg_dict:
-        mcfacts_args = mcfacts_args + "%s %s "%(item, str(mcfacts_arg_dict[item]))
-
     ## Loop early-type galaxies
     for i in range(opts.nbins):
         # Extract values for this set of galaxies
         mstar = mstar_arr[i]
-        mass_smbh = SMBH_arr[i]
+        smbh_mass = SMBH_arr[i]
         early_mass = NSC_early_arr[i]
         late_mass = NSC_late_arr[i]
         # Generate label for this mass bin
@@ -155,8 +226,8 @@ def main():
         if not isdir(late_dir):
             os.mkdir(late_dir)
 
-        make_batch(opts, early_dir, mcfacts_args, mass_smbh, early_mass)
-        make_batch(opts, late_dir,  mcfacts_args, mass_smbh, late_mass)
+        make_batch(opts, early_dir, smbh_mass, early_mass)
+        make_batch(opts, late_dir,  smbh_mass, late_mass)
 
     return
 

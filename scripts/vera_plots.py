@@ -39,6 +39,10 @@ def arg():
     assert isdir(opts.wkdir)
     return opts
 
+######## Coordinates ########
+def mc_of_m1_m2(m1,m2):
+    return ((m1*m2)**0.6) * ((m1+m2)**-0.2)
+
 ######## Load data ########
 def load_mergers_txt(fname, verbose=False):
     """Load output_mergers_population.dat
@@ -63,6 +67,8 @@ def load_mergers_txt(fname, verbose=False):
     print("Removing %d nans out of %d sample mergers"%(np.sum(~mask), mask.size), file=sys.stderr)
     for item in merger_dict:
         merger_dict[item] = merger_dict[item][mask]
+    # Add chirp mass
+    merger_dict["mc"] = mc_of_m1_m2(merger_dict["mass_1"], merger_dict["mass_2"])
 
     ## Print things
     # Loop the merger dict
@@ -214,7 +220,7 @@ def main():
 
     #### Cdf plots ####
     for _item in opts.cdf_fields:
-        assert _item in merger_dict, "%s not found in %s"%(_item, str(opts.cdf))
+        assert _item in merger_dict, "%s not found in %s"%(_item, merger_dict.keys())
         fname_item = join(opts.wkdir, "mergers_cdf_%s.png"%(_item))
         plot_cdf(merger_dict, _item, fname_item)
 
@@ -224,7 +230,7 @@ def main():
         _item = "chi_eff"
         fname_item = join(opts.wkdir, "mergers_nal_cdf_%s.png"%(_item))
         plot_nal_cdf(merger_dict, _item, fname_item, nal_dict)
-        _item = "M"
+        _item = "mc"
         fname_item = join(opts.wkdir, "mergers_nal_cdf_%s.png"%(_item))
         plot_nal_cdf(merger_dict, _item, fname_item, nal_dict)
     return
