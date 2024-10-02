@@ -22,14 +22,14 @@ HERE=./
 MCFACTS_SIM_EXE = ${HERE}/scripts/mcfacts_sim.py
 POPULATION_PLOTS_EXE = ${HERE}/scripts/population_plots.py
 VERA_PLOTS_EXE = ${HERE}/scripts/vera_plots.py
-MSTAR_RUNS_EXE = ${HERE}/scripts/vera_mstar_bins.py
+MSTAR_RUNS_EXE = ${HERE}/scripts/vera_mstar_bins_opacity.py
 MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
 SEED=3456789108
 #FNAME_INI= ${HERE}/recipes/p1_thompson.ini
 FNAME_INI= ${HERE}/recipes/model_choice_old.ini
-MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
+MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins_pAGN
 # NAL files might not exist unless you download them from
 # https://gitlab.com/xevra/nal-data
 # scripts that use NAL files might not work unless you install
