@@ -295,7 +295,8 @@ def main():
 
         # Initialize stars
 
-        stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=filing_cabinet.id_max+1)
+        #stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=filing_cabinet.id_max+1)
+        stars, disk_star_num = AGNStar(), 0
         print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
         filing_cabinet.add_objects(new_id_num=stars.id_num,
                                    new_category=np.full(stars.num, 1),
