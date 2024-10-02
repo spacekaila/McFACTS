@@ -95,9 +95,6 @@ Inifile
         How many timesteps are you taking (timestep*number_of_timesteps = disk_lifetime)
     "galaxy_num"                    : int
         Number of galaxies of code run (e.g. 1 for testing, 30 for a quick run)
-    "fraction_retro"                : float
-        Fraction of BBH that form retrograde to test (q,X_eff) relation.
-        Default retro=0.1. Possibly overwritten by initial retro population
     "fraction_bin_retro"            : float
         Fraction of BBH that form retrograde to test (q,X_eff) relation. Default retro=0.1
     "flag_thermal_feedback"         : int
@@ -179,7 +176,6 @@ INPUT_TYPES = {
     "timestep_duration_yr"          : float,
     "timestep_num"                  : int,
     "galaxy_num"                    : int,
-    "fraction_retro"                : float,
     "fraction_bin_retro"            : float,
     "flag_thermal_feedback"         : int,
     "flag_orb_ecc_damping"          : int,
