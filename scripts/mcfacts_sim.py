@@ -294,9 +294,11 @@ def main():
                                           )
 
         # Initialize stars
+        if opts.flag_add_stars:
+            stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=filing_cabinet.id_max+1)
+        else:
+            stars, disk_star_num = AGNStar(), 0
 
-        #stars, disk_star_num = initializediskstars.init_single_stars(opts, id_start_val=filing_cabinet.id_max+1)
-        stars, disk_star_num = AGNStar(), 0
         print('disk_bh_num = {}, disk_star_num = {}'.format(disk_bh_num, disk_star_num))
         filing_cabinet.add_objects(new_id_num=stars.id_num,
                                    new_category=np.full(stars.num, 1),
@@ -307,7 +309,8 @@ def main():
                                    new_disk_inner_outer=np.zeros(stars.num))
 
         # Writing initial parameters to file
-        stars.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_star.dat"))
+        if opts.flag_add_stars:
+            stars.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_star.dat"))
         blackholes.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_bh.dat"))
 
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
@@ -457,8 +460,9 @@ def main():
 
                 blackholes_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_single_pro_{timestep_current_num}.dat"))
                 blackholes_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_single_retro_{timestep_current_num}.dat"))
-                stars_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
-                stars_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
+                if opts.flag_add_stars:
+                    stars_pro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_pro{timestep_current_num}.dat"))
+                    stars_retro.to_file(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_stars_single_retro_{timestep_current_num}.dat"))
                 blackholes_binary.to_txt(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/output_bh_binary_{timestep_current_num}.dat"),
                                          cols=binary_cols)
                 timestep_current_num += 1
