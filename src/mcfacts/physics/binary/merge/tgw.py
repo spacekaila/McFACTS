@@ -27,13 +27,14 @@ def normalize_tgw(smbh_mass):
         normalization to gravitational wave timescale
     """
 
-    G = const.G
-    c = const.c
     mass_sun = const.M_sun
-    year = 3.1536e7
+    year = (1*u.year).to(u.second)
     bin_mass_ref = 10.0
     reduced_mass = 2.5
-    norm = (5.0/128.0)*(G/(c**(3)))*(smbh_mass**(4))*mass_sun/((bin_mass_ref**(2))*reduced_mass)
+    norm = (5.0/128.0)*(const.G/(const.c**(3)))*(smbh_mass**(4))*mass_sun/((bin_mass_ref**(2))*reduced_mass)
+    print(norm)
+    print(year)
     time_gw_normalization = norm/year
 
     return time_gw_normalization.si.value
+
