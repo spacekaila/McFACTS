@@ -20,11 +20,11 @@ plt.style.use("mcfacts.vis.mcfacts_figures")
 size = "apj_col"
 
 ## Dictionary of LaTeX style axes labels
-label_dict = {"chi_eff" : r"$\chi_\mathrm{eff}$",
-              "chi_p" : r"$\chi_\mathrm{p}$",
+label_dict = {"chi_eff": r"$\chi_\mathrm{eff}$",
+              "chi_p": r"$\chi_\mathrm{p}$",
               "final_mass": r"$M_\mathrm{final}$ [$M_\odot$]",
-              "gen1" : r"Generation 1",
-              "gen2" : r"Generation 2",
+              "gen1": r"Generation 1",
+              "gen2": r"Generation 2",
               "time_merge": r"$t_\mathrm{merge}$ [yr]"}
 
 ######## Arg ########
