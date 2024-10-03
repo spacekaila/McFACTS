@@ -181,7 +181,6 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
     if not opts.print_only:
         os.system(cmd)
 
-    #raise Exception
     # Scrub runs
     if opts.scrub:
         cmd = "rm -rf %s/run*"%wkdir
@@ -192,8 +191,6 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
 def main():
     # Load arguments
     opts = arg()
-    # Temporary check
-    if not opts.truncate_opacity: raise Exception
     # Get mstar array
     mstar_arr = np.logspace(np.log10(opts.mstar_min),np.log10(opts.mstar_max), opts.nbins)
     # Calculate SMBH and NSC mass 
