@@ -3,6 +3,7 @@
 color_gen1 = "darkgoldenrod"
 color_gen2 = "rebeccapurple"
 color_genX = "red"
+color_line1 = "teal"
 
 # Marker Styles
 marker_gen1 = 'o'

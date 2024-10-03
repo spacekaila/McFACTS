@@ -6,9 +6,11 @@ legend.fontsize: 9
 xtick.labelsize: 9
 ytick.labelsize: 9
 axes.labelsize: 9
+axes.formatter.use_mathtext: True
 
 figure.facecolor: white
 figure.dpi: 300
+figure.constrained_layout.use: True
 
 xtick.top: True
 xtick.direction: in
