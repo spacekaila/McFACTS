@@ -1,32 +1,33 @@
 
-# Define colors here
+# Dictionary of widths in points for different LaTeX  journal templates
+figure_sizes = {"aa_col": 256.0748,
+                "aa_page": 523.5307,
+                "mnras_col": 244.0,
+                "mnras_page": 508.0,
+                "apj_col": 242.2665,
+                "apj_page": 513.1174}
 
-def set_size(width, fraction=1, subplots=(1, 1), square = False):
+
+def set_size(width, fraction=1, subplots=(1, 1), square=False):
     """Set figure dimensions to avoid scaling in LaTeX.
 
     Parameters
     ----------
-    width: float or string
-            Document width in points, or string of predefined document type
-    fraction: float, optional
-            Fraction of the width which you wish the figure to occupy
-    subplots: array-like, optional
-            The number of rows and columns of subplots.
+    width : float or string
+        Document width in points, or string of predefined document type
+    fraction : float, optional
+        Fraction of the width which you wish the figure to occupy
+    subplots : array-like, optional
+        The number of rows and columns of subplots
+    square : bool
+        Whether or not figure should be square
     Returns
     -------
     fig_dim: tuple
             Dimensions of figure in inches
     """
-    if width == 'thesis_a4':
-        width_pt = 427.43153
-    elif width == 'aa_col':
-        width_pt = 256.0748
-    elif width == 'aa_page':
-        width_pt = 523.5307
-    elif width == 'mnras_col':
-        width_pt = 244.0
-    elif width == 'mnras_page':
-        width_pt = 508.0
+    if isinstance(width, str):
+        width_pt = figure_sizes[width]
     else:
         width_pt = width
 
@@ -42,7 +43,7 @@ def set_size(width, fraction=1, subplots=(1, 1), square = False):
     # Figure width in inches
     fig_width_in = fig_width_pt * inches_per_pt
     # Figure height in inches
-    if (square == True):
+    if (square is True):
         fig_height_in = fig_width_in
     else:
         fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
