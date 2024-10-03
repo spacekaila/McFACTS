@@ -2,14 +2,6 @@ import numpy as np
 from copy import deepcopy
 from mcfacts.setup import setupdiskstars, setupdiskblackholes
 
-"""
-def check_1d_length(arr_list):
-    if(len({arr.shape for arr in arr_list}) > 1):
-        raise ValueError('Arrays are not all 1d.')
-
-    if( len(set(map(len,arr_list))) != 1):
-        raise ValueError('Arrays are not all the same length.')
- """
 
 # TODO: dump_record_array writes every value as a float. Make dictionary with all attributes and datatypes? Or is a float fine?
 # TODO: init_from_file: you have to initialize an empty AGNObject before you can init_from_file and that seems weird.
