@@ -1,5 +1,5 @@
 text.usetex: True
-font.family: Nimbus Roman No9 L
+font.family: cmr10
 
 font.size: 10 #9
 legend.fontsize: 9
