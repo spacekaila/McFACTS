@@ -1447,7 +1447,6 @@ class AGNMergedBlackHole(AGNObject):
         self.check_consistency()
 
 
-
 obj_types = {0: "single black hole",
              1: "single star",
              2: "binary black hole",
