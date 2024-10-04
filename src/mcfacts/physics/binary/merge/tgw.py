@@ -51,3 +51,4 @@ def normalize_tgw(smbh_mass, inner_disk_outer_radius):
         0 * u.m,
     )
     return time_gw_normalization.si.value
+
