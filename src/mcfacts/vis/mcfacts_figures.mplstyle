@@ -1,6 +1,9 @@
 text.usetex: True
 font.family: cmr10
 
+# Commented out so auto-scaling works
+# Uncomment if you want fonts scaled for ApJ
+# ApJ: small = 9pt, normal = 10pt, large = 12pt
 #font.size: 10 #9
 #legend.fontsize: 9
 #xtick.labelsize: 9

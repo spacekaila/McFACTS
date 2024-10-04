@@ -4,10 +4,20 @@ import numpy as np
 import os
 import sys
 from os.path import expanduser, join, isfile, isdir, basename
+from astropy import units
 from basil_core.astro.relations import Neumayer_early_NSC_mass, Neumayer_late_NSC_mass
 from basil_core.astro.relations import SchrammSilvermanSMBH_mass_of_GSM as SMBH_mass_of_GSM
+from mcfacts.physics.dynamics.point_masses import time_of_orbital_shrinkage
+from mcfacts.physics.dynamics.point_masses import orbital_separation_evolve
+from mcfacts.physics.dynamics.point_masses import orbital_separation_evolve_reverse
+from mcfacts.physics.dynamics.point_masses import si_from_r_g, r_g_from_units
 from mcfacts.inputs.ReadInputs import ReadInputs_ini
 from mcfacts.inputs.ReadInputs import construct_disk_pAGN
+
+######## Constants ########
+smbh_mass_fiducial = 1e8 * units.solMass
+test_mass = 10 * units.solMass
+inner_disk_outer_radius_fiducial = si_from_r_g(smbh_mass_fiducial,50.) #50 r_g
 
 ######## Arg ########
 def arg():
@@ -163,6 +173,40 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
         print(cmd)
         if not opts.print_only: os.system(cmd)
 
+    # Rescale inner_disk_outer_radius
+    # rescale 
+    t_gw_inner_disk = time_of_orbital_shrinkage(
+        smbh_mass_fiducial,
+        test_mass,
+        inner_disk_outer_radius_fiducial,
+        0. * units.m,
+    )
+    # Find the new inner_disk_outer_radius
+    new_inner_disk_outer_radius = orbital_separation_evolve_reverse(
+        mcfacts_input_variables["smbh_mass"] * units.solMass,
+        test_mass,
+        0 * units.m,
+        t_gw_inner_disk,
+    )
+    # Estimate in r_g
+    new_inner_disk_outer_radius_r_g = r_g_from_units(
+        mcfacts_input_variables["smbh_mass"] * units.solMass,
+        new_inner_disk_outer_radius,
+    )
+    cmd=f"sed --in-place 's/inner_disk_outer_radius =.*/inner_disk_outer_radius = {new_inner_disk_outer_radius_r_g}/' {fname_ini_local}"
+    print(cmd)
+    if not opts.print_only:
+        os.system(cmd)
+
+    # Estimate new trap radius
+    new_trap_radius = mcfacts_input_variables["disk_radius_trap"] * np.sqrt(
+        mcfacts_input_variables["smbh_mass"] * units.solMass / \
+        smbh_mass_fiducial
+    ) 
+    cmd=f"sed --in-place 's/disk_radius_trap =.*/disk_radius_trap = {new_trap_radius}/' {fname_ini_local}"
+    if not opts.print_only:
+        os.system(cmd)
+
     # Make all iterations
     cmd = "python3 %s --fname-ini %s --work-directory %s"%(
         opts.mcfacts_exe, fname_ini_local, wkdir)
@@ -181,7 +225,6 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
     if not opts.print_only:
         os.system(cmd)
 
-    #raise Exception
     # Scrub runs
     if opts.scrub:
         cmd = "rm -rf %s/run*"%wkdir
@@ -192,8 +235,6 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
 def main():
     # Load arguments
     opts = arg()
-    # Temporary check
-    if not opts.truncate_opacity: raise Exception
     # Get mstar array
     mstar_arr = np.logspace(np.log10(opts.mstar_min),np.log10(opts.mstar_max), opts.nbins)
     # Calculate SMBH and NSC mass 
