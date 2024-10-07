@@ -520,6 +520,13 @@ def main():
                 opts.disk_bh_pro_orb_ecc_crit,
                 opts.disk_radius_outer,
             )
+            # Check for orb_a unphysical
+            bh_pro_id_num_unphysical_a = blackholes_pro.id_num[blackholes_pro.orb_a == 0.]
+            if bh_pro_id_num_unphysical_a.size > 0:
+                # The binary has unphysical eccentricity. Delete
+                blackholes_pro.remove_id_num(bh_pro_id_num_unphysical_a)
+                filing_cabinet.remove_id_num(bh_pro_id_num_unphysical_a)
+
 
             # Accrete
             blackholes_pro.mass = changebhmass.change_mass(
@@ -576,6 +583,13 @@ def main():
                 disk_surface_density,
                 opts.timestep_duration_yr
             )
+            # Check for bin_ecc unphysical
+            bh_retro_id_num_unphysical_ecc = blackholes_retro.id_num[blackholes_retro.orb_ecc >= 1.]
+            if bh_retro_id_num_unphysical_ecc.size > 0:
+                # The binary has unphysical eccentricity. Delete
+                blackholes_retro.remove_id_num(bh_retro_id_num_unphysical_ecc)
+                filing_cabinet.remove_id_num(bh_retro_id_num_unphysical_ecc)
+
 
             # and now stars
 
