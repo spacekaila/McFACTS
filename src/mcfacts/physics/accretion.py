@@ -1,5 +1,5 @@
 """
-Functions for calculating change of mass, spin mag, and spin angle due to accretion.
+Module for calculating change of mass, spin magnitude, and spin angle due to accretion.
 """
 
 import numpy as np

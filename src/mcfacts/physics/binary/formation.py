@@ -1,5 +1,5 @@
 """
-Functions for handling the formation of binaries
+Module for handling the formation of binaries.
 """
 import numpy as np
 

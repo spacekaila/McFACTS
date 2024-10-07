@@ -1,5 +1,5 @@
 """
-Functions for dealing with EMRIs
+Module for EMRI specific calculations.
 """
 import numpy as np
 from astropy import units as u

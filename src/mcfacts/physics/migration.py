@@ -1,5 +1,5 @@
 """
-Functions used to calculate migration timescales
+Module for calculating the timescale of migrations.
 """
 
 import numpy as np

@@ -1,5 +1,5 @@
 """
-Functions for calculating the orbital and binary eccentricity damping.
+Module for calculating the orbital and binary eccentricity damping.
 """
 
 import numpy as np

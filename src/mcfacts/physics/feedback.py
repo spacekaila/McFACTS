@@ -1,5 +1,5 @@
 """
-Functions for calculating corrections to migration due to feedback.
+Module for calculating corrections to migration due to feedback models.
 """
 import numpy as np
 

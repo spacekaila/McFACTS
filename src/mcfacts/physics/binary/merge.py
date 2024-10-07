@@ -1,5 +1,5 @@
 """
-Functions for calculating final variables of a merging binary
+Module for calculating the final variables of a merging binary.
 """
 import numpy as np
 from astropy import units as u

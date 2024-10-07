@@ -1,5 +1,5 @@
 """
-Functions for binary gw strain and freq
+Module for calculating the gw strain and freq of a binary.
 """
 import numpy as np
 from astropy import units as u, constants as const

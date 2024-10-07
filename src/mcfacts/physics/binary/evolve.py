@@ -1,5 +1,5 @@
 """
-Functions for evolving the state of a binary
+Module for evolving the state of a binary.
 """
 import numpy as np
 import scipy

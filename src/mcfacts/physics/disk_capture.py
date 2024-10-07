@@ -1,5 +1,5 @@
 """
-Functions for computing disk-orbiter interactions which may lead to capture.
+Module for computing disk-orbiter interactions, which may lead to capture.
 """
 import numpy as np
 import scipy

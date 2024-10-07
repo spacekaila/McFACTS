@@ -1,4 +1,4 @@
-"""Module for handling dynamical interactions
+"""Module for handling dynamical interactions.
 
 Contains multiple functions which are each mocked up versions of a
 dynamical mechanism. Of varying fidelity to reality. Also contains
