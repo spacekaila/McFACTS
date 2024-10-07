@@ -99,10 +99,10 @@ def main():
     plt.savefig(opts.plots_directory+r"/merger_remnant_mass.png", format='png')
     plt.close()
 
-    # TQM has a trap at 245r_g, SG has a trap radius at 700r_g.
-    #trap_radius = 245
+    # TQM has a trap at 500r_g, SG has a trap radius at 700r_g.
+    # trap_radius = 500
     trap_radius = 700
-    
+
     #plt.title('Migration Trap influence')
     for i in range(len(mergers[:,1])):
         if mergers[i,1] < 10.0:
