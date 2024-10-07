@@ -139,7 +139,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolors="none",
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     plt.axvline(trap_radius, color='k', linestyle='--', zorder=0,
                 label=f'Trap Radius = {trap_radius} '+r'$R_g$')
@@ -232,7 +232,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     if len(genH_chi_eff) > 0:
         poptHier, pcovHier = curve_fit(linefunc, genH_mass_ratio, genH_chi_eff)
@@ -243,7 +243,7 @@ def main():
                 lw=1,
                 color='gray',
                 zorder=3,
-                label=r'$d\chi/dq(\geq$2g)=' +
+                label=r'$d\chi/dq(\geqq$2g)=' +
                     f'{poptHier[0]:.2f}' +
                     r'$\pm$' + f'{errHier:.2f}'
                 )
@@ -309,7 +309,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng')
+                label=r'$\geq$3g-Ng')
     #plt.title("In-plane effective Spin vs. Merger radius")
     ax1.set(
         ylabel=r'$\chi_{\rm p}$',
@@ -370,7 +370,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     ax3.set(
         xlabel='Time [Myr]',
@@ -448,7 +448,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     ax4.set(
         xlabel=r'$M_1$ [$M_\odot$]',
