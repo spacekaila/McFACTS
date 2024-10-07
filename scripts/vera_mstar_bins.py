@@ -70,7 +70,7 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
     # Check for runs
     all_runs = []
     for item in os.listdir(wkdir):
-        if isdir(join(wkdir, item)) and item.startswith("run"):
+        if isdir(join(wkdir, item)) and item.startswith("gal"):
             all_runs.append(item)
     any_runs = len(all_runs) > 0
 
@@ -92,7 +92,7 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
     elif any_runs:
         # Some runs exist, but not an outfile. We can start these over
         # remove whole wkdir
-        cmd = "rm -rf %s"%wkdir
+        cmd = "rm -rf %s/*"%wkdir
         # Print the command
         print(cmd)
         # Check print_only
@@ -172,6 +172,14 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
         cmd=f"sed --in-place 's/disk_radius_outer =.*/disk_radius_outer = {tau_drop_radius}/' {fname_ini_local}"
         print(cmd)
         if not opts.print_only: os.system(cmd)
+        # Print radius
+        #print("np.log10(smbh_mass):", np.log10(mcfacts_input_variables["smbh_mass"]))
+        #print("tau_drop_radius:", tau_drop_radius)
+        #print("tau_drop_radius:", si_from_r_g(mcfacts_input_variables["smbh_mass"],tau_drop_radius))
+        #print("tau_drop_radius:", si_from_r_g(mcfacts_input_variables["smbh_mass"],tau_drop_radius).to('pc'))
+        #print("tau_drop_radius:", si_from_r_g(1409937948.5103269,12813.45465546737).to('pc'))
+        #raise Exception
+
 
     # Rescale inner_disk_outer_radius
     # rescale 
@@ -200,10 +208,11 @@ def make_batch(opts, wkdir, smbh_mass, nsc_mass):
 
     # Estimate new trap radius
     new_trap_radius = mcfacts_input_variables["disk_radius_trap"] * np.sqrt(
-        mcfacts_input_variables["smbh_mass"] * units.solMass / \
-        smbh_mass_fiducial
+        smbh_mass_fiducial /
+        (mcfacts_input_variables["smbh_mass"] * units.solMass)
     ) 
     cmd=f"sed --in-place 's/disk_radius_trap =.*/disk_radius_trap = {new_trap_radius}/' {fname_ini_local}"
+    print(cmd)
     if not opts.print_only:
         os.system(cmd)
 

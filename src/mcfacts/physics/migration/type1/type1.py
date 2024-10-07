@@ -149,8 +149,19 @@ def type1_migration(smbh_mass, disk_bh_orb_a_pro, disk_bh_mass_pro, disk_surf_de
     # Assert that things are not allowed to migrate out of the disk.
     mask_disk_radius_outer = disk_radius_outer < disk_bh_pro_a_new
     disk_bh_pro_a_new[mask_disk_radius_outer] = disk_radius_outer
-    assert np.sum(disk_bh_pro_a_new == 0) == 0, \
-        "disk_bh_pro_a_new was not set properly; a case was missed"
+    if np.sum(disk_bh_pro_a_new == 0) > 0:
+        empty_mask = disk_bh_pro_a_new == 0
+        print("empty_mask:",np.where(empty_mask))
+        print("smbh_mass:",smbh_mass)
+        print("disk_radius_trap:",disk_radius_trap)
+        print("disk_radius_outer:",disk_radius_outer)
+        print("disk_bh_pro_orb_ecc_crit:",disk_bh_pro_orb_ecc_crit)
+        print("disk_bh_orb_ecc_pro:",disk_bh_orb_ecc_pro[empty_mask])
+        print("disk_bh_orb_a_pro:", disk_bh_orb_a_pro[empty_mask])
+        print("disk_bh_mass_pro:", disk_bh_mass_pro[empty_mask])
+        # Toss the binaries
+        disk_bh_pro_a_new[empty_mask] = 0.
+        raise RuntimeError("disk_bh_pro_a_new was not set properly; a case was missed")
     
     return disk_bh_pro_a_new
 
