@@ -243,7 +243,7 @@ def main():
                 lw=1,
                 color='gray',
                 zorder=3,
-                label=r'$d\chi/dq(\geqq$2g)=' +
+                label=r'$d\chi/dq(\geq$2g)=' +
                     f'{poptHier[0]:.2f}' +
                     r'$\pm$' + f'{errHier:.2f}'
                 )
