@@ -1418,7 +1418,7 @@ def main():
     population_cols = ["galaxy", "bin_orb_a", "mass_final", "chi_eff", "spin_final", "spin_angle_final",
                        "mass_1", "mass_2", "spin_1", "spin_2", "spin_angle_1", "spin_angle_2",
                        "gen_1", "gen_2", "time_merged", "chi_p"]
-    binary_gw_cols = ["galaxy", "time_merged", "bin_sep", "mass_total", "bin_ecc", "gw_strain", "gw_freq"]
+    binary_gw_cols = ["galaxy", "time_merged", "bin_sep", "mass_total", "bin_ecc", "gw_strain", "gw_freq", "gen_1", "gen_2"]
 
     # Save things
     emris_pop.to_txt(os.path.join(opts.work_directory, emris_save_name),
