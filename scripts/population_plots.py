@@ -53,6 +53,8 @@ def linefunc(x, m):
 
 
 def make_gen_masks(table, col1, col2):
+    """Create masks for retrieving different sets of a merged or binary population based on generation.
+    """
     # Column of generation data
     gen_obj1 = table[:, col1]
     gen_obj2 = table[:, col2]
@@ -603,6 +605,7 @@ def main():
 
     # ----------Setting the values for the EMRIs and LVKs signals and inverting them----------
     inv_freq_emris = 1 / emris[:, 6]
+    # inv_freq_lvk = 1/lvk[:,6]
     # ma_freq_emris = np.ma.where(freq_emris == 0)
     # ma_freq_lvk = np.ma.where(freq_lvk == 0)
     # indices_where_zeros_emris = np.where(freq_emris = 0.)
