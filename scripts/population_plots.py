@@ -99,10 +99,10 @@ def main():
     plt.savefig(opts.plots_directory+r"/merger_remnant_mass.png", format='png')
     plt.close()
 
-    # TQM has a trap at 245r_g, SG has a trap radius at 700r_g.
-    #trap_radius = 245
+    # TQM has a trap at 500r_g, SG has a trap radius at 700r_g.
+    # trap_radius = 500
     trap_radius = 700
-    
+
     #plt.title('Migration Trap influence')
     for i in range(len(mergers[:,1])):
         if mergers[i,1] < 10.0:
@@ -139,7 +139,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolors="none",
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     plt.axvline(trap_radius, color='k', linestyle='--', zorder=0,
                 label=f'Trap Radius = {trap_radius} '+r'$R_g$')
@@ -232,7 +232,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     if len(genH_chi_eff) > 0:
         poptHier, pcovHier = curve_fit(linefunc, genH_mass_ratio, genH_chi_eff)
@@ -309,7 +309,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng')
+                label=r'$\geq$3g-Ng')
     #plt.title("In-plane effective Spin vs. Merger radius")
     ax1.set(
         ylabel=r'$\chi_{\rm p}$',
@@ -370,7 +370,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     ax3.set(
         xlabel='Time [Myr]',
@@ -448,7 +448,7 @@ def main():
                 edgecolor=styles.color_genX,
                 facecolor='none',
                 alpha=styles.markeralpha_genX,
-                label=r'$\ge$3g-Ng'
+                label=r'$\geq$3g-Ng'
                 )
     ax4.set(
         xlabel=r'$M_1$ [$M_\odot$]',
