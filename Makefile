@@ -62,6 +62,11 @@ unit_test: clean version
 	conda activate mcfacts-dev && \
 	pytest
 
+DIST=dist/mcfacts-${VERSION}.tar.gz
+build-install: clean version
+	python3 -m build
+	python3 -m pip install $(DIST)
+
 #### Test one thing at a time ####
 
 # do not put linebreaks between any of these lines. Your run will call a different .ini file
