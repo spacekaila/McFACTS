@@ -91,6 +91,10 @@ plots: mcfacts_sim
 	cd runs; \
 	python ../${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
 
+just_plots:
+	cd runs; \
+	python ../${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
+
 vera_plots: mcfacts_sim
 	python ${VERA_PLOTS_EXE} \
 		--cdf-fields chi_eff chi_p final_mass gen1 gen2 time_merge \
