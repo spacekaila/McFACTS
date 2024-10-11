@@ -321,6 +321,33 @@ def main():
             stars.to_txt(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_star.dat"))
         blackholes.to_txt(os.path.join(opts.work_directory, f"gal{galaxy_zfilled_str}/initial_params_bh.dat"))
 
+        # Any stars over 100 Msun immediately turn into BH
+        star_to_bh_id_num = stars.id_num[stars.mass > 100]
+        star_to_bh_spin = setupdiskblackholes.setup_disk_blackholes_spins(len(star_to_bh_id_num),
+                                                                        opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
+        star_to_bh_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(
+                len(star_to_bh_id_num),
+                star_to_bh_spin)
+        blackholes.add_blackholes(new_mass=stars.at_id_num(star_to_bh_id_num, "mass"),
+                                  new_id_num=star_to_bh_id_num,
+                                  new_orb_ang_mom=setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(len(star_to_bh_id_num)),
+                                  new_spin=star_to_bh_spin,
+                                  new_spin_angle=star_to_bh_spin_angle,
+                                  new_orb_a=stars.at_id_num(star_to_bh_id_num, "orb_a"),
+                                  new_orb_inc=stars.at_id_num(star_to_bh_id_num, "orb_inc"),
+                                  new_orb_ecc=stars.at_id_num(star_to_bh_id_num, "orb_ecc"),
+                                  new_orb_arg_periapse=stars.at_id_num(star_to_bh_id_num, "orb_arg_periapse"),
+                                  new_galaxy=stars.at_id_num(star_to_bh_id_num, "galaxy"),
+                                  new_gen=stars.at_id_num(star_to_bh_id_num, "gen"),
+                                  new_time_passed=stars.at_id_num(star_to_bh_id_num, "time_passed"))
+        # Remove from stars array
+        stars.remove_id_num(star_to_bh_id_num)
+        # Update filing cabinet
+        filing_cabinet.update(star_to_bh_id_num, "category", np.full(len(star_to_bh_id_num),0))
+
+        # For now remove all other stars
+        stars.remove_id_num(stars.id_num)
+
         # Generate initial inner disk arrays for objects that end up in the inner disk. 
         # This is to track possible EMRIs--we're tossing things in these arrays
         #  that end up with semi-major axis < 50rg
