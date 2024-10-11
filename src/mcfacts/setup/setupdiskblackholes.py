@@ -2,7 +2,7 @@ import numpy as np
 from mcfacts.mcfacts_random_state import rng
 
 
-def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius,disk_inner_stable_circ_orb):
+def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius, disk_inner_stable_circ_orb):
     """Generates initial single BH orbital semi-major axes [r_{g,SMBH}]
 
     BH semi-major axes are distributed randomly uniformly through disk of radial size :math:`\mathtt{disk_outer_radius}`
