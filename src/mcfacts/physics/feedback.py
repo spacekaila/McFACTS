@@ -23,7 +23,10 @@ def feedback_bh_hankla(disk_bh_pro_orbs_a, disk_surf_density_func, disk_opacity_
     disk_opacity_model : lambda
         Opacity as a function of radius
     disk_bh_eddington_ratio : float
-        The accretion rate Eddington ratio for black holes in the disk
+        Accretion rate of fully embedded stellar mass black hole [Eddington accretion rate].
+        1.0=embedded BH accreting at Eddington.
+        Super-Eddington accretion rates are permitted.
+        User chosen input set by input file
     disk_alpha_viscosity : float
         Disk gas viscocity [units??] alpha parameter
     disk_radius_outer : float
@@ -89,7 +92,10 @@ def feedback_stars_hankla(disk_stars_pro_orbs_a, disk_surf_density_func, disk_op
     disk_opacity_model : lambda
         Opacity as a function of radius
     disk_bh_eddington_ratio : float
-        The accretion rate Eddington ratio for black holes in the disk
+        Accretion rate of fully embedded stellar mass black hole [Eddington accretion rate].
+        1.0=embedded BH accreting at Eddington.
+        Super-Eddington accretion rates are permitted.
+        User chosen input set by input file
     disk_alpha_viscosity : float
         Disk gas viscocity [units??] alpha parameter
     disk_radius_outer : float
