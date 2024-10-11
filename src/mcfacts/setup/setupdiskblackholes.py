@@ -2,7 +2,6 @@ import numpy as np
 from mcfacts.mcfacts_random_state import rng
 
 
-
 def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius,disk_inner_stable_circ_orb):
     """Returns an array of initial single BH semi-major axes (disk_bh_orb_a) distributed randomly uniformly through disk of radial size disk_outer_radius
 
@@ -11,34 +10,46 @@ def setup_disk_blackholes_location(disk_bh_num, disk_outer_radius,disk_inner_sta
     disk_bh_num : int
         Integer number of BH initially embedded in disk
     disk_outer_radius : float
-        Outer radius of disk in units of r_g,SMBH
+        Outer radius of disk [r_{g,SMBH}]
     disk_inner_stable_circ_orb : float
-        Inner radius of disk in units of r_g,SMBH    
+        Inner radius of disk [r_{g,SMBH}]
     Returns
     -------
-    bh_initial_locations: float array
-        Array of initial BH locations in disk (disk_bh_orb_a)
+    bh_initial_locations : numpy.ndarray
+        Initial BH locations in disk [r_{g,SMBH}] with :obj:`float` type
     """
-    # ISCO defined here. Need to put this in the .ini file.
-    #disk_inner_stable_circ_orbit = 6.0
     #bh_initial_locations = disk_outer_radius * rng.uniform(size=disk_bh_num)
     #sma_too_small = np.where(bh_initial_locations < disk_inner_stable_circ_orb)
     #bh_initial_locations[sma_too_small] = disk_inner_stable_circ_orb
-    bh_initial_locations = rng.uniform(
-        low  = disk_inner_stable_circ_orb,
-        high = disk_outer_radius,
-        size = disk_bh_num,
-    )
+    bh_initial_locations = rng.uniform(low=disk_inner_stable_circ_orb,
+                                       high=disk_outer_radius,
+                                       size=disk_bh_num,
+                                       )
     return bh_initial_locations
 
+
 def setup_prior_blackholes_indices(prograde_n_bh, prior_bh_locations):
-    #Return an array of indices which allow us to read prior BH properties & replace prograde BH with these.
-    integer_nbh = int(prograde_n_bh)
+    """
+    Return an array of indices which allow us to read prior BH properties & replace prograde BH with these.
+
+    Parameters
+    ----------
+    prograde_n_bh : int
+        Integer number of prograde BHs
+    prior_bh_locations : numpy.ndarray
+        Locations of BH in disk [r_{g,SMBH}] with :obj:`float` type
+
+    Returns
+    -------
+    bh_indices : np.ndarray
+        BH indices with :obj:`float` type
+    """
     len_prior_locations = (prior_bh_locations.size)-1
-    bh_indices = np.rint(len_prior_locations * rng.uniform(size=integer_nbh))
+    bh_indices = np.rint(len_prior_locations * rng.uniform(size=prograde_n_bh))
     return bh_indices
 
-def setup_disk_blackholes_masses(disk_bh_num,nsc_bh_imf_mode,nsc_bh_imf_max_mass,nsc_bh_imf_powerlaw_index,mass_pile_up):
+
+def setup_disk_blackholes_masses(disk_bh_num, nsc_bh_imf_mode, nsc_bh_imf_max_mass, nsc_bh_imf_powerlaw_index, mass_pile_up):
     """Return an array of disk BH initial masses of size disk_bh_num for user defined inputs.
 
     Parameters
@@ -46,26 +57,31 @@ def setup_disk_blackholes_masses(disk_bh_num,nsc_bh_imf_mode,nsc_bh_imf_max_mass
         disk_bh_num : int
             Integer number of BH initially embedded in disk
         nsc_bh_imf_mode : float
-            Nuclear Star Cluster BH initial mass function , mode. Units of M_sun. User set (default = 10)
+            Mode of nuclear star cluster BH initial mass function [M_sun]. User set (default = 10).
         nsc_bh_inf_max_mass : float
-            Nuclear Star Cluster BH IMF, maximum mass. Units of M_sun. User set (default = 40)
+            Max mass of nuclear star cluster BH IMF [M_sun]. User set (default = 40).
         nsc_bh_imf_powerlaw_index : float
-            Nuclear Star Cluster BH IMF (e.g. M^-2). Powerlaw index. Unitless. User set (default = 2)
+            Powerlaw index of nuclear star cluster BH IMF (e.g. M^-2) [unitless]. User set (default = 2).
         mass_pile_up : float
-            Mass pile up term <nsc_bh_inf_max_mass. Units of M_sun. User set (default =35.) 
-            Used to make a uniform pile up in mass between [mass_pile_up,nsc_bh_inf_max_mass] for masses selected
-            from nsc_bh_imf_powerlaw_index beyond nsc_bh_inf_max_mass. E.g default [35,40] pile up of masses.    
+            Mass pile up term < nsc_bh_inf_max_mass [M_sun]. User set (default = 35.). 
+            Used to make a uniform pile up in mass between [mass_pile_up, nsc_bh_inf_max_mass] for masses selected
+            from nsc_bh_imf_powerlaw_index beyond nsc_bh_inf_max_mass. E.g default [35,40] pile up of masses.
 
     Returns:
-        disk_bh_initial_masses: float array
-            Array of disk BH initial masses
+        disk_bh_initial_masses: numpy.ndarray
+            Disk BH initial masses with :obj:`float` type
     """
 
     disk_bh_initial_masses = (rng.pareto(nsc_bh_imf_powerlaw_index, size=disk_bh_num) + 1) * nsc_bh_imf_mode
+    # Masses greater than max mass should be redrawn from a Gaussian set to recreate the mass pile up
+    # mean is set to mass_pile_up (default is 35Msun) and sigma is 2.3, following LVK rates and populations
+    # paper: 2023PhRvX..13a1048A, Section VI.B
+    while (np.sum(disk_bh_initial_masses > nsc_bh_imf_max_mass) > 0):
+        disk_bh_initial_masses[disk_bh_initial_masses > nsc_bh_imf_max_mass] = rng.normal(loc=mass_pile_up, scale=2.3, size=np.sum(disk_bh_initial_masses > nsc_bh_imf_max_mass))
     #impose mass pile up condition (should be set in .ini). Default is 35Msun (for max of 40Msun).
     #critical_bh_mass = 35.0
-    mass_diff = nsc_bh_imf_max_mass - mass_pile_up
-    disk_bh_initial_masses[disk_bh_initial_masses > nsc_bh_imf_max_mass] = mass_pile_up + np.rint(mass_diff*rng.uniform())
+    #mass_diff = nsc_bh_imf_max_mass - mass_pile_up
+    #disk_bh_initial_masses[disk_bh_initial_masses > nsc_bh_imf_max_mass] = mass_pile_up + np.rint(mass_diff*rng.uniform(size=np.sum(disk_bh_initial_masses > nsc_bh_imf_max_mass)))
     return disk_bh_initial_masses
 
 
