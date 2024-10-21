@@ -26,10 +26,11 @@ MSTAR_RUNS_EXE = ${HERE}/scripts/vera_mstar_bins.py
 MSTAR_PLOT_EXE = ${HERE}/src/mcfacts/outputs/plot_mcfacts_handler_quantities.py
 
 #### Setup ####
-SEED=3456789012
-FNAME_INI= ${HERE}/recipes/pAGN_test.ini
-#FNAME_INI= ${HERE}/recipes/model_choice.ini
-MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins
+SEED=3456789108
+#FNAME_INI= ${HERE}/recipes/p1_thompson.ini
+FNAME_INI= ${HERE}/recipes/model_choice_old.ini
+FNAME_INI_MSTAR= ${HERE}/recipes/p3_pAGN_on.ini
+MSTAR_RUNS_WKDIR = ${HERE}/runs_mstar_bins_pAGN
 # NAL files might not exist unless you download them from
 # https://gitlab.com/xevra/nal-data
 # scripts that use NAL files might not work unless you install
@@ -46,47 +47,86 @@ version: clean
 	echo "__version__ = '${VERSION}'" > src/mcfacts/__version__.py
 
 install: clean version
-	pip install -e .
+	python -m pip install --editable .
+
+setup: clean version
+	source ~/.bash_profile && \
+	conda activate base && \
+	conda remove -n mcfacts-dev --all -y && \
+	conda create --name mcfacts-dev "python>=3.10.4" pip "pytest" -c conda-forge -c defaults -y && \
+	conda activate mcfacts-dev && \
+	python -m pip install --editable .
+
+unit_test: clean version
+	source ~/.bash_profile && \
+	conda activate mcfacts-dev && \
+	pytest
+
+DIST=dist/mcfacts-${VERSION}.tar.gz
+build-install: clean version
+	python3 -m build
+	python3 -m pip install $(DIST)
+
+test-build: build-install
+	mkdir test-build
+	cp ${DIST} test-build
+	cp ${MCFACTS_SIM_EXE} test-build
+	cd test-build; pip install ${notdir ${DIST}}
+	cd test-build; python3 ${notdir ${MCFACTS_SIM_EXE}}
 
 #### Test one thing at a time ####
 
-
+# do not put linebreaks between any of these lines. Your run will call a different .ini file
 mcfacts_sim: clean
-	python3 ${MCFACTS_SIM_EXE} \
-		--n_iterations 10 \
-		--fname-ini ${FNAME_INI} \
+	mkdir -p runs
+	cd runs; \
+		python ../${MCFACTS_SIM_EXE} \
+		--galaxy_num 100 \
+		--fname-ini ../${FNAME_INI} \
 		--fname-log out.log \
 		--seed ${SEED}
 
 
-plots:  mcfacts_sim
-	python ${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
+plots: mcfacts_sim
+	cd runs; \
+	python ../${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
+
+just_plots:
+	cd runs; \
+	python ../${POPULATION_PLOTS_EXE} --fname-mergers ${wd}/output_mergers_population.dat --plots-directory ${wd}
 
 vera_plots: mcfacts_sim
-	python3 ${VERA_PLOTS_EXE} \
-		--cdf chi_eff chi_p M gen1 gen2 t_merge \
+	python ${VERA_PLOTS_EXE} \
+		--cdf-fields chi_eff chi_p final_mass gen1 gen2 time_merge \
 		--verbose
 
 mstar_runs:
-	python3 ${MSTAR_RUNS_EXE} \
-		--fname-ini ${FNAME_INI} \
-		--number_of_timesteps 1000 \
-        --n_bins_max 10000 \
-		--n_iterations 100 \
-		--dynamics \
-		--feedback \
+	python ${MSTAR_RUNS_EXE} \
+		--fname-ini ${FNAME_INI_MSTAR} \
+		--timestep_num 1000 \
+		--bin_num_max 10000 \
+		--nbins 33 \
+		--galaxy_num 100 \
 		--mstar-min 1e9 \
 		--mstar-max 1e13 \
-		--nbins 33 \
 		--scrub \
 		--fname-nal ${FNAME_GWTC2_NAL} \
-		--wkdir ${MSTAR_RUNS_WKDIR}
-	python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}
+		--wkdir ${MSTAR_RUNS_WKDIR} \
+		--truncate-opacity
+		#--nbins 33 
+		#--timestep_num 1000 \
+	#python3 ${MSTAR_PLOT_EXE} --run-directory ${MSTAR_RUNS_WKDIR}
 		
 
 #### CLEAN ####
+
+#TODO: Create an IO class that wraps the standard IO. This wrapper will keep a persistent log of all of the
+#instantaneous files created. The wrapper would have a cleanup function, and can also report metrics :^)
+#Plus, if we use a standard python IO library, we don't have to worry about rm / del and wildcards!
+
 clean:
 	rm -rf ${wd}/run*
+	rm -rf ${wd}/runs/*
 	rm -rf ${wd}/output_mergers*.dat
 	rm -rf ${wd}/m1m2.png
 	rm -rf ${wd}/merger_mass_v_radius.png
@@ -95,6 +135,22 @@ clean:
 	rm -rf ${wd}/merger_remnant_mass.png
 	rm -rf ${wd}/gw_strain.png
 	rm -rf ${wd}/out.log
-  rm -rf ${wd}/mergers_cdf*.png
+	rm -rf ${wd}/mergers_cdf*.png
 	rm -rf ${wd}/mergers_nal*.png
 	rm -rf ${wd}/r_chi_p.png
+	rm -rf ${wd}/dist
+	rm -rf ${wd}/test-build
+
+clean_win:
+	for /d %%i in (.\run*) do rd /s /q "%%i"
+	for /d %%i in (.\output_mergers*.dat) do rd /s /q "%%i"
+	del /q .\m1m2.png
+	del /q .\merger_mass_v_radius.png
+	del /q .\q_chi_eff.png
+	del /q .\time_of_merger.png
+	del /q .\merger_remnant_mass.png
+	del /q .\gw_strain.png
+	del /q .\out.log
+	for /d %%i in (.\mergers_cdf*.png) do rd /s /q "%%i"
+	for /d %%i in (.\mergers_nal*.png) do rd /s /q "%%i"
+	del /q .\r_chi_p.png

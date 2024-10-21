@@ -7,26 +7,41 @@ import pandas as pd
 import os
 from os.path import abspath, isfile, isdir, split, join
 import sys
-# Grab those txt files
-from importlib import resources as impresources
 
 ## Local imports ##
 import mcfacts.vis.LISA as li
 import mcfacts.vis.PhenomA as pa
-from mcfacts.vis import data
-from mcfacts.outputs import mergerfile
+from mcfacts.vis import data, plotting, styles
+from mcfacts.outputs.mergerfile import MERGER_FIELD_NAMES
 
-######### Setup ########
-COLUMN_NAMES=mergerfile.names_rec
+## Set plot style ##
+plt.style.use('bmh')
+plt.style.use("mcfacts.vis.mcfacts_figures")
+size = "apj_col"
+
+## Dictionary of LaTeX style axes labels
+label_dict = {"chi_eff" : r"$\chi_\mathrm{eff}$",
+              "chi_p" : r"$\chi_\mathrm{p}$",
+              "final_mass": r"$M_\mathrm{final}$ [$M_\odot$]",
+              "gen1" : r"Generation 1",
+              "gen2" : r"Generation 2",
+              "time_merge": r"$t_\mathrm{merge}$ [yr]"}
 
 ######## Arg ########
 def arg():
+    """Argument parser function for vera_plots.py
+
+    Returns
+    -------
+    opts : dict
+        Dictionary of options for code evaluation
+    """
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--fname-mergers",
-        default="output_mergers_population.dat",
+        default="runs/output_mergers_population.dat",
         type=str, help="output_mergers file")
-    parser.add_argument("--cdf",
+    parser.add_argument("--cdf-fields",
         nargs="+",default=[],help="Fields for cdf plots")
     parser.add_argument("--verbose", action='store_true')
     parser.add_argument("--fname-nal", default=None,
@@ -37,50 +52,84 @@ def arg():
     assert isdir(opts.wkdir)
     return opts
 
+######## Coordinates ########
+def mc_of_m1_m2(m1,m2):
+    return ((m1*m2)**0.6) * ((m1+m2)**-0.2)
+
 ######## Load data ########
 def load_mergers_txt(fname, verbose=False):
-    # Load the text file
-    mergers = np.loadtxt(fname, skiprows=2)
+    """Load output_mergers_population.dat
+    
+    Parameters
+    ----------
+    fname : str
+        The path to the output_mergers_population.dat file
+    verbose : bool
+        Verbose output flag
+    """
+    #mergers = np.loadtxt(fname, skiprows=2)
+    mergers = np.loadtxt(fname)
     # Initialize dictionary
     merger_dict = {}
-    # Check for iter
-    if len(COLUMN_NAMES) < mergers.shape[1]:
-        assert len(COLUMN_NAMES) + 1== mergers.shape[1]
-        merger_dict['iter'] = mergers[:,0]
     # Loop the column names
-    for i, item in enumerate(COLUMN_NAMES):
+    for i, item in enumerate(MERGER_FIELD_NAMES):
         # Find the correct index
-        if 'iter' in merger_dict:
-            index = i + 1
-        else:
-            index = i
-        # update the merger dict
-        merger_dict[item] = mergers[:,index]
-
+        merger_dict[item] = mergers[:,i]
     ## Select finite values
     mask = np.isfinite(merger_dict['chi_eff'])
     print("Removing %d nans out of %d sample mergers"%(np.sum(~mask), mask.size), file=sys.stderr)
     for item in merger_dict:
         merger_dict[item] = merger_dict[item][mask]
+    # Add chirp mass
+    merger_dict["mc"] = mc_of_m1_m2(merger_dict["mass_1"], merger_dict["mass_2"])
 
     ## Print things
     # Loop the merger dict
     if verbose:
         for item in merger_dict:
-            #print(item, merger_dict[item].dtype, merger_dict[item].shape, merger_dict[item][1])
-            print(item, merger_dict[item].dtype, merger_dict[item].shape)
-            print(merger_dict[item])
+            print(item, merger_dict[item].dtype, merger_dict[item].shape, merger_dict[item][1])
+            #print(item, merger_dict[item].dtype, merger_dict[item].shape)
+            #print(merger_dict[item])
     # Return the merger dict
     return merger_dict
 
 ######## Functions ########
 def simple_cdf(x):
+    """Construct a simple cdf from some samples
+    
+    Parameters
+    ----------
+    x : np.ndarray
+        The array of sample values used to construct a cdf
+    
+    Returns
+    -------
+    _x : np.ndarray
+        The x array, but sorted
+    cdf : np.ndarray
+        The cdf value at the corresponding value of _x
+    """
     _x = np.sort(x)
     cdf = np.arange(_x.size)
     cdf = cdf / np.max(cdf)
     return _x, cdf
 
 def nal_cdf(fname_nal,n=1000):
+    """Use gwalk.multivariate_normal object to construct cdfs for a GW population
+
+    Parameters
+    ----------
+    fname_nal : str
+        Path to the [GWTC-X].nal.hdf5 file from Vera's external work
+    n : int
+        The number of samples to draw
+
+    Returns
+    -------
+    nal_dict : dict
+        A dictionary holding sample and cdf data from the Normal Approximate Likelihood
+        method
+    """
     from gwalk import MultivariateNormal
     from xdata import Database
     from basil_core.astro.coordinates import m1_m2_of_mc_eta, M_of_mc_eta
@@ -126,29 +175,56 @@ def nal_cdf(fname_nal,n=1000):
     
 
 ######## Plots ########
-def plot_cdf(merger_dict, label, fname):
-    x, y = simple_cdf(merger_dict[label])
+def plot_cdf(merger_dict, field, label, fname):
+    """The simplest plot I could imagine to plot the cdf for a field
+
+    Parameters
+    ----------
+    merger_dict : dict
+        The dictionary with all of the sample values
+    field : str
+        The key to the dictionary for the field we want to use
+    label : str
+        The plot label
+    fname : str
+        The path to where we want to save the plot
+    """
+    x, y = simple_cdf(merger_dict[field])
     from matplotlib import pyplot as plt
-    plt.style.use('bmh')
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
+    fig, ax = plt.subplots(figsize=plotting.set_size(size))
+    ax.plot(x, y, color=styles.color_line1)
     ax.set_xlabel(label)
     ax.set_ylabel("CDF")
     plt.savefig(fname)
     plt.close()
 
 
-def plot_nal_cdf(merger_dict, label, fname, nal_dict):
-    x, y = simple_cdf(merger_dict[label])
+def plot_nal_cdf(merger_dict, field, label, fname, nal_dict):
+    """A simple plot for NAL cdfs
+
+    Parameters
+    ----------
+    merger_dict : dict
+        The dictionary with all of the sample values
+    field : str
+        The key to the dictionary for the field we want to use
+    label : str
+        The plot label
+    fname : str
+        The path to where we want to save the plot
+    nal_dict : dict
+        The dictionary we are using for NAL data
+    """
+    x, y = simple_cdf(merger_dict[field])
     from matplotlib import pyplot as plt
-    plt.style.use('bmh')
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=plotting.set_size(size))
     fig.suptitle(label)
-    ax.plot(x, y, label="mcfacts")
-    ax.plot(nal_dict[label], nal_dict["%s_cdf"%(label)], label="GWTC-2")
+    ax.plot(x, y, label="mcfacts",color=styles.color_line1)
+    ax.plot(nal_dict[field], nal_dict["%s_cdf"%(field)], label="GWTC-2")
     ax.set_xlabel(label)
     ax.set_ylabel("CDF")
     fig.legend()
+    fig.tight_layout()
     plt.savefig(fname)
     plt.close()
 
@@ -159,21 +235,22 @@ def main():
     merger_dict = load_mergers_txt(opts.fname_mergers, verbose=opts.verbose)
 
     #### Cdf plots ####
-    for _item in opts.cdf:
-        assert _item in merger_dict
+    for _item in opts.cdf_fields:
+        assert _item in merger_dict, "%s not found in %s"%(_item, merger_dict.keys())
         fname_item = join(opts.wkdir, "mergers_cdf_%s.png"%(_item))
-        plot_cdf(merger_dict, _item, fname_item)
+        plot_cdf(merger_dict, _item, label_dict[_item], fname_item)
 
     #### NAL plots ####
     if not opts.fname_nal is None:
         nal_dict = nal_cdf(opts.fname_nal)
         _item = "chi_eff"
         fname_item = join(opts.wkdir, "mergers_nal_cdf_%s.png"%(_item))
-        plot_nal_cdf(merger_dict, _item, fname_item, nal_dict)
-        _item = "M"
+        plot_nal_cdf(merger_dict, _item, label_dict[_item] ,fname_item, nal_dict)
+        _item = "mc"
         fname_item = join(opts.wkdir, "mergers_nal_cdf_%s.png"%(_item))
-        plot_nal_cdf(merger_dict, _item, fname_item, nal_dict)
+        plot_nal_cdf(merger_dict, _item, label_dict[_item], fname_item, nal_dict)
     return
+
 ######## Execution ########
 if __name__ == "__main__":
     main()
