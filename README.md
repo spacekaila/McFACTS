@@ -1,6 +1,6 @@
 <h1 align="center">
     <br>
-    <a href="https://github.com/bmckernan/test_mcfacts"><img src="branding/logo/mcfacts_logo.png" alt="Markdownify" width="500"></a>
+    <a href="https://github.com/mcfacts/mcfacts"><img src="branding/logo/mcfacts_logo.png" alt="Markdownify" width="500"></a>
     <br>
     <span style="font-weight: normal">
         <b>M</b>onte <b>c</b>arlo <b>F</b>or <b>A</b>GN <b>C</b>hannel <b>T</b>esting and <b>S</b>imulations
@@ -14,10 +14,10 @@
 
 To clone and run this application, you'll need [Git](https://git-scm.com) and [Conda](https://docs.conda.io/en/latest/).
 
-The latest development version is available directly from our [GitHub Repo](https://github.com/bmckernan/test_mcfacts). To start, clone the repository:
+The latest development version is available directly from our [GitHub Repo](https://github.com/mcfacts/mcfacts). To start, clone the repository:
 
 ```bash
-$ git clone https://github.com/bmckernan/test_mcfacts
+$ git clone https://github.com/mcfacts/mcfacts
 $ cd test_mcfacts
 ```
 
@@ -87,6 +87,9 @@ You can find documentation for our code and modules at our [Read the Docs](https
 
 Input and outputs are documented in `IOdocumentation.txt`. 
 
+Code Website (including Office Hours) (https://saavikford.wixsite.com/saavik/general-7).
+
+Paper 1: (https://arxiv.org/abs/2410.16515)
 Want build or browse the docs locally? Run the following:
 
 ```bash
