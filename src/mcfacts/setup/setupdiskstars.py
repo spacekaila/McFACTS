@@ -292,9 +292,7 @@ def setup_disk_stars_eccentricity_uniform(star_num):
     return (star_orb_ecc_initial)
 
 
-def setup_disk_stars_inclination_toinclude(star_num,
-                                           star_orb_a,
-                                           star_orb_ang_mom,
+def setup_disk_stars_inc(star_num, star_orb_a, star_orb_ang_mom,
                                            disk_aspect_ratio):
     """
     NEED TO UPDATE STAR FUNCTIONS TO CALL THS INSTEAD

@@ -324,17 +324,18 @@ def main():
         # Any stars over 100 Msun immediately turn into BH
         star_to_bh_id_num = stars.id_num[stars.mass > 100]
         star_to_bh_spin = setupdiskblackholes.setup_disk_blackholes_spins(len(star_to_bh_id_num),
-                                                                        opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
-        star_to_bh_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(
-                len(star_to_bh_id_num),
-                star_to_bh_spin)
+                                                                          opts.nsc_bh_spin_dist_mu, opts.nsc_bh_spin_dist_sigma)
+        star_to_bh_spin_angle = setupdiskblackholes.setup_disk_blackholes_spin_angles(len(star_to_bh_id_num), star_to_bh_spin)
+        star_to_bh_orb_ang_mom = setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(len(star_to_bh_id_num))
+        star_to_bh_inc = setupdiskblackholes.setup_disk_blackholes_incl(len(star_to_bh_id_num), stars.at_id_num(star_to_bh_id_num, "orb_a"), star_to_bh_orb_ang_mom, disk_aspect_ratio)
+
         blackholes.add_blackholes(new_mass=stars.at_id_num(star_to_bh_id_num, "mass"),
                                   new_id_num=star_to_bh_id_num,
-                                  new_orb_ang_mom=setupdiskblackholes.setup_disk_blackholes_orb_ang_mom(len(star_to_bh_id_num)),
+                                  new_orb_ang_mom=star_to_bh_orb_ang_mom,
                                   new_spin=star_to_bh_spin,
                                   new_spin_angle=star_to_bh_spin_angle,
                                   new_orb_a=stars.at_id_num(star_to_bh_id_num, "orb_a"),
-                                  new_orb_inc=stars.at_id_num(star_to_bh_id_num, "orb_inc"),
+                                  new_orb_inc=star_to_bh_inc,
                                   new_orb_ecc=stars.at_id_num(star_to_bh_id_num, "orb_ecc"),
                                   new_orb_arg_periapse=stars.at_id_num(star_to_bh_id_num, "orb_arg_periapse"),
                                   new_galaxy=stars.at_id_num(star_to_bh_id_num, "galaxy"),
